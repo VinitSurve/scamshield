@@ -53,12 +53,15 @@
       "resources": [
         "interstitial.html",
         "test-lab.html",
-        "icons/*"
+        "icons/*",
+        "tesseract/*",
+        "tesseract/core/*",
+        "tesseract/tessdata/*"
       ],
       "matches": ["<all_urls>"]
     }
   ],
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; frame-ancestors 'none';"
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; frame-ancestors 'none';"
   }
 }

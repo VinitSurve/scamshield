@@ -240,6 +240,108 @@ export class ProviderRouter {
   }
 
   /**
+   * Executes Vision request with automatic key rotation and multi-provider fallback
+   */
+  static async executeVisionWithFallback(
+    prompt: string,
+    imageDataUrl: string
+  ): Promise<{
+    rawText: string;
+    providerUsed: AIProviderId;
+    modelUsed: string;
+    latencyMs: number;
+    fallbackOccurred: boolean;
+  }> {
+    await this.initialize();
+    const settings = await this.getSettings();
+
+    if (!settings.enabled) {
+      throw new Error('AI analysis is disabled in ScamShield settings');
+    }
+
+    const providerOrder = await this.getProviderExecutionOrder();
+    const overallStart = Date.now();
+    const providerErrors: { provider: AIProviderId; error: string }[] = [];
+    let initialProviderTried = false;
+    let fallbackOccurred = false;
+
+    for (const providerId of providerOrder) {
+      const providerConfig = settings.providers[providerId];
+      if (!providerConfig?.enabled) continue;
+
+      const provider = this.providers[providerId];
+      if (!provider.executeVision) continue;
+
+      const model =
+        providerConfig.selectedModel ||
+        (providerId === 'groq' ? 'qwen/qwen3.8-27b' : 'gemini-1.5-flash');
+      const maxRetries = settings.maxRetriesPerKey || 1;
+
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        const keyConfig = await KeyManager.getNextAvailableKey(providerId);
+
+        if (!keyConfig) {
+          providerErrors.push({
+            provider: providerId,
+            error: 'No active or healthy API keys available',
+          });
+          break;
+        }
+
+        if (initialProviderTried) {
+          fallbackOccurred = true;
+        }
+        initialProviderTried = true;
+
+        const reqStart = Date.now();
+        try {
+          const rawText = await provider.executeVision(
+            prompt,
+            imageDataUrl,
+            model,
+            keyConfig.key,
+            settings.requestTimeoutMs || 15000
+          );
+
+          const latencyMs = Date.now() - reqStart;
+          await KeyManager.recordSuccess(keyConfig.id);
+
+          return {
+            rawText,
+            providerUsed: providerId,
+            modelUsed: model,
+            latencyMs,
+            fallbackOccurred,
+          };
+        } catch (err: any) {
+          const category = err.category || 'UNKNOWN';
+
+          if (category === 'RATE_LIMIT') {
+            await KeyManager.recordRateLimit(keyConfig.id, err.retryAfterSeconds);
+          } else if (category === 'AUTHENTICATION') {
+            await KeyManager.recordAuthFailure(keyConfig.id);
+          } else {
+            await KeyManager.recordFailure(keyConfig.id, category, err.message || 'Vision request failed');
+          }
+
+          providerErrors.push({
+            provider: providerId,
+            error: err.message || 'Vision request failed',
+          });
+        }
+      }
+
+      if (!settings.fallbackEnabled) break;
+    }
+
+    const totalDuration = Date.now() - overallStart;
+    const summaryErr = providerErrors.map((e) => `${e.provider}: ${e.error}`).join('; ');
+    throw new Error(
+      `All AI vision providers exhausted after ${totalDuration}ms. (${summaryErr || 'No operational vision keys configured'})`
+    );
+  }
+
+  /**
    * Tests a specific configured key by ID
    */
   static async testKeyById(keyId: string): Promise<KeyValidationResult> {

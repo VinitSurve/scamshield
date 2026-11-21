@@ -33,6 +33,7 @@ export const ImageScamScannerModal: React.FC<ImageScamScannerModalProps> = ({ is
   const [result, setResult] = useState<ImageScamAnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showOcrText, setShowOcrText] = useState(false);
+  const [showDiagnostics, setShowDiagnostics] = useState(false);
 
   if (!isOpen) return null;
 
@@ -333,39 +334,62 @@ export const ImageScamScannerModal: React.FC<ImageScamScannerModalProps> = ({ is
             /* Results View */
             <div className="space-y-3 animate-fade-in text-xs">
               {/* Verdict Header Card */}
-              <div
-                className={`p-3 rounded-xl border flex items-center justify-between ${
-                  result.verdict === 'CRITICAL' || result.verdict === 'HIGH'
-                    ? 'bg-red-950/40 border-red-700/60 text-red-200'
-                    : result.verdict === 'SUSPICIOUS'
-                    ? 'bg-amber-950/40 border-amber-700/60 text-amber-200'
-                    : 'bg-emerald-950/40 border-emerald-700/60 text-emerald-200'
-                }`}
-              >
-                <div className="flex items-center space-x-2.5">
-                  {result.verdict === 'CRITICAL' || result.verdict === 'HIGH' ? (
-                    <ShieldAlert className="w-5 h-5 text-red-400 shrink-0" />
-                  ) : result.verdict === 'SUSPICIOUS' ? (
-                    <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0" />
-                  ) : (
-                    <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0" />
-                  )}
-                  <div>
-                    <span className="font-bold text-xs uppercase block">
-                      {result.verdict === 'CRITICAL' || result.verdict === 'HIGH'
-                        ? 'High-Risk Scam Detected'
-                        : result.verdict === 'SUSPICIOUS'
-                        ? 'Suspicious Content'
-                        : 'No Obvious Scam Signals'}
-                    </span>
-                    <span className="text-[10px] opacity-80">{result.scamClassification.primaryThreatSummary}</span>
+              {result.isUnverified || result.verdict === 'UNVERIFIED' ? (
+                <div className="p-3 rounded-xl border bg-amber-950/40 border-amber-700/60 text-amber-200 flex items-start justify-between">
+                  <div className="flex items-start space-x-2.5">
+                    <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-bold text-xs uppercase block text-amber-300">
+                        Analysis Incomplete
+                      </span>
+                      <span className="text-[10px] text-amber-200/90 block mt-0.5">
+                        {result.scamClassification.primaryThreatSummary}
+                      </span>
+                      <span className="inline-block mt-1 text-[9px] px-1.5 py-0.5 rounded bg-amber-900/60 text-amber-300 border border-amber-800 font-mono">
+                        Risk Status: UNVERIFIED (No safety conclusion made)
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <span className="font-mono font-bold text-sm text-amber-300">20%</span>
+                    <span className="block text-[9px] text-amber-400/80">Caution</span>
                   </div>
                 </div>
-                <div className="text-right shrink-0">
-                  <span className="font-mono font-bold text-sm">{Math.round(result.overallRiskScore)}%</span>
-                  <span className="block text-[9px] opacity-75">Risk Score</span>
+              ) : (
+                <div
+                  className={`p-3 rounded-xl border flex items-center justify-between ${
+                    result.verdict === 'CRITICAL' || result.verdict === 'HIGH'
+                      ? 'bg-red-950/40 border-red-700/60 text-red-200'
+                      : result.verdict === 'SUSPICIOUS'
+                      ? 'bg-amber-950/40 border-amber-700/60 text-amber-200'
+                      : 'bg-emerald-950/40 border-emerald-700/60 text-emerald-200'
+                  }`}
+                >
+                  <div className="flex items-center space-x-2.5">
+                    {result.verdict === 'CRITICAL' || result.verdict === 'HIGH' ? (
+                      <ShieldAlert className="w-5 h-5 text-red-400 shrink-0" />
+                    ) : result.verdict === 'SUSPICIOUS' ? (
+                      <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0" />
+                    ) : (
+                      <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0" />
+                    )}
+                    <div>
+                      <span className="font-bold text-xs uppercase block">
+                        {result.verdict === 'CRITICAL' || result.verdict === 'HIGH'
+                          ? 'High-Risk Scam Detected'
+                          : result.verdict === 'SUSPICIOUS'
+                          ? 'Suspicious Content'
+                          : 'No Obvious Scam Signals'}
+                      </span>
+                      <span className="text-[10px] opacity-80">{result.scamClassification.primaryThreatSummary}</span>
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <span className="font-mono font-bold text-sm">{Math.round(result.overallRiskScore)}%</span>
+                    <span className="block text-[9px] opacity-75">Risk Score</span>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Detected Indicators List */}
               <div className="space-y-1.5">
@@ -471,6 +495,54 @@ export const ImageScamScannerModal: React.FC<ImageScamScannerModalProps> = ({ is
                 {showOcrText && (
                   <div className="p-2 bg-slate-950 font-mono text-[10px] text-slate-300 whitespace-pre-wrap max-h-32 overflow-y-auto">
                     {result.ocrResult.extractedText || 'No printable text recognized by OCR.'}
+                  </div>
+                )}
+              </div>
+
+              {/* Developer Diagnostics & Engine Telemetry (Phase 7) */}
+              <div className="border border-indigo-900/40 rounded-xl overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setShowDiagnostics(!showDiagnostics)}
+                  className="w-full p-2 bg-slate-900/70 hover:bg-slate-900 flex items-center justify-between text-[11px] font-semibold text-indigo-300"
+                >
+                  <span className="flex items-center space-x-1.5">
+                    <Sparkles className="w-3 h-3 text-indigo-400" />
+                    <span>Developer Diagnostics & Engine Telemetry</span>
+                  </span>
+                  {showDiagnostics ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                </button>
+                {showDiagnostics && result.diagnostics && (
+                  <div className="p-2.5 bg-slate-950 font-mono text-[9px] text-slate-300 space-y-2 border-t border-slate-800">
+                    <div>
+                      <p className="text-indigo-400 font-bold mb-1">IMAGE PROCESSING</p>
+                      <p>File Type: {result.diagnostics.fileType}</p>
+                      <p>Dimensions: {result.diagnostics.imageDimensions}</p>
+                      <p>Size: {Math.round(result.diagnostics.imageSizeBytes / 1024)} KB</p>
+                      <p>Selected Language: {result.diagnostics.selectedLanguage}</p>
+                      <p>Preprocessing: {result.diagnostics.preprocessingTechniques?.join(', ') || 'NONE'}</p>
+                    </div>
+                    <div>
+                      <p className="text-indigo-400 font-bold mb-1">OCR PROCESSING</p>
+                      <p>Engine: {result.diagnostics.ocrEngine}</p>
+                      <p>Worker Status: {result.diagnostics.workerStatus}</p>
+                      <p>WASM Status: {result.diagnostics.wasmStatus}</p>
+                      <p>Language Data: {result.diagnostics.languageDataStatus}</p>
+                      <p>OCR Duration: {result.diagnostics.ocrDurationMs}ms</p>
+                      <p>Passes Attempted: {result.diagnostics.passesAttempted}</p>
+                      <p>Detected Text Length: {result.diagnostics.ocrTextLength} chars</p>
+                      <p>OCR Status: {result.diagnostics.ocrStatus}</p>
+                    </div>
+                    <div>
+                      <p className="text-indigo-400 font-bold mb-1">FALLBACK TELEMETRY</p>
+                      <p>AI Fallback Attempted: {result.diagnostics.aiFallbackAttempted ? 'YES' : 'NO'}</p>
+                      {result.diagnostics.aiProvider && <p>Provider: {result.diagnostics.aiProvider}</p>}
+                      {result.diagnostics.aiModel && <p>Model: {result.diagnostics.aiModel}</p>}
+                      {result.diagnostics.aiFallbackStatus && <p>Fallback Status: {result.diagnostics.aiFallbackStatus}</p>}
+                      {result.diagnostics.aiFallbackOutputSnippet && (
+                        <p className="text-slate-400 truncate">Snippet: {result.diagnostics.aiFallbackOutputSnippet}</p>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>

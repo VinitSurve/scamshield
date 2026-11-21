@@ -137,11 +137,16 @@ export class IndicatorExtractor {
     const results: ExtractedUrlIndicator[] = [];
     const seen = new Set<string>();
 
+    // Heal line-wrapped URLs common in mobile SMS / chat screenshots (e.g. "https://is.gd/\nJ9gaHq.iciciBank.KYC")
+    const healedText = text
+      .replace(/(https?:\/\/[^\s<>"'{}|\\^`\[\]]+\/)\s*\n\s*([a-zA-Z0-9_.-]+)/gi, '$1$2')
+      .replace(/\b([a-zA-Z0-9-]+\.(?:gd|ly|com|top|xyz|in|org|net)\/)\s*\n\s*([a-zA-Z0-9_.-]+)/gi, '$1$2');
+
     // 1. Explicit http/https URLs
     const explicitUrlRegex = /https?:\/\/[^\s<>"'{}|\\^`\[\]]+/gi;
     let match: RegExpExecArray | null;
 
-    while ((match = explicitUrlRegex.exec(text)) !== null) {
+    while ((match = explicitUrlRegex.exec(healedText)) !== null) {
       const urlStr = match[0].replace(/[.,;:!?)\]]+$/, ''); // Strip trailing punctuation
       const canonical = canonicalizeUrl(urlStr);
 
@@ -160,7 +165,7 @@ export class IndicatorExtractor {
     // 2. Protocol-less domains with common TLDs (e.g. sbi-kyc.top/update, bit.ly/3xyz, update.ly/verify)
     const domainRegex = /\b([a-zA-Z0-9-]{2,63}\.(?:com|org|net|in|co\.in|top|xyz|online|site|store|app|biz|info|live|club|vip|link|cc|icu|tech|ly|io|me|to|ai|co|is|gd))(?:\/[^\s<>"'{}|\\^`\[\]]*)?/gi;
 
-    while ((match = domainRegex.exec(text)) !== null) {
+    while ((match = domainRegex.exec(healedText)) !== null) {
       const candidate = match[0].replace(/[.,;:!?)\]]+$/, '');
       const withProto = `https://${candidate}`;
       const canonical = canonicalizeUrl(withProto);
@@ -216,6 +221,8 @@ export class IndicatorExtractor {
           lowerText.includes('bank') ||
           lowerText.includes('sbi') ||
           lowerText.includes('hdfc') ||
+          lowerText.includes('icici') ||
+          lowerText.includes('kyc') ||
           lowerText.includes('electricity') ||
           lowerText.includes('manager') ||
           lowerText.includes('officer');

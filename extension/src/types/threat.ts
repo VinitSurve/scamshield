@@ -1,4 +1,4 @@
-export type ThreatSeverity = 'SAFE' | 'UNKNOWN' | 'SUSPICIOUS' | 'HIGH' | 'CRITICAL';
+export type ThreatSeverity = 'SAFE' | 'UNKNOWN' | 'SUSPICIOUS' | 'HIGH' | 'CRITICAL' | 'UNVERIFIED';
 
 export type ThreatCategory =
   | 'PHISHING'

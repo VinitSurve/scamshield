@@ -90,6 +90,97 @@ export class GeminiProvider extends BaseAIProvider {
   }
 
   /**
+   * Executes multimodal Vision OCR prompt on Gemini API
+   */
+  async executeVision(
+    prompt: string,
+    imageDataUrl: string,
+    model: string,
+    apiKey: string,
+    timeoutMs: number
+  ): Promise<string> {
+    const visionModel = model || 'gemini-1.5-flash';
+    const endpoint = `${this.baseUrl}/${encodeURIComponent(visionModel)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+    const match = imageDataUrl.match(/^data:([^;]+);base64,(.+)$/);
+    const mimeType = match ? match[1] : 'image/jpeg';
+    const base64Data = match ? match[2] : '';
+
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: 'user',
+              parts: [
+                {
+                  text: 'You are ScamShield AI Vision OCR engine. Transcribe all text, messages, URLs, links, and phone numbers from the provided image accurately. Return the extracted text faithfully without omission.',
+                },
+                { text: prompt },
+                {
+                  inlineData: {
+                    mimeType: mimeType,
+                    data: base64Data,
+                  },
+                },
+              ],
+            },
+          ],
+          generationConfig: {
+            temperature: 0.1,
+            maxOutputTokens: 1024,
+          },
+        }),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timer);
+
+      if (!response.ok) {
+        let errJson: any;
+        try {
+          errJson = await response.json();
+        } catch {
+          errJson = null;
+        }
+
+        const classified = this.classifyError(response.status, errJson);
+        const err = new Error(classified.sanitizedMessage);
+        (err as any).category = classified.category;
+        (err as any).statusCode = response.status;
+        (err as any).retryAfterSeconds = classified.retryAfterSeconds;
+        throw err;
+      }
+
+      const data = await response.json();
+      const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+      if (!rawText) {
+        const err = new Error('Empty response received from Gemini Vision API');
+        (err as any).category = 'MALFORMED_RESPONSE';
+        throw err;
+      }
+
+      return rawText;
+    } catch (err: any) {
+      clearTimeout(timer);
+      if (err.category) throw err;
+
+      const classified = this.classifyError(0, null, err);
+      const wrapped = new Error(classified.sanitizedMessage);
+      (wrapped as any).category = classified.category;
+      throw wrapped;
+    }
+  }
+
+  /**
    * Tests API key validity with a minimal 5-token ping
    */
   async validateKey(

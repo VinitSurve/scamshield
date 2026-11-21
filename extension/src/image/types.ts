@@ -69,10 +69,34 @@ export interface ExtractedIndicators {
   socialEngineeringTactics: string[];
 }
 
+export interface ImageDiagnosticTelemetry {
+  fileType: string;
+  imageDimensions: string;
+  imageSizeBytes: number;
+  selectedLanguage: string;
+  ocrEngine: string;
+  ocrInitialization: 'OK' | 'FAILED' | 'SKIPPED' | 'FALLBACK';
+  workerStatus: 'LOADED' | 'CSP_BLOCKED' | 'READY' | 'FAILED' | 'NOT_APPLICABLE';
+  wasmStatus: 'LOADED' | 'BLOCKED_BY_CSP' | 'FAILED' | 'READY';
+  languageDataStatus: 'LOCAL_EMBEDDED' | 'CACHED' | 'LOADED' | 'FAILED';
+  ocrDurationMs: number;
+  ocrTextLength: number;
+  ocrStatus: 'SUCCESS' | 'PARTIAL' | 'FAILED';
+  passesAttempted: number;
+  preprocessingTechniques: string[];
+  aiFallbackAttempted: boolean;
+  aiProvider?: string;
+  aiModel?: string;
+  aiFallbackStatus?: 'SUCCESS' | 'FAILED' | 'SKIPPED' | 'KEYS_EXHAUSTED';
+  aiFallbackOutputSnippet?: string;
+}
+
 export interface ImageScamAnalysisResult {
   scanId: string;
   timestamp: number;
   durationMs: number;
+  analysisStatus: 'COMPLETE' | 'INCOMPLETE' | 'FAILED';
+  isUnverified: boolean;
   imageMetadata: {
     name?: string;
     sizeBytes: number;
@@ -103,6 +127,7 @@ export interface ImageScamAnalysisResult {
     model?: string;
     explanation?: string;
   };
+  diagnostics: ImageDiagnosticTelemetry;
   verdict: ThreatSeverity;
   overallRiskScore: number; // 0 to 100
   recommendedActions: string[];

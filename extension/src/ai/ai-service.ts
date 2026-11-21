@@ -261,4 +261,37 @@ Respond ONLY with a valid, raw JSON object matching this schema:
   static async getHealthStats(): Promise<Record<AIProviderId, ProviderHealthStats>> {
     return KeyManager.getHealthStats();
   }
+
+  /**
+   * Performs AI Vision OCR text extraction with multi-provider fallback
+   */
+  static async extractTextWithVisionFallback(
+    imageDataUrl: string
+  ): Promise<{
+    success: boolean;
+    extractedText: string;
+    providerUsed?: AIProviderId;
+    modelUsed?: string;
+    error?: string;
+  }> {
+    const prompt =
+      'Transcribe all text from this screenshot or image verbatim. Extract all messages, sender headers, phone numbers, and URLs. Return only the extracted text.';
+
+    try {
+      const result = await ProviderRouter.executeVisionWithFallback(prompt, imageDataUrl);
+      return {
+        success: true,
+        extractedText: result.rawText.trim(),
+        providerUsed: result.providerUsed,
+        modelUsed: result.modelUsed,
+      };
+    } catch (err: any) {
+      logger.debug('Vision OCR fallback execution failed:', err);
+      return {
+        success: false,
+        extractedText: '',
+        error: err instanceof Error ? err.message : String(err),
+      };
+    }
+  }
 }

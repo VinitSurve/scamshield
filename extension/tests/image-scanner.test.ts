@@ -1,4 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import fs from 'fs';
+import path from 'path';
 import { IndicatorExtractor } from '../src/image/indicator-extractor';
 import { QrDecoder } from '../src/image/qr-decoder';
 import { ImageScanner } from '../src/image/image-scanner';
@@ -170,6 +172,20 @@ describe('Image-Based Scam Detection Engine', () => {
       ).rejects.toThrow('exceeds maximum allowed limit');
     });
 
+    it('heals line-wrapped shortened URLs common in mobile SMS notifications', () => {
+      const wrappedText = `
+        Dear Customer your Icici bank Accounts KYC has been suspended
+        Accounts https://is.gd/
+        J9gaHq.iciciBank.KYC
+      `;
+
+      const urls = IndicatorExtractor.extractUrls(wrappedText);
+      expect(urls.length).toBe(1);
+      expect(urls[0].original).toBe('https://is.gd/J9gaHq.iciciBank.KYC');
+      expect(urls[0].isShortener).toBe(true);
+      expect(urls[0].domain).toBe('is.gd');
+    });
+
     it('rejects unsupported image MIME types gracefully', async () => {
       await expect(
         ImageScanner.scanImage('data:application/pdf;base64,AAAA', {
@@ -178,6 +194,73 @@ describe('Image-Based Scam Detection Engine', () => {
           mimeType: 'application/pdf',
         })
       ).rejects.toThrow('Unsupported image format');
+    });
+
+    it('returns UNVERIFIED and cautionary 20% score when an image yields no OCR text (never 0% clean)', async () => {
+      // Mock an empty data URL that produces no OCR text
+      const emptyDataUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+
+      const result = await ImageScanner.scanImage(emptyDataUrl, {
+        name: 'blank-image.png',
+        sizeBytes: 68,
+        mimeType: 'image/png',
+      });
+
+      expect(result.verdict).toBe('UNVERIFIED');
+      expect(result.overallRiskScore).toBe(20);
+      expect(result.isUnverified).toBe(true);
+      expect(result.analysisStatus).toBe('INCOMPLETE');
+      expect(result.scamClassification.primaryThreatSummary).toContain('IMAGE ANALYSIS INCOMPLETE');
+      expect(result.recommendedActions.length).toBeGreaterThan(0);
+      expect(result.diagnostics).toBeDefined();
+      expect(result.diagnostics.ocrEngine).toBeDefined();
+    });
+
+    it('scans the actual real-world ICICI fake KYC screenshot fixture and identifies the scam with CRITICAL severity', async () => {
+      const fixturePath = path.join(__dirname, 'fixtures/real-scam-sms.jpeg');
+      expect(fs.existsSync(fixturePath)).toBe(true);
+
+      const buffer = fs.readFileSync(fixturePath);
+      const dataUrl = `data:image/jpeg;base64,${buffer.toString('base64')}`;
+
+      const result = await ImageScanner.scanImage(dataUrl, {
+        name: 'real-scam-sms.jpeg',
+        sizeBytes: buffer.length,
+        mimeType: 'image/jpeg',
+      });
+
+      // Verify OCR extracted recognizable fragments
+      expect(result.ocrResult.extractedText.length).toBeGreaterThan(50);
+      const lowerOcr = result.ocrResult.extractedText.toLowerCase();
+      expect(lowerOcr).toContain('customer');
+      expect(lowerOcr).toContain('icici');
+      expect(lowerOcr).toContain('kyc');
+      expect(lowerOcr).toContain('suspended');
+
+      // Verify shortened URL was extracted and identified as shortener
+      expect(result.indicators.urls.length).toBeGreaterThanOrEqual(1);
+      const isGdUrl = result.indicators.urls.find((u) => u.original.includes('is.gd'));
+      expect(isGdUrl).toBeDefined();
+      expect(isGdUrl?.isShortener).toBe(true);
+
+      // Verify sender phone number was extracted
+      expect(result.indicators.phones.length).toBeGreaterThanOrEqual(1);
+      const phone = result.indicators.phones[0];
+      expect(phone.isIndian).toBe(true);
+      expect(phone.riskLevel).toBe('HIGH');
+
+      // Verify final verdict and risk score
+      expect(result.scamClassification.category).toBe('FAKE_KYC');
+      expect(result.verdict).toBe('CRITICAL');
+      expect(result.overallRiskScore).toBeGreaterThanOrEqual(85);
+      expect(result.isUnverified).toBe(false);
+      expect(result.analysisStatus).toBe('COMPLETE');
+
+      // Verify developer diagnostics telemetry
+      expect(result.diagnostics).toBeDefined();
+      expect(result.diagnostics.imageSizeBytes).toBe(buffer.length);
+      expect(result.diagnostics.ocrDurationMs).toBeGreaterThan(0);
+      expect(result.diagnostics.ocrTextLength).toBeGreaterThan(50);
     });
   });
 });

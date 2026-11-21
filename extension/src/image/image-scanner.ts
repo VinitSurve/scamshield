@@ -1,4 +1,4 @@
-import { ImageScamAnalysisResult, OCRResult } from './types';
+import { ImageScamAnalysisResult, ImageDiagnosticTelemetry } from './types';
 import { QrDecoder } from './qr-decoder';
 import { IndicatorExtractor } from './indicator-extractor';
 import { OcrService } from './ocr-service';
@@ -10,9 +10,10 @@ import { logger } from '../utils/logger';
 
 export class ImageScanner {
   /**
-   * Master pipeline: processes an image, decodes QR codes, performs OCR,
-   * extracts all indicators, passes them through existing security scanners,
-   * runs optional AI analysis, and aggregates evidence into a comprehensive report.
+   * Master pipeline: processes an image, decodes QR codes, performs multi-pass OCR,
+   * falls back to Groq/Gemini Vision AI if local OCR fails, extracts all indicators,
+   * passes them through existing security scanners, runs optional AI reasoning,
+   * and aggregates evidence into a comprehensive report.
    */
   static async scanImage(
     imageDataUrl: string,
@@ -29,13 +30,13 @@ export class ImageScanner {
     const scanId = `img_scan_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
     // 1. Image Validation
-    this.validateImageInput(imageDataUrl, metadata);
+    this.validateImageInput(metadata);
 
     // 2. Decode QR Code (if present in image)
     const qrIndicator = await QrDecoder.decodeFromDataUrl(imageDataUrl);
 
-    // 3. Perform Optical Character Recognition (OCR)
-    let ocrResult: OCRResult = await OcrService.performOCR(imageDataUrl, language);
+    // 3. Perform Optical Character Recognition (OCR) with Local Tesseract & Multi-Pass Preprocessing
+    let ocrResult = await OcrService.performOCR(imageDataUrl, language);
 
     // If QR code contained text and OCR was empty, supplement with QR data
     let combinedText = ocrResult.extractedText;
@@ -49,15 +50,121 @@ export class ImageScanner {
       }
     }
 
-    // 4. Extract Structured Indicators from combined text
+    // 4. Vision Fallback: If Local OCR failed or extracted minimal unusable text (< 15 chars)
+    let aiFallbackAttempted = false;
+    let aiFallbackStatus: 'SUCCESS' | 'FAILED' | 'SKIPPED' | 'KEYS_EXHAUSTED' = 'SKIPPED';
+    let aiProvider: string | undefined;
+    let aiModel: string | undefined;
+
+    if (!combinedText || combinedText.trim().length < 15) {
+      aiFallbackAttempted = true;
+      try {
+        const visionResult = await this.tryVisionFallback(imageDataUrl);
+        if (visionResult.success && visionResult.extractedText) {
+          combinedText = visionResult.extractedText;
+          ocrResult.extractedText = visionResult.extractedText;
+          ocrResult.sourceEngine = 'AI_VISION';
+          ocrResult.status = 'SUCCESS';
+          aiFallbackStatus = 'SUCCESS';
+          aiProvider = visionResult.provider;
+          aiModel = visionResult.model;
+        } else {
+          aiFallbackStatus = visionResult.error?.includes('exhausted')
+            ? 'KEYS_EXHAUSTED'
+            : 'FAILED';
+        }
+      } catch (visionErr) {
+        logger.debug('Vision fallback error:', visionErr);
+        aiFallbackStatus = 'FAILED';
+      }
+    }
+
+    const durationMs = Math.round(performance.now() - startTime);
+
+    // 5. Build Developer Diagnostic Telemetry
+    const diagnostics: ImageDiagnosticTelemetry = {
+      fileType: metadata.mimeType || 'image/jpeg',
+      imageDimensions: `${metadata.width || 'auto'}x${metadata.height || 'auto'}`,
+      imageSizeBytes: metadata.sizeBytes,
+      selectedLanguage: language,
+      ocrEngine: ocrResult.sourceEngine,
+      ocrInitialization: 'OK',
+      workerStatus: (ocrResult as any).diagnostics?.workerStatus || 'READY',
+      wasmStatus: (ocrResult as any).diagnostics?.wasmStatus || 'READY',
+      languageDataStatus: (ocrResult as any).diagnostics?.languageDataStatus || 'LOCAL_EMBEDDED',
+      ocrDurationMs: ocrResult.processingTimeMs,
+      ocrTextLength: combinedText.length,
+      ocrStatus: combinedText ? 'SUCCESS' : 'FAILED',
+      passesAttempted: (ocrResult as any).passesAttempted || 1,
+      preprocessingTechniques: (ocrResult as any).preprocessingTechniques || [],
+      aiFallbackAttempted,
+      aiProvider,
+      aiModel,
+      aiFallbackStatus,
+      aiFallbackOutputSnippet: aiProvider ? combinedText.slice(0, 150) : undefined,
+    };
+
+    // 6. Security Critical Check: If both Local OCR and Vision failed to extract readable text
+    if (!combinedText || combinedText.trim().length === 0) {
+      return {
+        scanId,
+        timestamp: Date.now(),
+        durationMs,
+        analysisStatus: 'INCOMPLETE',
+        isUnverified: true,
+        imageMetadata: metadata,
+        ocrResult,
+        indicators: {
+          urls: [],
+          phones: [],
+          upiIds: [],
+          emails: [],
+          qrCodes: qrIndicator ? [qrIndicator] : [],
+          socialEngineeringTactics: [],
+        },
+        scamClassification: {
+          category: 'UNKNOWN',
+          confidenceScore: 0,
+          riskLevel: 'SAFE',
+          urgencyLevel: 'NONE',
+          primaryThreatSummary:
+            'IMAGE ANALYSIS INCOMPLETE: We could not reliably extract text from this image. The image has NOT been verified as safe.',
+          socialEngineeringTactics: [],
+        },
+        securityChecks: {
+          urlChecks: [],
+          phoneChecks: [],
+          upiChecks: [],
+          qrChecks: qrIndicator
+            ? [
+                {
+                  type: qrIndicator.type,
+                  target: qrIndicator.decodedUrl || qrIndicator.rawData,
+                  verdict: 'UNVERIFIED',
+                },
+              ]
+            : [],
+        },
+        diagnostics,
+        verdict: 'UNVERIFIED',
+        overallRiskScore: 20, // Strict caution score: Never display 0% clean for unanalyzable images
+        recommendedActions: [
+          'Upload a clearer screenshot with sharp, readable text',
+          'Crop the image directly around the message or notification',
+          'Avoid taking photos of screens with glare or moiré patterns',
+        ],
+      };
+    }
+
+    // 7. Extract Structured Indicators from combined text
     const indicators = IndicatorExtractor.extractAll(combinedText);
     if (qrIndicator) {
       indicators.qrCodes.push(qrIndicator);
     }
 
-    // 5. Pass Extracted Indicators through EXISTING Security Scanners
+    // 8. Pass Extracted Indicators through EXISTING Security Scanners
 
-    // 5A. Scan Extracted URLs through ReputationService
+    // 8A. Scan Extracted URLs through ReputationService
     const urlChecks: { url: string; verdict: string; riskScore: number; isBlocked: boolean }[] = [];
     for (const urlItem of indicators.urls) {
       try {
@@ -80,7 +187,7 @@ export class ImageScanner {
       }
     }
 
-    // 5B. Scan QR Decoded URL (if separate from text)
+    // 8B. Scan QR Decoded URL (if separate from text)
     if (qrIndicator && qrIndicator.type === 'URL' && qrIndicator.decodedUrl) {
       try {
         const qrRep = await ReputationService.evaluateUrl(qrIndicator.decodedUrl, true);
@@ -90,7 +197,7 @@ export class ImageScanner {
       }
     }
 
-    // 5C. Check Brand Impersonation across extracted domains and text
+    // 8C. Check Brand Impersonation across extracted domains and text
     let brandImpersonationResult: { detected: boolean; brand?: string; matchedKeyword?: string } | undefined;
     for (const urlItem of indicators.urls) {
       const imp = detectBrandImpersonation(urlItem.domain);
@@ -104,31 +211,31 @@ export class ImageScanner {
       }
     }
 
-    // 5D. Aggregate Phone Checks
+    // 8D. Aggregate Phone Checks
     const phoneChecks = indicators.phones.map((p) => ({
       phone: p.original,
       risk: p.riskLevel,
       reason: p.riskReason,
     }));
 
-    // 5E. Aggregate UPI Checks
+    // 8E. Aggregate UPI Checks
     const upiChecks = indicators.upiIds.map((u) => ({
       upiId: u.original,
       risk: u.riskLevel,
       reason: u.riskReason,
     }));
 
-    // 5F. Aggregate QR Checks
+    // 8F. Aggregate QR Checks
     const qrChecks = indicators.qrCodes.map((q) => ({
       type: q.type,
       target: q.decodedUrl || q.decodedUpi?.original || q.rawData,
       verdict: q.reputationVerdict ? `${q.reputationVerdict.severity} (${q.reputationVerdict.category})` : undefined,
     }));
 
-    // 6. Classification & Risk Scoring
+    // 9. Classification & Risk Scoring
     const classification = this.classifyScam(combinedText, indicators, brandImpersonationResult);
 
-    // 7. Optional AI Analysis (Graceful Fallback if Keys Exhausted / Offline)
+    // 10. Optional AI Analysis (Graceful Fallback if Keys Exhausted / Offline)
     let aiInsights: { used: boolean; provider?: string; model?: string; explanation?: string } | undefined;
 
     if (combinedText.trim().length > 10) {
@@ -155,22 +262,24 @@ export class ImageScanner {
       }
     }
 
-    // 8. Overall Risk Score & Verdict Synthesis
+    // 11. Overall Risk Score & Verdict Synthesis
     let overallRiskScore = classification.confidenceScore * 100;
 
-    // Escalate if any extracted URL is blocked or critical
     const hasBlockedUrl = urlChecks.some((u) => u.isBlocked);
     const hasHighRiskPhone = phoneChecks.some((p) => p.risk === 'HIGH');
     const hasHighRiskUpi = upiChecks.some((u) => u.risk === 'HIGH');
+    const hasShortener = indicators.urls.some((u) => u.isShortener);
 
     if (hasBlockedUrl || classification.riskLevel === 'CRITICAL') {
       overallRiskScore = Math.max(overallRiskScore, 95);
-    } else if (hasHighRiskUpi || hasHighRiskPhone || brandImpersonationResult?.detected) {
-      overallRiskScore = Math.max(overallRiskScore, 80);
+    } else if (hasShortener && classification.category === 'FAKE_KYC') {
+      overallRiskScore = Math.max(overallRiskScore, 95);
+    } else if (hasHighRiskUpi || hasHighRiskPhone || brandImpersonationResult?.detected || hasShortener) {
+      overallRiskScore = Math.max(overallRiskScore, 85);
     } else if (indicators.socialEngineeringTactics.length > 0) {
       overallRiskScore = Math.max(overallRiskScore, 65);
-    } else if (indicators.urls.length === 0 && indicators.phones.length === 0 && indicators.upiIds.length === 0 && !combinedText) {
-      overallRiskScore = 0;
+    } else if (indicators.urls.length === 0 && indicators.phones.length === 0 && indicators.upiIds.length === 0) {
+      overallRiskScore = 5;
     }
 
     let verdict: ThreatSeverity = 'SAFE';
@@ -182,19 +291,18 @@ export class ImageScanner {
       verdict = 'SUSPICIOUS';
     }
 
-    // 9. Recommended Actions
+    // 12. Recommended Actions
     const recommendedActions = this.generateRecommendedActions(
       classification.category,
-      indicators,
       hasBlockedUrl
     );
-
-    const durationMs = Math.round(performance.now() - startTime);
 
     return {
       scanId,
       timestamp: Date.now(),
       durationMs,
+      analysisStatus: 'COMPLETE',
+      isUnverified: false,
       imageMetadata: metadata,
       ocrResult,
       indicators,
@@ -207,6 +315,7 @@ export class ImageScanner {
         brandImpersonation: brandImpersonationResult,
       },
       aiInsights,
+      diagnostics,
       verdict,
       overallRiskScore,
       recommendedActions,
@@ -214,20 +323,72 @@ export class ImageScanner {
   }
 
   /**
-   * Validates image inputs, file limits, and supported formats
+   * Attempts Vision text extraction: queries backend service first, then local KeyManager
    */
-  private static validateImageInput(
-    dataUrl: string,
-    metadata: { sizeBytes: number; mimeType: string }
-  ): void {
-    if (!dataUrl || typeof dataUrl !== 'string') {
-      throw new Error('Invalid image input: data is empty or missing');
+  private static async tryVisionFallback(imageDataUrl: string): Promise<{
+    success: boolean;
+    extractedText: string;
+    provider?: string;
+    model?: string;
+    error?: string;
+  }> {
+    // 1. Try Backend Vision Endpoint (e.g. localhost:3001 or cloud API)
+    try {
+      const backendUrl = 'http://localhost:3001/api/v1/analyze/image-vision';
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 4000);
+
+      const resp = await fetch(backendUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageDataUrl }),
+        signal: controller.signal,
+      });
+      clearTimeout(timer);
+
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data.extractedText) {
+          return {
+            success: true,
+            extractedText: data.extractedText,
+            provider: data.provider || 'groq',
+            model: data.model || 'qwen/qwen3.8-27b',
+          };
+        }
+      }
+    } catch {
+      // Backend not running, seamlessly proceed to direct ProviderRouter
     }
 
-    // 15 MB Max file limit for browser stability
-    const MAX_IMAGE_SIZE = 15 * 1024 * 1024;
-    if (metadata.sizeBytes > MAX_IMAGE_SIZE) {
-      throw new Error(`Image size (${Math.round(metadata.sizeBytes / 1024 / 1024)}MB) exceeds maximum allowed limit of 15MB`);
+    // 2. Direct ProviderRouter Vision Fallback
+    try {
+      const res = await AIService.extractTextWithVisionFallback(imageDataUrl);
+      if (res.success && res.extractedText) {
+        return {
+          success: true,
+          extractedText: res.extractedText,
+          provider: res.providerUsed,
+          model: res.modelUsed,
+        };
+      }
+      return { success: false, extractedText: '', error: res.error };
+    } catch (err: any) {
+      return { success: false, extractedText: '', error: err.message };
+    }
+  }
+
+  /**
+   * Validates image format and file size limits
+   */
+  private static validateImageInput(
+    metadata: { sizeBytes: number; mimeType?: string }
+  ) {
+    const MAX_ALLOWED_BYTES = 15 * 1024 * 1024; // 15MB limit
+    if (metadata.sizeBytes > MAX_ALLOWED_BYTES) {
+      throw new Error(
+        `Image size (${Math.round(metadata.sizeBytes / (1024 * 1024))}MB) exceeds maximum allowed limit of 15MB.`
+      );
     }
 
     const validMimes = new Set([
@@ -260,6 +421,8 @@ export class ImageScanner {
       lower.includes('pan update') ||
       lower.includes('aadhaar update') ||
       lower.includes('account suspended') ||
+      lower.includes('accounts kyc') ||
+      lower.includes('has been suspended') ||
       lower.includes('netbanking blocked');
 
     const isUpi =
@@ -313,55 +476,37 @@ export class ImageScanner {
       category = 'LOTTERY_SCAM';
       riskLevel = 'HIGH';
       primaryThreatSummary = 'Lottery / Prize Scam: Deceptive winnings lure prompting upfront advance fee or details';
-    } else if (brandImp?.detected) {
-      category = 'PHISHING';
-      riskLevel = 'CRITICAL';
-      primaryThreatSummary = `Brand Impersonation: Mimics official brand ${brandImp.brand} with unverified destination`;
-    } else if (indicators.urls.length > 0) {
-      category = 'PHISHING';
-      riskLevel = 'SUSPICIOUS';
-      primaryThreatSummary = 'Image contains unverified links requiring cautious inspection';
     }
 
     return {
       category,
-      confidenceScore: riskLevel === 'CRITICAL' ? 0.95 : riskLevel === 'HIGH' ? 0.85 : riskLevel === 'SUSPICIOUS' ? 0.65 : 0.2,
+      confidenceScore: riskLevel === 'CRITICAL' ? 0.95 : riskLevel === 'HIGH' ? 0.8 : 0.2,
       riskLevel,
-      urgencyLevel: indicators.socialEngineeringTactics.some((t: string) => t.includes('Urgency')) ? ('HIGH' as const) : ('LOW' as const),
+      urgencyLevel: (isKyc || isUtility ? 'HIGH' : 'MEDIUM') as 'HIGH' | 'MEDIUM' | 'LOW' | 'NONE',
       primaryThreatSummary,
       socialEngineeringTactics: indicators.socialEngineeringTactics,
     };
   }
 
   /**
-   * Actionable recommendations based on detected signals
+   * Actionable recommendations
    */
   private static generateRecommendedActions(
     category: ThreatCategory,
-    indicators: any,
     hasBlockedUrl: boolean
   ): string[] {
     const actions: string[] = [];
 
-    if (hasBlockedUrl || indicators.urls.length > 0) {
-      actions.push('Do NOT click or open any links found in this image.');
-    }
-
-    if (category === 'FAKE_KYC' || category === 'PHISHING') {
-      actions.push('Never share OTPs, NetBanking passwords, or card CVVs with anyone.');
-      actions.push('Banks NEVER demand KYC updates over SMS, WhatsApp, or third-party links.');
-      actions.push('Verify your account status exclusively via your bank official mobile app or physical branch.');
+    if (category === 'FAKE_KYC' || category === 'PHISHING' || hasBlockedUrl) {
+      actions.push('Do NOT click or open any links found in the screenshot.');
+      actions.push('Never share OTPs, PINs, passwords, or banking credentials.');
+      actions.push('Banks NEVER demand KYC updates through unofficial shortened links or personal SMS.');
+      actions.push('Report the incident to the National Cyber Crime Reporting Portal (cybercrime.gov.in) or call 1930.');
     } else if (category === 'UPI_FRAUD') {
-      actions.push('Remember: Receiving money NEVER requires entering your UPI PIN.');
-      actions.push('Decline any unexpected "Collect" requests received on PhonePe, GPay, or Paytm.');
-    } else if (category === 'LOTTERY_SCAM') {
-      actions.push('Legitimate prizes never require an advance processing fee or registration deposit.');
+      actions.push('Do NOT approve any pending UPI collect requests.');
+      actions.push('Remember: Entering your UPI PIN always DEDUCTS money from your account, never receives it.');
     } else {
-      actions.push('Verify communication directly through official, verified phone numbers.');
-    }
-
-    if (indicators.phones.some((p: any) => p.riskLevel === 'HIGH')) {
-      actions.push('Do not call the mobile number listed in the image — it is an unverified private contact.');
+      actions.push('Verify any urgent requests directly with the official service provider via their verified portal.');
     }
 
     return actions;

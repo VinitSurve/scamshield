@@ -29,6 +29,17 @@ export abstract class BaseAIProvider {
   ): Promise<string>;
 
   /**
+   * Optional vision execution for multimodal models
+   */
+  async executeVision?(
+    prompt: string,
+    imageDataUrl: string,
+    model: string,
+    apiKey: string,
+    timeoutMs: number
+  ): Promise<string>;
+
+  /**
    * Validates API key health using a minimal token test
    */
   abstract validateKey(

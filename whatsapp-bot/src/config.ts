@@ -10,6 +10,7 @@ export interface WhatsAppConfig {
   verifyToken: string;
   appSecret: string;
   scannerApiUrl: string;
+  groqApiKeys: string[];
 }
 
 export const config: WhatsAppConfig = {
@@ -21,4 +22,8 @@ export const config: WhatsAppConfig = {
   verifyToken: process.env.WHATSAPP_VERIFY_TOKEN || 'scamshield_webhook_secret_verify_token_2026',
   appSecret: process.env.WHATSAPP_APP_SECRET || '',
   scannerApiUrl: process.env.SCAMSHIELD_API_URL || 'https://api.scamshield.org',
+  groqApiKeys: (process.env.GROQ_API_KEYS || process.env.VITE_DEV_GROQ_KEYS || '')
+    .split(',')
+    .map((k) => k.trim())
+    .filter(Boolean),
 };

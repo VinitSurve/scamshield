@@ -23,6 +23,76 @@ app.get('/health', (_req: Request, res: Response) => {
 });
 
 /**
+ * Backend Vision OCR Endpoint (POST /api/v1/analyze/image-vision)
+ * Securely uses server-configured Groq API keys without exposing secrets to client
+ */
+app.post('/api/v1/analyze/image-vision', async (req: Request, res: Response) => {
+  try {
+    const { imageDataUrl, prompt } = req.body;
+    if (!imageDataUrl) {
+      res.status(400).json({ error: 'Missing imageDataUrl in request payload' });
+      return;
+    }
+
+    const groqKey = config.groqApiKeys[0];
+    if (!groqKey) {
+      res.status(503).json({ error: 'No Groq API keys configured on backend' });
+      return;
+    }
+
+    const visionPrompt =
+      prompt ||
+      'Extract all readable text, URLs, phone numbers, and sender info from this image. Transcribe every word accurately.';
+
+    const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${groqKey}`,
+        'User-Agent': 'ScamShield-Backend/1.0',
+      },
+      body: JSON.stringify({
+        model: 'qwen/qwen3.8-27b',
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You are ScamShield AI Vision OCR engine. Transcribe all text, messages, URLs, links, and phone numbers from the provided image accurately.',
+          },
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: visionPrompt },
+              { type: 'image_url', image_url: { url: imageDataUrl } },
+            ],
+          },
+        ],
+        temperature: 0.1,
+        max_tokens: 1024,
+      }),
+    });
+
+    if (!groqRes.ok) {
+      const err = await groqRes.text();
+      res.status(groqRes.status).json({ error: `Groq Vision request failed: ${err}` });
+      return;
+    }
+
+    const data = await groqRes.json();
+    const content = data?.choices?.[0]?.message?.content || '';
+
+    res.json({
+      success: true,
+      provider: 'groq',
+      model: 'qwen/qwen3.8-27b',
+      extractedText: content,
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Vision analysis failed' });
+  }
+});
+
+/**
  * Meta Webhook Verification (GET /webhook)
  */
 app.get('/webhook', (req: Request, res: Response) => {
