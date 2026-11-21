@@ -3,6 +3,7 @@ import { Shield, Globe, Trash2, RotateCcw, Check, Plus } from 'lucide-react';
 import { UserSettings, DEFAULT_SETTINGS, SupportedLanguage } from '../types/settings';
 import { SafeMessaging } from '../security/safe-messaging';
 import { getTranslation } from '../i18n';
+import { AISettingsSection } from './components/AISettingsSection';
 
 export const OptionsApp: React.FC = () => {
   const [settings, setSettings] = useState<UserSettings>(DEFAULT_SETTINGS);
@@ -162,6 +163,9 @@ export const OptionsApp: React.FC = () => {
           </label>
         </div>
       </div>
+
+      {/* Section 2: AI-Powered Multi-Provider Engine & Key Pool */}
+      <AISettingsSection />
 
       {/* Section 2: Language & Localization */}
       <div className="bg-shield-card border border-shield-border rounded-2xl p-6 space-y-4">

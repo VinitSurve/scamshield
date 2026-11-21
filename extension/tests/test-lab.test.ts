@@ -10,8 +10,8 @@ describe('Security Test Lab — Automated Verification Suite', () => {
     await SettingsService.resetSettings();
   });
 
-  it('contains exactly 10 predefined controlled test cases covering all required security categories', () => {
-    expect(CONTROLLED_TEST_CASES).toHaveLength(10);
+  it('contains exactly 14 predefined controlled test cases covering all security and AI categories', () => {
+    expect(CONTROLLED_TEST_CASES).toHaveLength(14);
 
     const categories = new Set(CONTROLLED_TEST_CASES.map((tc) => tc.categoryLabel));
     expect(categories.has('Legitimate Mainstream')).toBe(true);
@@ -19,6 +19,7 @@ describe('Security Test Lab — Automated Verification Suite', () => {
     expect(categories.has('Known Threat Fixture')).toBe(true);
     expect(categories.has('Redirect Chain')).toBe(true);
     expect(categories.has('Input Resilience')).toBe(true);
+    expect(categories.has('AI Engine Diagnostic')).toBe(true);
   });
 
   it('passes all 4 legitimate mainstream website tests via Tranco Anchor validation', async () => {
@@ -82,18 +83,29 @@ describe('Security Test Lab — Automated Verification Suite', () => {
     expect(result.actualVerdict?.severity).toBe('SAFE');
   });
 
+  it('passes all 4 AI Engine diagnostic test cases', async () => {
+    const aiCases = CONTROLLED_TEST_CASES.filter((tc) => tc.categoryLabel === 'AI Engine Diagnostic');
+    expect(aiCases).toHaveLength(4);
+
+    for (const tc of aiCases) {
+      const result = await TestRunner.runSingleTest(tc);
+      expect(result.status).toBe('PASS');
+      expect(result.notes.length).toBeGreaterThan(0);
+    }
+  });
+
   it('executes runAllTests sequentially with progress tracking and achieves 100% pass rate', async () => {
     const progressUpdates: number[] = [];
 
     const allResults = await TestRunner.runAllTests(CONTROLLED_TEST_CASES, (completed, total) => {
       progressUpdates.push(completed);
-      expect(total).toBe(10);
+      expect(total).toBe(14);
     });
 
-    expect(allResults).toHaveLength(10);
-    expect(progressUpdates).toHaveLength(10);
+    expect(allResults).toHaveLength(14);
+    expect(progressUpdates).toHaveLength(14);
 
     const passedCount = allResults.filter((r) => r.status === 'PASS').length;
-    expect(passedCount).toBe(10); // All 10 tests must pass
+    expect(passedCount).toBe(14); // All 14 tests must pass
   });
 });

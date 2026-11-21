@@ -10,12 +10,24 @@ export type TestCaseId =
   | 'IMPERSONATION_PHONEPE'
   | 'MALICIOUS_OFFLINE_KYC'
   | 'SIMULATED_REDIRECT_CHAIN'
-  | 'INVALID_URL_SAFETY';
+  | 'INVALID_URL_SAFETY'
+  | 'AI_KEY_ROTATION'
+  | 'AI_RATE_LIMIT_COOLDOWN'
+  | 'AI_PROVIDER_FALLBACK'
+  | 'AI_SCAM_PARSING';
+
+export type TestCaseCategory =
+  | 'Legitimate Mainstream'
+  | 'Brand Impersonation'
+  | 'Known Threat Fixture'
+  | 'Redirect Chain'
+  | 'Input Resilience'
+  | 'AI Engine Diagnostic';
 
 export interface TestCase {
   id: TestCaseId;
   title: string;
-  categoryLabel: 'Legitimate Mainstream' | 'Brand Impersonation' | 'Known Threat Fixture' | 'Redirect Chain' | 'Input Resilience';
+  categoryLabel: TestCaseCategory;
   targetUrl: string;
   description: string;
   expectedSeverity: ThreatSeverity | ThreatSeverity[];
@@ -23,6 +35,8 @@ export interface TestCase {
   expectedSource?: string;
   isRedirectSimulation?: boolean;
   simulationHops?: string[];
+  isAiDiagnostic?: boolean;
+  aiTestType?: 'ROTATION' | 'RATE_LIMIT' | 'FALLBACK' | 'PARSER';
 }
 
 export type TestExecutionStatus = 'IDLE' | 'RUNNING' | 'PASS' | 'FAIL' | 'WARNING';

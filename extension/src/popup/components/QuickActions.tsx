@@ -1,11 +1,14 @@
 import React from 'react';
-import { RefreshCw, Flag, Shield, ShieldOff, FlaskConical } from 'lucide-react';
+import { RefreshCw, Flag, Shield, ShieldOff, FlaskConical, Sparkles } from 'lucide-react';
 
 interface QuickActionsProps {
   onScan: () => void;
   onOpenReport: () => void;
   onToggleProtection: () => void;
   onOpenTestLab: () => void;
+  onOpenAiAnalyzer: () => void;
+  onOpenAiExplanation?: () => void;
+  canExplainThreat?: boolean;
   isScanning: boolean;
   protectionActive: boolean;
   t: Record<string, string>;
@@ -16,12 +19,16 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
   onOpenReport,
   onToggleProtection,
   onOpenTestLab,
+  onOpenAiAnalyzer,
+  onOpenAiExplanation,
+  canExplainThreat,
   isScanning,
   protectionActive,
   t,
 }) => {
   return (
     <div className="px-4 pb-4 space-y-2.5">
+      {/* Primary Action Buttons */}
       <div className="grid grid-cols-2 gap-2">
         {/* Scan Website Button */}
         <button
@@ -42,6 +49,26 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
           <span>{t.reportThreat}</span>
         </button>
       </div>
+
+      {/* AI Threat Explanation Button (Visible when page has threats or warnings) */}
+      {canExplainThreat && onOpenAiExplanation && (
+        <button
+          onClick={onOpenAiExplanation}
+          className="w-full flex items-center justify-center space-x-1.5 py-2 px-3 bg-gradient-to-r from-indigo-900/40 to-purple-900/40 hover:from-indigo-900/60 hover:to-purple-900/60 text-indigo-300 border border-indigo-700/50 rounded-xl text-xs font-semibold transition-all active:scale-[0.99] shadow-sm"
+        >
+          <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+          <span>Explain Threat with ScamShield AI</span>
+        </button>
+      )}
+
+      {/* AI Scam Message Scanner Launcher */}
+      <button
+        onClick={onOpenAiAnalyzer}
+        className="w-full flex items-center justify-center space-x-2 py-2 px-3 bg-gradient-to-r from-indigo-950/60 to-purple-950/60 hover:from-indigo-900/80 hover:to-purple-900/80 text-white border border-indigo-500/40 rounded-xl text-xs font-bold transition-all active:scale-[0.99] shadow-sm"
+      >
+        <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+        <span>Scan Message / SMS with AI</span>
+      </button>
 
       {/* Proactive Protection Toggle */}
       <button

@@ -18,6 +18,7 @@ export type ReputationSource =
   | 'REMOTE_API'
   | 'HEURISTIC'
   | 'OFFLINE_RULE'
+  | 'AI_DIAGNOSTIC'
   | 'FALLBACK';
 
 export interface ThreatEvidenceItem {
