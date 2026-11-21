@@ -19,7 +19,54 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   logger.info(`ScamShield Extension installed / updated: ${details.reason}`);
   const settings = await SettingsService.getSettings();
   await DnrManager.syncRules(settings.enableDnrBlocking && settings.protectionEnabled);
+
+  // Initialize Right-Click Context Menus
+  try {
+    if (chrome.contextMenus) {
+      chrome.contextMenus.removeAll(() => {
+        chrome.contextMenus.create({
+          id: 'scamshield_scan_image',
+          title: 'Scan image with ScamShield',
+          contexts: ['image'],
+        });
+        chrome.contextMenus.create({
+          id: 'scamshield_scan_link',
+          title: 'Scan link with ScamShield',
+          contexts: ['link'],
+        });
+        chrome.contextMenus.create({
+          id: 'scamshield_scan_selection',
+          title: 'Analyze suspicious text with ScamShield',
+          contexts: ['selection'],
+        });
+      });
+    }
+  } catch (err) {
+    logger.debug('Context menu registration skipped:', err);
+  }
 });
+
+// Handle Context Menu Actions
+if (chrome.contextMenus?.onClicked) {
+  chrome.contextMenus.onClicked.addListener(async (info, tab) => {
+    try {
+      if (info.menuItemId === 'scamshield_scan_link' && info.linkUrl) {
+        const verdict = await ReputationService.evaluateUrl(info.linkUrl, true);
+        if (verdict.isBlocked && tab?.id) {
+          const warningUrl = chrome.runtime.getURL(`interstitial.html?blockedUrl=${encodeURIComponent(info.linkUrl)}&category=${encodeURIComponent(verdict.category)}&severity=${encodeURIComponent(verdict.severity)}`);
+          chrome.tabs.update(tab.id, { url: warningUrl });
+        }
+      } else if (info.menuItemId === 'scamshield_scan_selection' && info.selectionText) {
+        // Open options or message scan view
+        chrome.runtime.openOptionsPage?.();
+      } else if (info.menuItemId === 'scamshield_scan_image' && info.srcUrl) {
+        chrome.runtime.openOptionsPage?.();
+      }
+    } catch (err) {
+      logger.error('Error executing context menu action:', err);
+    }
+  });
+}
 
 chrome.runtime.onStartup.addListener(async () => {
   logger.info('ScamShield Background Service Worker started');
@@ -107,9 +154,25 @@ async function handleExtensionMessage(
     }
 
     case 'TRIGGER_MANUAL_SCAN': {
-      const url = (message.payload as any)?.url;
-      if (!url) throw new Error('Missing URL parameter');
-      // Force fresh evaluation by skipping cache
+      let url = (message.payload as any)?.url;
+      const tabId = (message.payload as any)?.tabId;
+
+      if (!url && tabId) {
+        try {
+          const tab = await chrome.tabs.get(tabId);
+          url = tab?.url;
+        } catch {
+          // Fall through to active tab query
+        }
+      }
+
+      if (!url) {
+        const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        url = activeTab?.url;
+      }
+
+      if (!url) throw new Error('No active website detected to scan');
+      // Force fresh live evaluation by skipping cache
       return ReputationService.evaluateUrl(url, true);
     }
 

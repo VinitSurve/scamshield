@@ -42,6 +42,16 @@ export const CONTROLLED_TEST_CASES: TestCase[] = [
     expectedCategory: 'LEGITIMATE',
     expectedSource: 'TRANCO_ANCHOR',
   },
+  {
+    id: 'LEGIT_LINKEDIN',
+    title: 'Legitimate Mainstream — LinkedIn',
+    categoryLabel: 'Legitimate Mainstream',
+    targetUrl: 'https://www.linkedin.com/feed/for-you/',
+    description: 'Global professional networking platform verified against Tranco Top 100K high-trust anchor list.',
+    expectedSeverity: 'SAFE',
+    expectedCategory: 'LEGITIMATE',
+    expectedSource: 'TRANCO_ANCHOR',
+  },
 
   // 2. Suspicious Brand-Impersonation Domains (Synthetic .example TLDs)
   {
@@ -75,7 +85,7 @@ export const CONTROLLED_TEST_CASES: TestCase[] = [
     expectedSource: 'HEURISTIC',
   },
 
-  // 3. Known Threat Simulation (Offline Threat Fixture)
+  // 3. Known Threat Simulation (Offline Threat Fixtures & URL-Level Protection)
   {
     id: 'MALICIOUS_OFFLINE_KYC',
     title: 'Known Threat Simulation — Verified Phishing Fixture',
@@ -85,6 +95,26 @@ export const CONTROLLED_TEST_CASES: TestCase[] = [
     expectedSeverity: 'CRITICAL',
     expectedCategory: 'FAKE_KYC',
     expectedSource: 'OFFLINE_RULE',
+  },
+  {
+    id: 'MALWARE_GOOGLE_TEST_URL',
+    title: 'Path-Specific Threat — Google Malware Test Endpoint',
+    categoryLabel: 'Known Threat Fixture',
+    targetUrl: 'https://testsafebrowsing.appspot.com/s/malware.html',
+    description: 'Official Google Safe Browsing synthetic malware verification fixture testing path-specific detection.',
+    expectedSeverity: 'CRITICAL',
+    expectedCategory: 'MALWARE',
+    expectedSource: 'OFFLINE_RULE',
+  },
+  {
+    id: 'CLEAN_DOMAIN_CLEAN_PATH',
+    title: 'Path-Specific Isolation — Parent Domain Root',
+    categoryLabel: 'Known Threat Fixture',
+    targetUrl: 'https://testsafebrowsing.appspot.com/',
+    description: 'Validates that root hosting domain is NOT falsely flagged as malware when only a sub-path is malicious.',
+    expectedSeverity: ['SAFE', 'UNKNOWN'],
+    expectedCategory: ['NO_KNOWN_THREAT', 'ANALYSIS_UNAVAILABLE', 'UNVERIFIED', 'UNKNOWN'],
+    expectedSource: ['FALLBACK', 'REMOTE_API'],
   },
 
   // 4. Suspicious Deceptive Redirect Chain Simulation
@@ -160,5 +190,39 @@ export const CONTROLLED_TEST_CASES: TestCase[] = [
     expectedCategory: 'LEGITIMATE',
     isAiDiagnostic: true,
     aiTestType: 'PARSER',
+  },
+
+  // 7. Image Scam Diagnostics
+  {
+    id: 'IMAGE_KYC_PHISHING_SCAN',
+    title: 'Image Diagnostics — Fake Electricity KYC Phishing Notice',
+    categoryLabel: 'Image Scam Diagnostic',
+    targetUrl: 'image://scanner/fake-kyc-fixture',
+    description: 'Runs ImageScanner with OCR & indicator extraction on high-urgency fake KYC notice with phishing URL and spoofed contact.',
+    expectedSeverity: 'CRITICAL',
+    expectedCategory: 'FAKE_KYC',
+    isImageDiagnostic: true,
+  },
+  {
+    id: 'IMAGE_UPI_FRAUD_SCAN',
+    title: 'Image Diagnostics — Fraudulent UPI Financial Lure Scheme',
+    categoryLabel: 'Image Scam Diagnostic',
+    targetUrl: 'image://scanner/upi-fraud-fixture',
+    description: 'Runs ImageScanner on fraudulent UPI payment request soliciting advance fees or refunds with high-risk financial lures.',
+    expectedSeverity: ['CRITICAL', 'HIGH'],
+    expectedCategory: 'UPI_FRAUD',
+    isImageDiagnostic: true,
+  },
+
+  // 8. WhatsApp Bot Diagnostics
+  {
+    id: 'WHATSAPP_BOT_DEMO_PIPELINE',
+    title: 'WhatsApp Bot Diagnostics — Inbound Threat Detection & Consent Pipeline',
+    categoryLabel: 'WhatsApp Bot Diagnostic',
+    targetUrl: 'whatsapp://bot/inbound-scan',
+    description: 'Validates WhatsApp bot message threat analysis pipeline, risk score thresholding, and two-step investigation consent prompt.',
+    expectedSeverity: 'CRITICAL',
+    expectedCategory: 'FAKE_KYC',
+    isWhatsAppDiagnostic: true,
   },
 ];

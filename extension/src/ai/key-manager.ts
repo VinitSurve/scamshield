@@ -40,6 +40,52 @@ export class KeyManager {
       } else {
         this.keys = [];
       }
+
+      // Optional Dev-Seeding from .env.local for local testing (disabled during automated test runs)
+      const isTestEnv = (import.meta as any).env?.MODE === 'test' || typeof process !== 'undefined' && process.env?.NODE_ENV === 'test';
+      if (this.keys.length === 0 && !isTestEnv) {
+        const devGemini = (import.meta as any).env?.VITE_DEV_GEMINI_KEYS;
+        const devGroq = (import.meta as any).env?.VITE_DEV_GROQ_KEYS;
+
+        if (devGemini) {
+          const keys = String(devGemini).split(',').map((k) => k.trim()).filter(Boolean);
+          for (let i = 0; i < keys.length; i++) {
+            this.keys.push({
+              id: `gemini_dev_${i + 1}_${Date.now()}`,
+              provider: 'gemini',
+              key: keys[i],
+              label: `Dev Gemini Key ${i + 1}`,
+              enabled: true,
+              status: 'healthy',
+              usageCount: 0,
+              failureCount: 0,
+              rateLimitCount: 0,
+            });
+          }
+        }
+
+        if (devGroq) {
+          const keys = String(devGroq).split(',').map((k) => k.trim()).filter(Boolean);
+          for (let i = 0; i < keys.length; i++) {
+            this.keys.push({
+              id: `groq_dev_${i + 1}_${Date.now()}`,
+              provider: 'groq',
+              key: keys[i],
+              label: `Dev Groq Key ${i + 1}`,
+              enabled: true,
+              status: 'healthy',
+              usageCount: 0,
+              failureCount: 0,
+              rateLimitCount: 0,
+            });
+          }
+        }
+
+        if (this.keys.length > 0) {
+          await this.persist();
+        }
+      }
+
       this.isInitialized = true;
       this.refreshCooldowns();
     } catch (err) {
@@ -412,6 +458,7 @@ export class KeyManager {
    */
   static async clearAllKeys(): Promise<void> {
     this.keys = [];
+    this.isInitialized = true;
     this.roundRobinIndices = { gemini: 0, groq: 0 };
     await this.persist();
   }
