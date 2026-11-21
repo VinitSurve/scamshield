@@ -81,3 +81,23 @@ def test_main_orchestrator_resolves_contradictions_and_verdicts():
     assert res_phish.verdict in ("HIGH_RISK", "CONFIRMED_MALICIOUS")
     assert len(res_phish.contradictions_detected) >= 1
     assert any("Transport Security Contradiction" in c for c in res_phish.contradictions_detected)
+
+
+def test_main_orchestrator_plain_text_message_routing_no_fake_domain_or_ssl_error():
+    orchestrator = MainOrchestrator()
+
+    # Plain text message starting with 'URGENT:' containing no URL
+    msg = "URGENT: Team standup moved to conference room B at 4:30 PM."
+    res = orchestrator.analyze(msg)
+
+    # Must NOT report "urgent" as an unverified domain
+    evidence_types = [e.get("indicator") for e in res.evidence]
+    assert "unverified_domain" not in evidence_types
+    # Must NOT flag plain_http_detected (high severity transport security error) on plain text!
+    assert "plain_http_detected" not in evidence_types
+
+    # URL-specific agents must be marked skipped
+    reports = {r["agent"]: r["status"] for r in res.agent_reports}
+    assert reports["domain_intelligence_agent"] == "skipped"
+    assert reports["https_certificate_agent"] == "skipped"
+    assert reports["url_structure_agent"] == "skipped"

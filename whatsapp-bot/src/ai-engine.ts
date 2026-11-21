@@ -324,8 +324,20 @@ Evaluate the message and return ONLY a valid, raw JSON object matching this exac
     // STAGE 3: Local Heuristic Fallback Engine
     // ----------------------------------------------------
     // When all AI providers are exhausted, offline, or unavailable,
-    // evaluate the message deterministically using local heuristics.
-    const localResult = this.evaluateLocalHeuristics(messageText, sourceType);
+    // evaluate the message deterministically using local heuristics
+    // (optionally augmented by local ML Lab microservice if online).
+    const mlLabResult = await this.queryLocalMlLab(messageText, sourceType);
+    if (mlLabResult) {
+      providerDiagnostics.push({
+        provider: 'ml-lab',
+        model: mlLabResult.ml_prediction?.model_name || 'ensemble',
+        status: 'SUCCESS',
+        httpStatus: 200,
+        latencyMs: mlLabResult.processing_time_ms,
+      });
+    }
+
+    const localResult = this.evaluateLocalHeuristics(messageText, sourceType, mlLabResult);
     const totalLatency = Date.now() - overallStart;
 
     return {
@@ -347,9 +359,34 @@ Evaluate the message and return ONLY a valid, raw JSON object matching this exac
         fallbackProvider: 'groq',
         fallbackResult: 'FAILED',
         finalAnalysisStatus: 'LOCAL_HEURISTIC_FALLBACK',
+        mlLabStatus: mlLabResult ? 'CONNECTED' : 'STANDALONE_LOCAL',
         providerDiagnostics,
       },
     };
+  }
+
+  /**
+   * Queries ScamShield ML Lab FastAPI microservice if running locally
+   */
+  private static async queryLocalMlLab(messageText: string, sourceType: string): Promise<any | null> {
+    const mlUrl = process.env.ML_LAB_URL || 'http://localhost:8000';
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 600);
+      const res = await fetch(`${mlUrl}/api/v1/analyze`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: messageText, source: sourceType }),
+        signal: controller.signal,
+      });
+      clearTimeout(timer);
+      if (res.ok) {
+        return await res.json();
+      }
+      return null;
+    } catch {
+      return null;
+    }
   }
 
   /**
@@ -449,9 +486,9 @@ Evaluate the message and return ONLY a valid, raw JSON object matching this exac
   }
 
   /**
-   * Deterministic local heuristic analysis fallback
+   * Deterministic local heuristic analysis fallback (augmented with ML Lab when available)
    */
-  static evaluateLocalHeuristics(messageText: string, sourceType: string): any {
+  static evaluateLocalHeuristics(messageText: string, sourceType: string, mlLabData: any = null): any {
     const text = messageText.trim();
     const lower = text.toLowerCase();
 

@@ -141,6 +141,21 @@ class PipelineRunner:
             model = KNNScamModel()
         elif model_type == "ann":
             model = ANNScamModel()
+            if resume:
+                checkpoints = sorted(CHECKPOINTS_DIR.glob(f"{model_type}_epoch_*.joblib"))
+                if checkpoints:
+                    latest_chk = checkpoints[-1]
+                    logger.info("Found existing checkpoint %s. Loading before resuming...", latest_chk)
+                    try:
+                        model.load(str(latest_chk))
+                    except Exception as e:
+                        logger.warning("Failed to load checkpoint %s: %s", latest_chk, e)
+                elif artifact_file.exists():
+                    logger.info("Found existing artifact %s. Loading before resuming...", artifact_file)
+                    try:
+                        model.load(str(artifact_file))
+                    except Exception as e:
+                        logger.warning("Failed to load artifact %s: %s", artifact_file, e)
         elif model_type == "url":
             model = URLFeatureClassifier()
         elif model_type == "ensemble":
@@ -152,6 +167,10 @@ class PipelineRunner:
         def on_checkpoint(epoch: int, total_epochs: int, metrics: Dict[str, Any]):
             prog = int((epoch / max(1, total_epochs)) * 90) + 10
             chk_path = str(CHECKPOINTS_DIR / f"{model_type}_epoch_{epoch}.joblib")
+            try:
+                model.save(chk_path)
+            except Exception as e:
+                logger.warning("Failed to save checkpoint to %s: %s", chk_path, e)
             self.state.update_job_progress(job_id, epoch, prog, chk_path, metrics)
             self.state.set_phase_status(phase_name, STATUS_RUNNING, prog, f"Epoch {epoch}/{total_epochs} completed", chk_path)
 

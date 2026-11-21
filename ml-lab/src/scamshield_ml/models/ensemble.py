@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import re
 import time
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
@@ -79,20 +80,32 @@ class EnsembleScamModel(BaseModel):
 
     def predict_one(self, content: str) -> PredictionOutput:
         start = time.time()
-        is_url = content.strip().startswith(("http://", "https://", "www."))
+        is_lone_url = content.strip().startswith(("http://", "https://", "www."))
+        has_url = is_lone_url or bool(re.search(r"https?://[^\s<>\"'()]+|www\.[^\s<>\"'()]+", content))
 
-        # Adjust weights dynamically if lone URL
+        # Adjust weights dynamically based on input modality
         w = dict(self.weights)
-        if is_url:
+        if is_lone_url:
             w["url_classifier"] = 0.50
-            w["logistic_regression"] = 0.20
-            w["ann"] = 0.20
-            w["knn"] = 0.10
+            w["logistic_regression"] = 0.25
+            w["knn"] = 0.15
+            w["ann"] = 0.10
+        elif has_url:
+            w["url_classifier"] = 0.30
+            w["logistic_regression"] = 0.40
+            w["knn"] = 0.20
+            w["ann"] = 0.10
+        else:
+            # If text contains no URL, URL classifier has zero signal and must not inject false prior bias
+            w["url_classifier"] = 0.00
+            w["logistic_regression"] = 0.55
+            w["knn"] = 0.30
+            w["ann"] = 0.15
 
         p_log = self.logistic.predict_one(content).scam_probability
         p_ann = self.ann.predict_one(content).scam_probability
         p_knn = self.knn.predict_one(content).scam_probability
-        p_url = self.url_model.predict_one(content).scam_probability
+        p_url = self.url_model.predict_one(content).scam_probability if has_url else 0.0
 
         weighted_prob = (
             w["logistic_regression"] * p_log +

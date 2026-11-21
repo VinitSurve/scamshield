@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import logging
+import re
 import time
 from dataclasses import asdict, dataclass
 from typing import Any, Dict, List, Optional
 
 from scamshield_ml.orchestration.agents import (
+    AgentReport,
     BehavioralRedirectAgent,
     CommunityReputationAgent,
     DomainIntelligenceAgent,
@@ -59,48 +61,89 @@ class MainOrchestrator:
         start_time = time.time()
         trimmed = target.strip()
 
-        # 1. Determine input type
+        # 1. Determine input type and extract embedded URL if present
+        url_match = re.search(r"https?://[^\s<>\"'()]+|www\.[^\s<>\"'()]+", trimmed)
+        embedded_url = url_match.group(0) if url_match else ""
+
         if content_type is None:
             if trimmed.startswith(("http://", "https://", "www.")) or (len(trimmed.split()) == 1 and "." in trimmed):
                 content_type = "url"
             else:
                 content_type = "message"
 
+        is_pure_url = (content_type == "url")
+        url_target = trimmed if is_pure_url else embedded_url
+
         agent_reports = []
         evidence = []
         contradictions = []
         limitations = []
 
-        # 2. Invoke Specialized Agents
-        rep_threat = self.threat_intel_agent.analyze(trimmed)
+        # 2. Invoke Specialized Agents (routing appropriately to URL vs text agents)
+        rep_threat = self.threat_intel_agent.analyze(url_target or trimmed)
         agent_reports.append(rep_threat.to_dict())
         evidence.extend(rep_threat.evidence)
         limitations.extend(rep_threat.limitations)
 
-        rep_domain = self.domain_agent.analyze(trimmed)
-        agent_reports.append(rep_domain.to_dict())
-        evidence.extend(rep_domain.evidence)
-        limitations.extend(rep_domain.limitations)
+        if url_target:
+            rep_domain = self.domain_agent.analyze(url_target)
+            rep_https = self.https_agent.analyze(url_target)
+            rep_url = self.url_agent.analyze(url_target)
+            rep_redirect = self.redirect_agent.analyze(url_target)
+        else:
+            rep_domain = AgentReport(
+                agent="domain_intelligence_agent",
+                status="skipped",
+                verdict="clean",
+                risk_score=0,
+                confidence=1.0,
+                evidence=[],
+                checks_performed=[],
+                limitations=["No domain present in plain-text input"],
+                recommendation="No domain to verify.",
+            )
+            rep_https = AgentReport(
+                agent="https_certificate_agent",
+                status="skipped",
+                verdict="clean",
+                risk_score=0,
+                confidence=1.0,
+                evidence=[],
+                checks_performed=[],
+                limitations=["No URL present in message; transport encryption check not applicable"],
+                recommendation="Plaintext message without links.",
+            )
+            rep_url = AgentReport(
+                agent="url_structure_agent",
+                status="skipped",
+                verdict="clean",
+                risk_score=0,
+                confidence=1.0,
+                evidence=[],
+                checks_performed=[],
+                limitations=["No URL present in message"],
+                recommendation="No URL structure to analyze.",
+            )
+            rep_redirect = AgentReport(
+                agent="behavioral_redirect_agent",
+                status="skipped",
+                verdict="clean",
+                risk_score=0,
+                confidence=1.0,
+                evidence=[],
+                checks_performed=[],
+                limitations=["No redirector link present"],
+                recommendation="No redirection behavior detected.",
+            )
 
-        rep_https = self.https_agent.analyze(trimmed)
-        agent_reports.append(rep_https.to_dict())
-        evidence.extend(rep_https.evidence)
-        limitations.extend(rep_https.limitations)
-
-        rep_url = self.url_agent.analyze(trimmed)
-        agent_reports.append(rep_url.to_dict())
-        evidence.extend(rep_url.evidence)
-        limitations.extend(rep_url.limitations)
+        agent_reports.extend([rep_domain.to_dict(), rep_https.to_dict(), rep_url.to_dict(), rep_redirect.to_dict()])
+        evidence.extend(rep_domain.evidence + rep_https.evidence + rep_url.evidence + rep_redirect.evidence)
+        limitations.extend(rep_domain.limitations + rep_https.limitations + rep_url.limitations + rep_redirect.limitations)
 
         rep_content = self.content_agent.analyze(trimmed)
         agent_reports.append(rep_content.to_dict())
         evidence.extend(rep_content.evidence)
         limitations.extend(rep_content.limitations)
-
-        rep_redirect = self.redirect_agent.analyze(trimmed)
-        agent_reports.append(rep_redirect.to_dict())
-        evidence.extend(rep_redirect.evidence)
-        limitations.extend(rep_redirect.limitations)
 
         rep_indian = self.indian_scam_agent.analyze(trimmed)
         agent_reports.append(rep_indian.to_dict())
@@ -132,7 +175,7 @@ class MainOrchestrator:
             explanation = "Target is confirmed malicious in global threat intelligence databases."
             recommendations = ["BLOCK access immediately.", "Do NOT navigate or submit any data."]
         # Rule B: Verified trust anchor (e.g. google.com, sbi.co.in)
-        elif rep_domain.verdict == "clean" and rep_threat.verdict == "clean" and rep_url.verdict == "clean" and rep_content.verdict == "clean" and rep_indian.verdict == "clean":
+        elif url_target and rep_domain.status == "completed" and rep_domain.verdict == "clean" and rep_threat.verdict == "clean" and rep_url.verdict == "clean" and rep_content.verdict == "clean" and rep_indian.verdict == "clean":
             verdict = "VERIFIED_TRUSTED"
             risk_score = 0
             confidence = 0.98

@@ -1,0 +1,162 @@
+[
+  {
+    "id": "ADV-BENIGN-01",
+    "type": "benign_with_trigger_words",
+    "content": "Dear Customer, please complete your mandatory re-KYC at your nearest SBI home branch before March 31 with original PAN and Aadhaar card. Do not submit details on any third-party link.",
+    "is_scam": 0,
+    "category": "BANKING_NOTICE",
+    "threat_notes": "Contains 're-KYC', 'SBI', 'PAN', 'Aadhaar', but is genuine bank advice explicitly warning against third-party links."
+  },
+  {
+    "id": "ADV-BENIGN-02",
+    "type": "benign_with_trigger_words",
+    "content": "Your OTP for transaction of Rs 1,450 at Flipkart is 849201. Valid for 10 minutes. Do not share this OTP with anyone, including bank staff.",
+    "is_scam": 0,
+    "category": "TRANSACTION_OTP",
+    "threat_notes": "Legitimate transaction OTP alert. Contains 'OTP' and 'Rs 1,450'."
+  },
+  {
+    "id": "ADV-BENIGN-03",
+    "type": "benign_with_trigger_words",
+    "content": "Dear SBI customer, your debit card ending in 4109 has been temporarily blocked for security reasons due to multiple incorrect PIN attempts. Visit onlinesbi.sbi or call 18001234 to unblock.",
+    "is_scam": 0,
+    "category": "SECURITY_ALERT",
+    "threat_notes": "Legitimate security notice from official onlinesbi.sbi domain."
+  },
+  {
+    "id": "ADV-BENIGN-04",
+    "type": "benign_with_trigger_words",
+    "content": "Mahavitaran Notice: Your electricity bill for consumer number 0192837465 is Rs 1,280 due on 15-Dec-2026. Pay safely via official portal mahadiscom.in or Mahavitaran mobile app.",
+    "is_scam": 0,
+    "category": "UTILITY_BILL",
+    "threat_notes": "Legitimate electricity bill notice using official mahadiscom.in domain."
+  },
+  {
+    "id": "ADV-BENIGN-05",
+    "type": "benign_with_trigger_words",
+    "content": "Google Pay: You have received a cashback reward of Rs 25 for your merchant payment. Credited directly to your linked HDFC account.",
+    "is_scam": 0,
+    "category": "CASHBACK",
+    "threat_notes": "Legitimate cashback credit without demands for PIN or collect approval."
+  },
+  {
+    "id": "ADV-BENIGN-06",
+    "type": "benign_with_trigger_words",
+    "content": "India Post: Tracking ID IN928471029IN delivered to your address today. Thank you for using Speed Post. Track status on indiapost.gov.in.",
+    "is_scam": 0,
+    "category": "DELIVERY",
+    "threat_notes": "Legitimate India Post delivery confirmation."
+  },
+  {
+    "id": "ADV-BENIGN-07",
+    "type": "benign_with_trigger_words",
+    "content": "Cyber Crime Awareness: Mumbai Police urges citizens never to transfer money under fear of digital arrest. Police never conduct trials over video calls. Dial 1930 to report scams.",
+    "is_scam": 0,
+    "category": "AWARENESS",
+    "threat_notes": "Awareness advisory containing 'digital arrest', 'Mumbai Police', and 'video calls'."
+  },
+  {
+    "id": "ADV-BENIGN-08",
+    "type": "benign_with_trigger_words",
+    "content": "TCS Recruitment: We have reviewed your application for Software Engineer position. Your technical interview is scheduled for Tuesday at 11 AM IST via Microsoft Teams.",
+    "is_scam": 0,
+    "category": "JOB",
+    "threat_notes": "Legitimate corporate interview scheduling."
+  },
+  {
+    "id": "ADV-BENIGN-09",
+    "type": "benign_multilingual",
+    "content": "प्रिय ग्राहक, तुमच्या खात्यातून ₹ ५,००० एटीएम मधून काढण्यात आले आहेत. उर्वरित शिल्लक ₹ १२,४००. - बँक ऑफ महाराष्ट्र",
+    "is_scam": 0,
+    "category": "TRANSACTION_ALERT",
+    "threat_notes": "Legitimate Marathi ATM withdrawal notification."
+  },
+  {
+    "id": "ADV-BENIGN-10",
+    "type": "benign_multilingual",
+    "content": "आपके बैंक खाते में वेतन के ₹ 65,000 जमा किए गए हैं। कुल शेष राशि ₹ 78,500। स्टेट बैंक ऑफ इंडिया।",
+    "is_scam": 0,
+    "category": "TRANSACTION_ALERT",
+    "threat_notes": "Legitimate Hindi salary credit SMS."
+  },
+  {
+    "id": "ADV-SCAM-01",
+    "type": "unicode_homoglyph_domain",
+    "content": "URGENT: Verify your bank identity immediately to prevent suspension: https://sbı.co.in/verify",
+    "is_scam": 1,
+    "category": "PUNYCODE_PHISH",
+    "threat_notes": "Uses Turkish dotless i (ı) instead of regular ASCII i."
+  },
+  {
+    "id": "ADV-SCAM-02",
+    "type": "ip_literal_url",
+    "content": "SBI Alert: Complete your KYC mandate within 2 hours: http://192.241.168.42/sbi-login.html",
+    "is_scam": 1,
+    "category": "IP_PHISHING",
+    "threat_notes": "Direct IP literal URL masquerading as SBI."
+  },
+  {
+    "id": "ADV-SCAM-03",
+    "type": "shortener_concealment",
+    "content": "Dear user your package has been returned to hub. Update shipping address to avoid return: https://is.gd/inpost_track",
+    "is_scam": 1,
+    "category": "SHORTENER_SCAM",
+    "threat_notes": "Shortened is.gd link hiding malicious destination."
+  },
+  {
+    "id": "ADV-SCAM-04",
+    "type": "zero_url_upi_scam",
+    "content": "Congratulations! Your refund of Rs 4,999 has been initiated. Open PhonePe now and accept the collect request from merchant.refund98@ybl to claim your money.",
+    "is_scam": 1,
+    "category": "UPI_COLLECT",
+    "threat_notes": "Pure social engineering without any URL. Tricking user into approving UPI collect request."
+  },
+  {
+    "id": "ADV-SCAM-05",
+    "type": "digital_arrest_call_scam",
+    "content": "This is Officer Sharma from CBI Narcotics Wing Delhi. A consignment containing 250g contraband registered on your Aadhaar was seized at customs. Join Skype interrogation immediately or warrant will be executed.",
+    "is_scam": 1,
+    "category": "DIGITAL_ARREST",
+    "threat_notes": "Digital arrest extortion via Skype video call threat."
+  },
+  {
+    "id": "ADV-SCAM-06",
+    "type": "emoji_obfuscated_kyc",
+    "content": "🚨 URGENT 🚨 Dear 🏦 Customer, your account ⛔ BLOCKED ⛔ today! Update 📝 K-Y-C immediately: 🔗 https://sbi-cust-update.xyz/login",
+    "is_scam": 1,
+    "category": "EMOJI_OBFUSCATION",
+    "threat_notes": "Emoji spacing and 'K-Y-C' hyphenation to bypass naive regex."
+  },
+  {
+    "id": "ADV-SCAM-07",
+    "type": "misspelled_banking_lure",
+    "content": "Dear Coustomer your HDFK Bank AC has been suspended. Plz clik link to re-activate http://hdfk-ebanking.top",
+    "is_scam": 1,
+    "category": "TYPO_PHISHING",
+    "threat_notes": "Misspellings ('Coustomer', 'HDFK', 'clik')."
+  },
+  {
+    "id": "ADV-SCAM-08",
+    "type": "subdomain_deep_phish",
+    "content": "Access secure netbanking at https://www.sbi.co.in.ebank-auth-portal.com/login",
+    "is_scam": 1,
+    "category": "SUBDOMAIN_DECEPTION",
+    "threat_notes": "Official brand in third-level subdomain, actual host is ebank-auth-portal.com."
+  },
+  {
+    "id": "ADV-SCAM-09",
+    "type": "electricity_threat_no_link",
+    "content": "ELECTRICITY ALERT: Your power will be disconnected today at 9:30 PM due to unpaid bill. Call executive immediately on 9876543210 for instant bill payment.",
+    "is_scam": 1,
+    "category": "UTILITY_CALL_SCAM",
+    "threat_notes": "Threatens power cutoff, directs to mobile number without link."
+  },
+  {
+    "id": "ADV-SCAM-10",
+    "type": "work_from_home_telegram",
+    "content": "Earn Rs 3,000 to 8,000 daily working from home! Simply like YouTube videos and write hotel reviews. No experience needed. Contact our HR manager on Telegram @EarnDailyIndia.",
+    "is_scam": 1,
+    "category": "TASK_SCAM",
+    "threat_notes": "Prepaid task fraud directing to Telegram handle."
+  }
+]

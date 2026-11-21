@@ -330,6 +330,12 @@ describe('ScamShield WhatsApp Bot Comprehensive 20-Scenario Verification', () =>
         'http://169.254.169.254/latest/meta-data/',
         'https://192.168.1.1/router',
         'http://10.0.0.1/internal',
+        'http://2130706433/admin',
+        'http://[::1]/status',
+        'http://0177.0.0.1/secret',
+        'http://0x7f000001/aws',
+        'http://127.1/internal',
+        'http://[fd00::1]/metadata',
       ];
 
       for (const target of privateTargets) {

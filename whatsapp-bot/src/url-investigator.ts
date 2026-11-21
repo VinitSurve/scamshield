@@ -60,40 +60,87 @@ export class UrlInvestigator {
 
   /**
    * Checks if an IP or host is private, loopback, or reserved (SSRF protection)
+   * Hardened against decimal IPs, octal notation, hex IPs, IPv6 brackets, and IPv4-mapped IPv6.
    */
   static isPrivateOrReservedHost(hostname: string): boolean {
-    const host = hostname.toLowerCase().trim();
+    let host = hostname.toLowerCase().trim();
+    if (host.startsWith('[') && host.endsWith(']')) {
+      host = host.slice(1, -1);
+    }
+    if (host.endsWith('.')) {
+      host = host.slice(0, -1);
+    }
 
     if (
       host === 'localhost' ||
-      host === '127.0.0.1' ||
-      host === '0.0.0.0' ||
-      host === '169.254.169.254' ||
       host === '::1' ||
+      host === '::' ||
+      host === '0.0.0.0' ||
       host.endsWith('.local') ||
-      host.endsWith('.internal')
+      host.endsWith('.internal') ||
+      host.endsWith('.localhost') ||
+      host.endsWith('.lan')
     ) {
       return true;
     }
 
-    // Check IPv4 private subnets
-    const parts = host.split('.');
-    if (parts.length === 4 && parts.every((p) => /^\d+$/.test(p))) {
-      const b0 = parseInt(parts[0], 10);
-      const b1 = parseInt(parts[1], 10);
+    // IPv6 ULA (fc00::/7) and Link-Local (fe80::/10)
+    if (
+      host.startsWith('fc') ||
+      host.startsWith('fd') ||
+      host.startsWith('fe8') ||
+      host.startsWith('fe9') ||
+      host.startsWith('fea') ||
+      host.startsWith('feb')
+    ) {
+      return true;
+    }
 
-      // 10.0.0.0/8
-      if (b0 === 10) return true;
-      // 172.16.0.0/12 (172.16.x.x - 172.31.x.x)
-      if (b0 === 172 && b1 >= 16 && b1 <= 31) return true;
-      // 192.168.0.0/16
-      if (b0 === 192 && b1 === 168) return true;
-      // 127.0.0.0/8
-      if (b0 === 127) return true;
-      // 169.254.0.0/16 (Link-local)
-      if (b0 === 169 && b1 === 254) return true;
-      // 0.0.0.0/8
-      if (b0 === 0) return true;
+    // IPv4-mapped IPv6 (::ffff:127.0.0.1)
+    if (host.startsWith('::ffff:')) {
+      return this.isPrivateOrReservedHost(host.slice(7));
+    }
+
+    // Check single integer (decimal / hex) representation (e.g. 2130706433 or 0x7f000001)
+    if (/^(0x[0-9a-f]+|\d+)$/i.test(host)) {
+      const num = parseInt(host, host.startsWith('0x') ? 16 : 10);
+      if (!isNaN(num) && num >= 0 && num <= 0xffffffff) {
+        const b0 = (num >>> 24) & 0xff;
+        const b1 = (num >>> 16) & 0xff;
+        if (b0 === 127 || b0 === 10 || b0 === 0) return true;
+        if (b0 === 172 && b1 >= 16 && b1 <= 31) return true;
+        if (b0 === 192 && b1 === 168) return true;
+        if (b0 === 169 && b1 === 254) return true;
+      }
+    }
+
+    // Check dotted IPv4 notation (supporting decimal, hex 0x, octal 0)
+    const parts = host.split('.');
+    if (parts.length >= 2 && parts.length <= 4) {
+      const nums: number[] = [];
+      for (const p of parts) {
+        if (/^0x[0-9a-f]+$/i.test(p)) {
+          nums.push(parseInt(p, 16));
+        } else if (/^0[0-7]+$/.test(p)) {
+          nums.push(parseInt(p, 8));
+        } else if (/^\d+$/.test(p)) {
+          nums.push(parseInt(p, 10));
+        } else {
+          return false;
+        }
+      }
+      if (nums.every((n) => !isNaN(n) && n >= 0)) {
+        let b0 = nums[0];
+        let b1 = nums[1];
+        if (parts.length === 2) {
+          const rest = nums[1];
+          b1 = (rest >>> 16) & 0xff;
+        }
+        if (b0 === 127 || b0 === 10 || b0 === 0) return true;
+        if (b0 === 172 && b1 >= 16 && b1 <= 31) return true;
+        if (b0 === 192 && b1 === 168) return true;
+        if (b0 === 169 && b1 === 254) return true;
+      }
     }
 
     return false;

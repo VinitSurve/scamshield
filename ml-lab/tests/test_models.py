@@ -70,6 +70,21 @@ def test_ann_train_and_checkpointing():
         assert pred.model_name == "ann"
 
 
+def test_ann_resume_continues_from_checkpoint():
+    with tempfile.NamedTemporaryFile(suffix=".joblib") as f:
+        model1 = ANNScamModel(hidden_layer_sizes=(16, 8), max_epochs=3)
+        model1.train(TRAIN_SAMPLES)
+        assert model1.current_epoch == 3
+        model1.save(f.name)
+
+        # Resume with loaded model to epoch 6
+        model2 = ANNScamModel(hidden_layer_sizes=(16, 8), max_epochs=6)
+        model2.load(f.name)
+        assert model2.current_epoch == 3
+        model2.train(TRAIN_SAMPLES, resume=True)
+        assert model2.current_epoch == 6
+
+
 def test_url_classifier_train_and_predict():
     model = URLFeatureClassifier(n_estimators=10, max_depth=3)
     metrics = model.train(TRAIN_SAMPLES, val_samples=TEST_SAMPLES)
