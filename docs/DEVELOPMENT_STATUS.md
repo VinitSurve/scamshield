@@ -79,9 +79,9 @@ ScamShield is being actively developed across two synchronized, high-velocity wo
 
 | Check | Tool / Runner | Target | Result | Details |
 |---|---|---|---|---|
-| **Extension Unit & Integration Tests** | Vitest v5.1.1 | `extension/tests/*.test.ts` | **90 / 90 PASS** | 14 test files passing in ~650ms |
-| **WhatsApp Bot Tests** | Vitest v3.2.7 | `whatsapp-bot/tests/*.test.ts` | **6 / 6 PASS** | SSRF blocking + message scanning + consent |
-| **Total Automated Tests** | Vitest (Dual Runner) | Entire Monorepo | **96 / 96 PASS** | 100% test pass rate across all suites |
+| **Extension Unit & Integration Tests** | Vitest v5.1.1 | `extension/tests/*.test.ts` | **97 / 97 PASS** | 15 test files passing in ~650ms |
+| **WhatsApp Bot Tests** | Vitest v3.2.7 | `whatsapp-bot/tests/*.test.ts` | **9 / 9 PASS** | 2 test files passing (SSRF, AI pipeline, heuristics) |
+| **Total Automated Tests** | Vitest (Dual Runner) | Entire Monorepo | **106 / 106 PASS** | 100% test pass rate across all suites |
 | **TypeScript Typecheck** | `tsc --noEmit` | `extension/tsconfig.json` | **0 Errors** | Strict mode enabled |
 | **WhatsApp Bot Typecheck** | `tsc` | `whatsapp-bot/tsconfig.json` | **0 Errors** | Clean build with zero warnings |
 | **Production Build** | Vite v6.4.6 + Node script | `extension/scripts/build.js` | **SUCCESS** | Bundles `popup`, `options`, `interstitial`, `test-lab`, `background`, `content`, `gmail` |
@@ -102,7 +102,13 @@ ScamShield is being actively developed across two synchronized, high-velocity wo
 
 ## 6. Audit & Change Log
 
-- **2026-11-21 (`vinit-browser-extension-mvp`):** Fixed critical bug in Image Scam Scanner where real ICICI fake KYC SMS screenshot failed OCR and incorrectly returned "0% / NO OBVIOUS SCAM SIGNALS":
+- **2026-11-21 (`vinit-browser-extension-mvp`):** Fixed critical bug where SMS/WhatsApp AI Analyzer returned `UNKNOWN / 0% / ANALYSIS_UNAVAILABLE` on suspicious SBI KYC scam messages:
+  1. **Root Cause Resolved:** Identified that default Groq model configuration was set to `llama-3.3-70b-versatile` which returns HTTP 404 on current Groq account tiers, and Gemini default was set to deprecated model endpoints. Updated active model selection to `gemini-3-flash-preview` and `qwen/qwen3.8-27b`, with automatic model auto-recovery upon HTTP 404 responses.
+  2. **Backend API Endpoint:** Created `POST /api/v1/analyze/message` in `whatsapp-bot/src/webhook.ts` and `whatsapp-bot/src/ai-engine.ts` with CORS support for extension clients, multi-key rotation, 429 rate limit cooldown recovery, and automatic provider fallback (Gemini ➔ Groq).
+  3. **Local Heuristic Analysis Engine (`local-message-heuristics.ts`):** Built deterministic offline safety net detecting brand impersonation (SBI, HDFC, ICICI, PhonePe, Paytm, Electricity), KYC fraud lures, urgency/coercion threats, suspicious URLs, phone numbers, and OTP/credential theft. If AI providers fail or are offline, local heuristics ensure the message is accurately evaluated (e.g., 92% HIGH RISK for SBI KYC scam, 5% SAFE for legitimate shipping confirmation) with clear, transparent user notices.
+  4. **Strict Verdict & Status Separation:** Added separate statuses (`AI Engine: LIVE / UNAVAILABLE` and `Security Engine: ACTIVE / HEURISTIC FALLBACK`). Analysis failure never equates to 0% risk or wipes evidence.
+  5. **Developer Diagnostics & Telemetry UI:** Implemented collapsible diagnostics panel in `AIScamAnalyzerModal.tsx` showing Request ID, timestamp, backend reachability, provider attempted, model, HTTP status, latency, fallback result, and provider trace.
+  6. **Automated Verification:** Added 10 new unit/integration tests in `extension/tests/ai-message-analyzer.test.ts` and `whatsapp-bot/tests/ai-engine.test.ts`. Verified live integration with real Gemini and Groq API calls. Total tests passing: 106 / 106. Clean production extension build.
   1. **Root Cause Resolved:** Identified that Tesseract.js attempted to load worker scripts and WASM binaries from remote CDN URLs blocked by Manifest V3 Content Security Policy (`script-src 'self'`). Packaged all Tesseract assets locally in `extension/public/tesseract/` (`worker.min.js`, WASM core variants, `eng`/`hin`/`mar` traineddata) and added `'wasm-unsafe-eval'` to manifest CSP.
   2. **Image Preprocessing:** Created client-side pipeline in `extension/src/image/image-preprocessor.ts` implementing proportional resizing (1600px max, 400px min upscale), BT.601 luminance grayscale, contrast stretching, and Otsu global binarization.
   3. **Multi-Pass OCR Engine:** Updated `ocr-service.ts` to execute Pass 1 on normalized grayscale image, and automatically trigger Pass 2 on Otsu binarized image if text density < 20 characters.

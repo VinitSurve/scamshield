@@ -85,6 +85,31 @@ export interface AISystemSettings {
   providers: Record<AIProviderId, AIProviderConfig>;
 }
 
+export interface AIDiagnosticsTelemetry {
+  requestId: string;
+  timestamp: string;
+  backendReachable: boolean;
+  providerAttempted?: string;
+  model?: string;
+  providerAttemptNumber?: number;
+  httpStatus?: number;
+  latencyMs: number;
+  errorType?: string;
+  fallbackAttempted?: boolean;
+  fallbackProvider?: string;
+  fallbackResult?: string;
+  finalAnalysisStatus: 'AI_COMPLETED' | 'LOCAL_HEURISTIC_FALLBACK' | 'ANALYSIS_UNAVAILABLE';
+  keyHealthSummary?: string;
+  providerDiagnostics?: Array<{
+    provider: string;
+    model: string;
+    status: 'SUCCESS' | 'FAILED';
+    error?: string;
+    httpStatus?: number;
+    latencyMs?: number;
+  }>;
+}
+
 export const DEFAULT_AI_SETTINGS: AISystemSettings = {
   enabled: true,
   primaryProvider: 'gemini',
@@ -95,17 +120,22 @@ export const DEFAULT_AI_SETTINGS: AISystemSettings = {
   providers: {
     gemini: {
       enabled: true,
-      selectedModel: 'gemini-1.5-flash',
-      availableModels: ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-2.0-flash'],
+      selectedModel: 'gemini-3-flash-preview',
+      availableModels: [
+        'gemini-3-flash-preview',
+        'gemini-2.5-flash',
+        'gemini-1.5-flash',
+        'gemini-2.0-flash',
+      ],
     },
     groq: {
       enabled: true,
-      selectedModel: 'llama-3.3-70b-versatile',
+      selectedModel: 'qwen/qwen3.8-27b',
       availableModels: [
-        'llama-3.3-70b-versatile',
         'qwen/qwen3.8-27b',
-        'llama-3.1-8b-instant',
-        'mixtral-8x7b-32768',
+        'openai/gpt-oss-120b',
+        'openai/gpt-oss-20b',
+        'llama-3.3-70b-versatile',
       ],
     },
   },
@@ -118,11 +148,13 @@ export const DEFAULT_AI_SETTINGS: AISystemSettings = {
 export type ScamClassification = 'SAFE' | 'SUSPICIOUS' | 'SCAM' | 'MALICIOUS' | 'UNKNOWN';
 export type RiskSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
-export interface ScamIndicator {
+export interface ThreatIndicator {
   type: string;
   description: string;
   severity: 'LOW' | 'MEDIUM' | 'HIGH';
 }
+
+export type ScamIndicator = ThreatIndicator;
 
 export interface ExtractedEntities {
   brandImpersonated?: string;
@@ -139,7 +171,7 @@ export interface StructuredScamAnalysis {
   scamCategory: string; // e.g., 'BANKING_KYC', 'UPI_FRAUD', 'LOTTERY_SCAM', 'JOB_OFFER'
   summary: string;
   socialEngineeringTactics: string[]; // e.g., ['Urgency', 'Authority', 'Fear of penalty']
-  indicators: ScamIndicator[];
+  indicators: ThreatIndicator[];
   extractedEntities: ExtractedEntities;
   recommendedActions: string[];
   explanation: string;
@@ -148,6 +180,10 @@ export interface StructuredScamAnalysis {
   latencyMs?: number;
   fallbackOccurred?: boolean;
   error?: string;
+  aiStatus?: 'SUCCESS' | 'FAILED' | 'UNAVAILABLE';
+  securityStatus?: 'SUCCESS' | 'FAILED';
+  isLocalHeuristicFallback?: boolean;
+  diagnostics?: AIDiagnosticsTelemetry;
 }
 
 export interface MessageAnalysisRequest {

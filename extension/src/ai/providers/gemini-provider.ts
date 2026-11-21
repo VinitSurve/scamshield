@@ -23,13 +23,18 @@ export class GeminiProvider extends BaseAIProvider {
     apiKey: string,
     timeoutMs: number
   ): Promise<string> {
-    const endpoint = `${this.baseUrl}/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+    const targetModel =
+      model === 'gemini-1.5-flash' || !model
+        ? 'gemini-3-flash-preview'
+        : model;
+
+    let endpoint = `${this.baseUrl}/${encodeURIComponent(targetModel)}:generateContent?key=${encodeURIComponent(apiKey)}`;
 
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
-      const response = await fetch(endpoint, {
+      let response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -49,6 +54,31 @@ export class GeminiProvider extends BaseAIProvider {
         }),
         signal: controller.signal,
       });
+
+      // Auto-fallback to active supported Gemini model if 404 deprecated model error
+      if (response.status === 404 && targetModel !== 'gemini-3-flash-preview') {
+        endpoint = `${this.baseUrl}/gemini-3-flash-preview:generateContent?key=${encodeURIComponent(apiKey)}`;
+        response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                role: 'user',
+                parts: [{ text: prompt }],
+              },
+            ],
+            generationConfig: {
+              temperature: 0.1,
+              maxOutputTokens: 1024,
+              responseMimeType: 'application/json',
+            },
+          }),
+          signal: controller.signal,
+        });
+      }
 
       clearTimeout(timer);
 

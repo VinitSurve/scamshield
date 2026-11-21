@@ -17,10 +17,12 @@ import {
   ProviderHealthStats,
   AIProviderId,
   AISystemSettings,
+  AIDiagnosticsTelemetry,
 } from './types';
 import { PiiScrubber } from './pii-scrubber';
 import { KeyManager } from './key-manager';
 import { ProviderRouter } from './provider-router';
+import { LocalMessageHeuristics } from '../security/local-message-heuristics';
 import { logger } from '../utils/logger';
 
 export class AIService {
@@ -93,9 +95,59 @@ Evaluate the message and return ONLY a valid, raw JSON object matching this exac
 }`;
 
     const startTime = Date.now();
+    const requestId = `req_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const timestamp = new Date().toISOString();
 
+    let backendReachable = false;
+    let backendError: string | undefined;
+
+    // ----------------------------------------------------
+    // STAGE 1: Try Backend Endpoint (whatsapp-bot service)
+    // ----------------------------------------------------
     try {
-      // 3. Execute via Provider Router with health-aware multi-key rotation and automatic fallback
+      const backendUrl =
+        ((import.meta as any).env?.VITE_BACKEND_API_URL as string) ||
+        'http://localhost:3001/api/v1/analyze/message';
+
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 6000);
+
+      const res = await fetch(backendUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Client-App': 'ScamShield-Chrome-Extension',
+        },
+        body: JSON.stringify({
+          messageText: rawInput,
+          sourceType: request.sourceType || 'SMS',
+          userLanguage: lang,
+        }),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timer);
+
+      if (res.ok) {
+        backendReachable = true;
+        const data = (await res.json()) as StructuredScamAnalysis;
+        return {
+          ...data,
+          latencyMs: Date.now() - startTime,
+        };
+      } else {
+        backendError = `Backend returned HTTP ${res.status}`;
+      }
+    } catch (err: any) {
+      backendError = err instanceof Error ? err.message : String(err);
+      logger.debug('Backend AI analysis endpoint unavailable, attempting local engine:', backendError);
+    }
+
+    // ----------------------------------------------------
+    // STAGE 2: Try In-Extension ProviderRouter (Gemini -> Groq)
+    // ----------------------------------------------------
+    let providerError: string | undefined;
+    try {
       const { rawOutput, providerUsed, modelUsed, latencyMs, fallbackOccurred } =
         await ProviderRouter.executeWithFallback(prompt);
 
@@ -106,36 +158,76 @@ Evaluate the message and return ONLY a valid, raw JSON object matching this exac
         throw new Error('Failed to parse structured JSON response from AI provider');
       }
 
-      return provider.normalizeAnalysisResponse(
+      const normalized = provider.normalizeAnalysisResponse(
         parsed,
         providerUsed,
         modelUsed,
         latencyMs,
         fallbackOccurred
       );
-    } catch (err: any) {
-      const totalLatency = Date.now() - startTime;
-      logger.error('Message analysis failed across all providers:', err);
 
       return {
-        success: false,
-        classification: 'UNKNOWN',
-        riskLevel: 'MEDIUM',
-        confidenceScore: 0,
-        scamCategory: 'ANALYSIS_UNAVAILABLE',
-        summary: 'AI analysis could not be completed at this time.',
-        socialEngineeringTactics: [],
-        indicators: [],
-        extractedEntities: {},
-        recommendedActions: [
-          'Exercise caution: do not click links or share credentials.',
-          'Verify that at least one operational Gemini or Groq API key is configured in ScamShield settings.',
-        ],
-        explanation: 'The AI provider returned an error or all configured API keys were exhausted.',
-        latencyMs: totalLatency,
-        error: err.message || 'AI provider request failed',
+        ...normalized,
+        aiStatus: 'SUCCESS',
+        securityStatus: 'SUCCESS',
+        diagnostics: {
+          requestId,
+          timestamp,
+          backendReachable,
+          providerAttempted: providerUsed,
+          model: modelUsed,
+          latencyMs: Date.now() - startTime,
+          fallbackAttempted: fallbackOccurred,
+          fallbackProvider: fallbackOccurred ? providerUsed : undefined,
+          fallbackResult: 'SUCCESS',
+          finalAnalysisStatus: 'AI_COMPLETED',
+        },
       };
+    } catch (err: any) {
+      providerError = err.message || 'All AI providers exhausted';
+      logger.warn('In-extension AI providers failed, falling back to local heuristics:', providerError);
     }
+
+    // ----------------------------------------------------
+    // STAGE 3: Local Heuristic Fallback Engine
+    // ----------------------------------------------------
+    // Never fail silently with UNKNOWN or 0% risk.
+    const totalLatency = Date.now() - startTime;
+    const diagnostics: AIDiagnosticsTelemetry = {
+      requestId,
+      timestamp,
+      backendReachable,
+      providerAttempted: 'gemini',
+      model: 'local-heuristics',
+      latencyMs: totalLatency,
+      errorType: providerError || backendError || 'PROVIDERS_UNAVAILABLE',
+      fallbackAttempted: true,
+      fallbackProvider: 'groq',
+      fallbackResult: 'FAILED',
+      finalAnalysisStatus: 'LOCAL_HEURISTIC_FALLBACK',
+      providerDiagnostics: [
+        {
+          provider: 'backend',
+          model: 'api/v1/analyze/message',
+          status: 'FAILED',
+          error: backendError || 'Unreachable or disabled',
+        },
+        {
+          provider: 'gemini',
+          model: 'gemini-3-flash-preview',
+          status: 'FAILED',
+          error: providerError || 'No healthy keys or quota exhausted',
+        },
+        {
+          provider: 'groq',
+          model: 'qwen/qwen3.8-27b',
+          status: 'FAILED',
+          error: providerError || 'Fallback attempted but failed',
+        },
+      ],
+    };
+
+    return LocalMessageHeuristics.analyze(rawInput, request.sourceType || 'SMS', diagnostics);
   }
 
   /**

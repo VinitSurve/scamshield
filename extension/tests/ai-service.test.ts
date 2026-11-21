@@ -71,16 +71,21 @@ describe('ScamShield AI Service Master Pipeline', () => {
       expect(result.summary).toContain('No text provided');
     });
 
-    it('returns graceful fallback response when no operational keys are available', async () => {
-      // Zero keys configured
+    it('returns robust heuristic fallback response with scam indicators when no operational AI keys are available', async () => {
+      // Zero AI keys configured: must fall back to local heuristics and NOT return UNKNOWN 0%
       const result = await AIService.analyzeMessage({
         messageText: 'Claim your lottery bonus of Rs 50000 now: http://lottery.example',
       });
 
-      expect(result.success).toBe(false);
-      expect(result.classification).toBe('UNKNOWN');
+      expect(result.success).toBe(true);
+      expect(result.aiStatus).toBe('FAILED');
+      expect(result.securityStatus).toBe('SUCCESS');
+      expect(result.isLocalHeuristicFallback).toBe(true);
+      expect(result.classification).toBe('SCAM');
+      expect(result.confidenceScore).toBeGreaterThan(0.7);
       expect(result.recommendedActions.length).toBeGreaterThan(0);
-      expect(result.summary).toContain('AI analysis could not be completed');
+      expect(result.summary).toContain('AI ANALYSIS UNAVAILABLE');
+      expect(result.summary).toContain('local security checks detected');
     });
   });
 

@@ -2,9 +2,21 @@ import express, { Request, Response } from 'express';
 import { config } from './config.js';
 import { ScannerClient } from './scanner-client.js';
 import { BotSecurity } from './security.js';
+import { BackendAIEngine } from './ai-engine.js';
 
 export const app = express();
 app.use(express.json());
+
+// Enable CORS for Browser Extension local communication
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Client-App, X-Client-Version');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
 
 // Set of processed message IDs to prevent duplicate webhook delivery execution
 const processedMessageIds = new Set<string>();
@@ -18,8 +30,37 @@ app.get('/health', (_req: Request, res: Response) => {
     service: 'scamshield-whatsapp-bot',
     mode: config.mode,
     enabled: config.enabled,
+    geminiKeysConfigured: config.geminiApiKeys.length,
+    groqKeysConfigured: config.groqApiKeys.length,
     timestamp: new Date().toISOString(),
   });
+});
+
+/**
+ * Backend Message Threat Analysis Endpoint (POST /api/v1/analyze/message)
+ * Executes Multi-Provider AI (Gemini + Groq fallback) with local heuristic backup
+ */
+app.post('/api/v1/analyze/message', async (req: Request, res: Response) => {
+  try {
+    const { messageText, sourceType, userLanguage } = req.body;
+    if (!messageText || typeof messageText !== 'string') {
+      res.status(400).json({ error: 'Missing or invalid messageText in request body' });
+      return;
+    }
+
+    const result = await BackendAIEngine.analyzeMessage(
+      messageText,
+      sourceType || 'SMS',
+      userLanguage || 'en'
+    );
+
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({
+      error: err.message || 'Message analysis failed on backend',
+      success: false,
+    });
+  }
 });
 
 /**

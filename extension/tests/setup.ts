@@ -83,6 +83,9 @@ export const chromeMock = {
 // Install mock fetch so unit tests execute deterministically with 0ms latency
 (globalThis as any).fetch = vi.fn(async (url: string | URL | Request) => {
   const urlStr = typeof url === 'string' ? url : url.toString();
+  if (urlStr.includes('localhost:3001')) {
+    throw new Error('connect ECONNREFUSED 127.0.0.1:3001');
+  }
   if (urlStr.includes('/api/v1/reputation/prefix/')) {
     return {
       ok: true,

@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { StructuredScamAnalysis } from '../../ai/types';
 import { SafeMessaging } from '../../security/safe-messaging';
+import { LocalMessageHeuristics } from '../../security/local-message-heuristics';
 
 interface AIScamAnalyzerModalProps {
   isOpen: boolean;
@@ -27,6 +28,7 @@ export const AIScamAnalyzerModal: React.FC<AIScamAnalyzerModalProps> = ({
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<StructuredScamAnalysis | null>(null);
   const [showIndicators, setShowIndicators] = useState(false);
+  const [showDiagnostics, setShowDiagnostics] = useState(false);
 
   if (!isOpen) return null;
 
@@ -49,20 +51,14 @@ export const AIScamAnalyzerModal: React.FC<AIScamAnalyzerModalProps> = ({
       );
       setResult(res);
     } catch (err: any) {
-      setResult({
-        success: false,
-        classification: 'UNKNOWN',
-        riskLevel: 'MEDIUM',
-        confidenceScore: 0,
-        scamCategory: 'ERROR',
-        summary: err.message || 'AI analysis failed across providers',
-        socialEngineeringTactics: [],
-        indicators: [],
-        extractedEntities: {},
-        recommendedActions: ['Check your AI Provider keys in ScamShield Settings.'],
-        explanation: 'Could not connect to configured AI engine.',
-        error: err.message,
+      const fallbackResult = LocalMessageHeuristics.analyze(inputText, sourceType, {
+        requestId: `ui_${Date.now()}`,
+        timestamp: new Date().toISOString(),
+        backendReachable: false,
+        errorType: err.message || 'Messaging channel failed',
+        finalAnalysisStatus: 'LOCAL_HEURISTIC_FALLBACK',
       });
+      setResult(fallbackResult);
     } finally {
       setIsAnalyzing(false);
     }
@@ -178,6 +174,49 @@ export const AIScamAnalyzerModal: React.FC<AIScamAnalyzerModalProps> = ({
           {/* Results Display */}
           {result && (
             <div className="p-3 bg-shield-dark border border-shield-border rounded-xl space-y-2.5 animate-fade-in">
+              {/* Dual Engine Status Badges */}
+              <div className="flex items-center justify-between pb-1 text-[10px]">
+                <div className="flex items-center space-x-1.5">
+                  <span className="text-slate-400">AI Engine:</span>
+                  <span
+                    className={`px-1.5 py-0.2 rounded font-mono font-semibold ${
+                      result.aiStatus === 'SUCCESS' || (!result.isLocalHeuristicFallback && result.success)
+                        ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-800/40'
+                        : 'bg-amber-950/80 text-amber-400 border border-amber-800/40'
+                    }`}
+                  >
+                    {result.aiStatus === 'SUCCESS' || (!result.isLocalHeuristicFallback && result.success)
+                      ? `LIVE (${(result.providerUsed || 'AI').toUpperCase()})`
+                      : 'FAILED'}
+                  </span>
+                </div>
+
+                <div className="flex items-center space-x-1.5">
+                  <span className="text-slate-400">Security Engine:</span>
+                  <span
+                    className={`px-1.5 py-0.2 rounded font-mono font-semibold ${
+                      result.securityStatus === 'SUCCESS' || result.success
+                        ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-800/40'
+                        : 'bg-red-950/80 text-red-400 border border-red-800/40'
+                    }`}
+                  >
+                    {result.isLocalHeuristicFallback ? 'HEURISTIC FALLBACK' : 'ACTIVE'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Local Heuristic Fallback Warning Alert */}
+              {result.isLocalHeuristicFallback && (
+                <div className="p-2.5 bg-amber-950/30 border border-amber-600/40 rounded-lg text-[11px] space-y-1">
+                  <div className="flex items-center space-x-1.5 text-amber-400 font-bold">
+                    <span>⚠️ AI ANALYSIS UNAVAILABLE</span>
+                  </div>
+                  <p className="text-amber-200/90 leading-tight text-[10px]">
+                    All configured AI provider requests failed or were unreachable. However, ScamShield local security checks analyzed the message directly using deterministic threat signatures.
+                  </p>
+                </div>
+              )}
+
               {/* Verdict Header */}
               <div className="flex items-center justify-between border-b border-shield-border/60 pb-2">
                 <div className="flex items-center space-x-2">
@@ -201,14 +240,20 @@ export const AIScamAnalyzerModal: React.FC<AIScamAnalyzerModalProps> = ({
 
                 <div className="flex items-center space-x-1.5 text-[10px] text-slate-400 font-mono">
                   <Cpu className="w-3 h-3 text-indigo-400" />
-                  <span>{result.providerUsed?.toUpperCase()}</span>
+                  <span>
+                    {result.isLocalHeuristicFallback
+                      ? 'LOCAL HEURISTICS'
+                      : result.providerUsed?.toUpperCase() || 'AI'}
+                  </span>
                   <span>({result.latencyMs}ms)</span>
                 </div>
               </div>
 
               {/* Summary */}
               <div>
-                <p className="text-xs text-white leading-relaxed font-medium">{result.summary}</p>
+                <p className="text-xs text-white leading-relaxed font-medium whitespace-pre-line">
+                  {result.summary}
+                </p>
               </div>
 
               {/* Category & Tactics */}
@@ -297,6 +342,83 @@ export const AIScamAnalyzerModal: React.FC<AIScamAnalyzerModalProps> = ({
                           <p className="text-slate-400">{ind.description}</p>
                         </div>
                       ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Collapsible Developer Diagnostics & Telemetry Panel (Priority 2) */}
+              {result.diagnostics && (
+                <div className="pt-2 border-t border-shield-border/50">
+                  <button
+                    type="button"
+                    onClick={() => setShowDiagnostics(!showDiagnostics)}
+                    className="flex items-center justify-between w-full text-[10px] text-indigo-400 hover:text-indigo-300 font-mono"
+                  >
+                    <span>🛠 Developer Diagnostics & Engine Telemetry</span>
+                    {showDiagnostics ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                  </button>
+
+                  {showDiagnostics && (
+                    <div className="mt-2 p-2 bg-slate-950 rounded-lg border border-indigo-900/40 text-[9px] font-mono text-slate-300 space-y-1.5">
+                      <div className="grid grid-cols-2 gap-1 pb-1 border-b border-slate-800">
+                        <div>
+                          <span className="text-slate-500 block">Request ID:</span>
+                          <span className="text-white truncate block">{result.diagnostics.requestId}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block">Backend Reachable:</span>
+                          <span className={result.diagnostics.backendReachable ? 'text-emerald-400' : 'text-amber-400'}>
+                            {result.diagnostics.backendReachable ? 'YES (Port 3001)' : 'NO (Offline)'}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-1 pb-1 border-b border-slate-800">
+                        <div>
+                          <span className="text-slate-500 block">Provider Attempted:</span>
+                          <span className="text-white">{result.diagnostics.providerAttempted || result.providerUsed || 'None'}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block">Model:</span>
+                          <span className="text-indigo-300">{result.diagnostics.model || result.modelUsed || 'N/A'}</span>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-1 pb-1 border-b border-slate-800">
+                        <div>
+                          <span className="text-slate-500 block">Fallback Attempted:</span>
+                          <span className="text-white">{result.diagnostics.fallbackAttempted ? 'YES' : 'NO'}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block">Fallback Result:</span>
+                          <span className={result.diagnostics.fallbackResult === 'SUCCESS' ? 'text-emerald-400' : 'text-amber-400'}>
+                            {result.diagnostics.fallbackResult || 'N/A'}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <span className="text-slate-500 block">Final Status:</span>
+                        <span className="text-emerald-400 font-bold">{result.diagnostics.finalAnalysisStatus}</span>
+                      </div>
+
+                      {result.diagnostics.providerDiagnostics && result.diagnostics.providerDiagnostics.length > 0 && (
+                        <div className="pt-1">
+                          <span className="text-slate-400 font-bold block mb-1">Provider Trace:</span>
+                          {result.diagnostics.providerDiagnostics.map((pd, idx) => (
+                            <div key={idx} className="p-1 bg-slate-900 rounded mb-1 text-[8.5px]">
+                              <div className="flex justify-between">
+                                <span className="font-bold text-slate-300">{pd.provider.toUpperCase()} ({pd.model})</span>
+                                <span className={pd.status === 'SUCCESS' ? 'text-emerald-400' : 'text-red-400'}>
+                                  {pd.status} {pd.httpStatus ? `[HTTP ${pd.httpStatus}]` : ''}
+                                </span>
+                              </div>
+                              {pd.error && <p className="text-red-300 mt-0.5 truncate">{pd.error}</p>}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

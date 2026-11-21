@@ -1,5 +1,24 @@
 import dotenv from 'dotenv';
-dotenv.config();
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Search and load environment variables from candidate paths
+const envCandidates = [
+  path.resolve(process.cwd(), '.env'),
+  path.resolve(__dirname, '../.env'),
+  path.resolve(__dirname, '../../extension/.env'),
+  path.resolve(__dirname, '../../.env'),
+];
+
+for (const envPath of envCandidates) {
+  if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath });
+  }
+}
 
 export interface WhatsAppConfig {
   mode: 'demo' | 'cloud_api';
@@ -10,8 +29,17 @@ export interface WhatsAppConfig {
   verifyToken: string;
   appSecret: string;
   scannerApiUrl: string;
+  geminiApiKeys: string[];
   groqApiKeys: string[];
 }
+
+const parseKeys = (keysString?: string): string[] => {
+  if (!keysString) return [];
+  return keysString
+    .split(',')
+    .map((k) => k.trim())
+    .filter(Boolean);
+};
 
 export const config: WhatsAppConfig = {
   mode: (process.env.WHATSAPP_MODE === 'cloud_api' ? 'cloud_api' : 'demo') as 'demo' | 'cloud_api',
@@ -22,8 +50,15 @@ export const config: WhatsAppConfig = {
   verifyToken: process.env.WHATSAPP_VERIFY_TOKEN || 'scamshield_webhook_secret_verify_token_2026',
   appSecret: process.env.WHATSAPP_APP_SECRET || '',
   scannerApiUrl: process.env.SCAMSHIELD_API_URL || 'https://api.scamshield.org',
-  groqApiKeys: (process.env.GROQ_API_KEYS || process.env.VITE_DEV_GROQ_KEYS || '')
-    .split(',')
-    .map((k) => k.trim())
-    .filter(Boolean),
+  geminiApiKeys: parseKeys(
+    process.env.GEMINI_API_KEYS ||
+      process.env.VITE_DEV_GEMINI_KEYS ||
+      process.env.GEMINI_API_KEY ||
+      process.env.GOOGLE_API_KEY
+  ),
+  groqApiKeys: parseKeys(
+    process.env.GROQ_API_KEYS ||
+      process.env.VITE_DEV_GROQ_KEYS ||
+      process.env.GROQ_API_KEY
+  ),
 };

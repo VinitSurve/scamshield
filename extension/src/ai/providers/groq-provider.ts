@@ -26,15 +26,22 @@ export class GroqProvider extends BaseAIProvider {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
 
+    // Auto-select verified active model if an unavailable or legacy model is passed
+    const targetModel =
+      model === 'llama-3.3-70b-versatile' || !model
+        ? 'qwen/qwen3.8-27b'
+        : model;
+
     try {
-      const response = await fetch(this.endpoint, {
+      let response = await fetch(this.endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${apiKey}`,
+          'User-Agent': 'ScamShield-AI/1.0',
         },
         body: JSON.stringify({
-          model,
+          model: targetModel,
           messages: [
             {
               role: 'system',
@@ -52,6 +59,36 @@ export class GroqProvider extends BaseAIProvider {
         }),
         signal: controller.signal,
       });
+
+      // Auto-fallback to active Groq model if 404 (model not found on user account tier)
+      if (response.status === 404 && targetModel !== 'qwen/qwen3.8-27b') {
+        response = await fetch(this.endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${apiKey}`,
+            'User-Agent': 'ScamShield-AI/1.0',
+          },
+          body: JSON.stringify({
+            model: 'qwen/qwen3.8-27b',
+            messages: [
+              {
+                role: 'system',
+                content:
+                  'You are ScamShield AI, a premier cybersecurity scam detection engine. Always respond with strict, valid JSON matching the exact schema requested by the user.',
+              },
+              {
+                role: 'user',
+                content: prompt,
+              },
+            ],
+            temperature: 0.1,
+            max_tokens: 1024,
+            response_format: { type: 'json_object' },
+          }),
+          signal: controller.signal,
+        });
+      }
 
       clearTimeout(timer);
 
