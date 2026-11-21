@@ -43,7 +43,7 @@ ScamShield is being actively developed across two parallel, decoupled workstream
 | **Phase 6: In-Browser Website Heuristics** | P1 | **Completed** | Content script (`content-script.ts`) DOM analysis, zero-keystroke scanning, login form detection on unrated domains, Punycode/homoglyph detection. |
 | **Phase 7: Gmail Web Protection** | P2 | **Completed** | Gmail content script (`gmail.ts`) detecting display-name vs. SMTP address spoofing with injected security pills. |
 | **Phase 8: Extension UI Shells** | P0 | **Completed** | Responsive Popup UI (`popup.html`), full Options/Settings page (`options.html`), threat history, telemetry toggles, and multilingual i18n support. |
-| **Phase 9: Security Test Lab (Dev Mode)** | P0 (Dev) | **Completed** | Controlled testing dashboard (`test-lab.html`) with 14 synthetic/anchor/AI test cases, real-time progress, latency tracking, and diagnostic evidence inspection. |
+| **Phase 9: Security Test Lab (Dev Mode)** | P0 (Dev) | **Completed** | Controlled testing dashboard (`test-lab.html`) with 15 synthetic/anchor/AI test cases, real-time progress, latency tracking, and diagnostic evidence inspection. |
 | **Phase 10: Multi-Provider AI Engine** | P0 | **Completed** | Dual-provider support (Google Gemini & Groq), multi-key pools, health-aware round-robin rotation, HTTP 429 rate-limit cooldown recovery, provider fallback, PII scrubber, structured scam message analyzer in Popup, and AI Settings UI in Options. |
 
 ### B. Security Test Lab Matrix (`test-lab.html`)
@@ -54,6 +54,7 @@ ScamShield is being actively developed across two parallel, decoupled workstream
 | `LEGIT_GITHUB` | `https://github.com` | `Legitimate Mainstream` | Safe (Score: 0) | **PASS** | Tranco Top 100K Anchor |
 | `LEGIT_MICROSOFT` | `https://microsoft.com` | `Legitimate Mainstream` | Safe (Score: 0) | **PASS** | Tranco Top 100K Anchor |
 | `LEGIT_AMAZON_IN` | `https://amazon.in` | `Legitimate Mainstream` | Safe (Score: 0) | **PASS** | Tranco Top 100K Anchor |
+| `LEGIT_LINKEDIN` | `https://www.linkedin.com/feed/for-you/` | `Legitimate Mainstream` | Safe (Score: 0) | **PASS** | Tranco Top 100K Anchor |
 | `IMPERSONATION_SBI` | `https://sbi-online-kyc-verification.example` | `Brand Impersonation` | Suspicious (Score ≥ 40) | **PASS** | Local Brand Impersonation Heuristics |
 | `IMPERSONATION_HDFC` | `https://hdfc-bank-secure-login.example` | `Brand Impersonation` | Suspicious (Score ≥ 40) | **PASS** | Local Brand Impersonation Heuristics |
 | `IMPERSONATION_PHONEPE` | `https://phonepe-account-verify.example` | `Brand Impersonation` | Suspicious (Score ≥ 40) | **PASS** | Local Brand Impersonation Heuristics |
