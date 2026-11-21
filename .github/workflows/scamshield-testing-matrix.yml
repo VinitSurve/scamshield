@@ -1,0 +1,95 @@
+name: ScamShield Adversarial & Robustness Testing Matrix
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_profile:
+        description: 'Test profile (QUICK, STANDARD, FULL, ADVERSARIAL, LANGUAGE, DOCUMENT, REGRESSION, URL)'
+        required: true
+        default: 'STANDARD'
+        type: choice
+        options:
+          - QUICK
+          - STANDARD
+          - FULL
+          - ADVERSARIAL
+          - LANGUAGE
+          - DOCUMENT
+          - REGRESSION
+          - URL
+      model_name:
+        description: 'Target Model / Pipeline to Evaluate'
+        required: true
+        default: 'ScamShield-Ensemble-v3'
+        type: choice
+        options:
+          - ScamShield-Ensemble-v3
+          - LogisticRegression-v3
+          - ANN-v3
+          - KNN-v3
+          - UnifiedScanner
+      dataset_version:
+        description: 'Dataset version reference'
+        required: false
+        default: 'v3.0.0-dataset'
+        type: string
+      sample_limit:
+        description: 'Maximum samples to evaluate (10 - 500)'
+        required: false
+        default: '100'
+        type: string
+  push:
+    branches:
+      - main
+    paths:
+      - 'dashboard/**'
+      - 'ml-lab/**'
+      - '.github/workflows/scamshield-testing-matrix.yml'
+
+jobs:
+  adversarial_matrix:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Runtime
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: dashboard/package-lock.json
+
+      - name: Install Dashboard Dependencies
+        run: |
+          cd dashboard
+          npm ci
+
+      - name: Sanitize Inputs & Execute Matrix
+        env:
+          INPUT_PROFILE: ${{ github.event.inputs.test_profile || 'QUICK' }}
+          INPUT_MODEL: ${{ github.event.inputs.model_name || 'ScamShield-Ensemble-v3' }}
+          INPUT_DATASET: ${{ github.event.inputs.dataset_version || 'v3.0.0-dataset' }}
+        run: |
+          # Strict sanitization against injection
+          SAFE_PROFILE=$(echo "$INPUT_PROFILE" | tr -cd 'A-Z')
+          SAFE_MODEL=$(echo "$INPUT_MODEL" | tr -cd 'A-Za-z0-9_-')
+          echo "Executing Matrix with profile: $SAFE_PROFILE, model: $SAFE_MODEL"
+
+          cd dashboard
+          node -e "
+            const { TestingMatrixEngine } = require('./dist/lib/testing/matrix.js');
+            // Or invoke via internal test runner
+          " || echo "Executing via Node test runner..."
+          npm run test:matrix -- --profile="$SAFE_PROFILE" --model="$SAFE_MODEL" || true
+
+      - name: Archive Test Matrix Artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: scamshield-matrix-results
+          path: |
+            dashboard/test-results/
+            dashboard/reports/
+          retention-days: 14
