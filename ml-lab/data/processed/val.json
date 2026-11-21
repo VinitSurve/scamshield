@@ -1,0 +1,340 @@
+[
+  {
+    "sample_id": "SCAM-DATA-00003",
+    "content": "HDFC Bank Alert: NetBanking access restricted due to unverified PAN. Submit PAN details within 24h at https://hdfc-bank-verify.xyz/auth.",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "BANKING_KYC",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://hdfc-bank-verify.xyz/auth"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 136,
+    "word_count": 17,
+    "sha256": "773871c4472c5544f503efc20eb0a37d9a9f45844b6121c464527db77ad70b7c"
+  },
+  {
+    "sample_id": "SCAM-DATA-00123",
+    "content": "URGENT: SBI Account Blocked today. Complete KYC: https://sbi-kyc-alert.top/pan Contact: 9811223344",
+    "content_type": "ocr_text",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "BANKING_KYC",
+    "language": "en",
+    "source": "reported_scam",
+    "extracted_urls": [
+      "https://sbi-kyc-alert.top/pan"
+    ],
+    "extracted_phones": [
+      "9811223344"
+    ],
+    "extracted_upis": [],
+    "char_length": 98,
+    "word_count": 10,
+    "sha256": "548f8e6ffeb828980a5542cb633a104614068acc48a8eb8b076b041d30208f50"
+  },
+  {
+    "sample_id": "SCAM-DATA-00008",
+    "content": "Priya Grahak, tumche ICICI bank account suspend zale ahe. Turant KYC update kara ya link var: https://is.gd/icici-update",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "BANKING_KYC",
+    "language": "romanized_mr",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://is.gd/icici-update"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 120,
+    "word_count": 17,
+    "sha256": "0e4e4b822a02756bc32672a92fa8a44f7026161dfe8cb71af71723b3c82e7db9"
+  },
+  {
+    "sample_id": "SCAM-DATA-00022",
+    "content": "फोनपे कडून ५००० रुपयांचा कॅशबॅक मंजूर झाला आहे. खात्यात मिळवण्यासाठी त्वरित पिन टाका आणि विनंती स्वीकारा.",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "UPI_FRAUD",
+    "language": "mr",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [],
+    "extracted_upis": [
+      "cashback@upi"
+    ],
+    "char_length": 105,
+    "word_count": 16,
+    "sha256": "003e63602d9b9764e7429b3b76408133fa555ca2b6e0d9dd642287276181e625"
+  },
+  {
+    "sample_id": "SCAM-DATA-00028",
+    "content": "BSES Rajdhani: Bijli bill pending. Aaj shaam connection cut ho jayega. Turant call kare helpline 9811002233 par.",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "ELECTRICITY",
+    "language": "hinglish",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [
+      "9811002233"
+    ],
+    "extracted_upis": [],
+    "char_length": 112,
+    "word_count": 17,
+    "sha256": "cf0c0746d2605d10034a42d2f3ab2fbcf1354c847411376d3cad64c29c279c3d"
+  },
+  {
+    "sample_id": "SCAM-DATA-00038",
+    "content": "इंडिया पोस्ट: आपका पार्सल गलत पते के कारण रोका गया है। कृपया 24 घंटे के भीतर डिलीवरी शुल्क ₹ 25 का भुगतान करें: https://post-parcel-in.top",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "DELIVERY",
+    "language": "hi",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://post-parcel-in.top"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 138,
+    "word_count": 24,
+    "sha256": "51892ec648845aca467da2c84d2a2d4b65020aa1a196b892d199cd6b39dc69a4"
+  },
+  {
+    "sample_id": "SCAM-DATA-00044",
+    "content": "अभिनंदन! तुम्हाला २५ लाखांची लॉटरी लागली आहे. बक्षीस मिळवण्यासाठी तात्काळ संपर्क साधा: ९८२२११३३४४",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "LOTTERY",
+    "language": "mr",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [
+      "९८२२११३३४४"
+    ],
+    "extracted_upis": [],
+    "char_length": 97,
+    "word_count": 13,
+    "sha256": "19828d9fb2221777bb3122468abaa30ae9eb05a3efac620acb539d1131492f51"
+  },
+  {
+    "sample_id": "SCAM-DATA-00051",
+    "content": "Work from Home: Telegram task completion job. Invest Rs 1,000 and get Rs 1,300 return in 15 minutes. Join VIP task group: https://t.me/task_vip_invest",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "JOB_OFFER",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://t.me/task_vip_invest"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 150,
+    "word_count": 23,
+    "sha256": "9a261c049a478556542edf2b2e883512a9b606eb1a625f5d4356ed05d165d83b"
+  },
+  {
+    "sample_id": "SCAM-DATA-00135",
+    "content": "URGENT LEGAL NOTICE: This is Inspector Sharma from Mumbai Cyber Crime Branch. A parcel containing narcotics and fake passports has been intercepted under your Aadhaar number. A non-bailable warrant is issued. Connect on Skype/WhatsApp immediately on +91 9123456789 to avoid digital arrest.",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "DIGITAL_ARREST",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [
+      "9123456789"
+    ],
+    "extracted_upis": [],
+    "char_length": 289,
+    "word_count": 42,
+    "sha256": "2ffdc355dea85e6bcf3bb8c215e76f098d3241d303069840f6a66a551a29d707"
+  },
+  {
+    "sample_id": "SCAM-DATA-00058",
+    "content": "Security Alert: Unauthorized login from IP 185.220.101.4 detected on your bank account. To cancel this login, provide the 6-digit OTP received on your mobile to executive on 9876543210.",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "OTP_THEFT",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [
+      "9876543210"
+    ],
+    "extracted_upis": [],
+    "char_length": 185,
+    "word_count": 28,
+    "sha256": "a17190946b2141a405b44587f0de46039279c1b9edfdc92a5429b965de6f6c80"
+  },
+  {
+    "sample_id": "SCAM-DATA-00076",
+    "content": "Uber: Your ride with driver Ramesh (Swift Dzire MH02AB1234) is arriving in 3 mins. PIN is 4492.",
+    "content_type": "message",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 95,
+    "word_count": 17,
+    "sha256": "47260de2911fb5a66fa7adbb8cb938a73be12c183a0561318165a8e3f8c2d7c7"
+  },
+  {
+    "sample_id": "SCAM-DATA-00095",
+    "content": "https://sachet.rbi.org.in/",
+    "content_type": "url",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "en",
+    "source": "tranco_anchor",
+    "extracted_urls": [
+      "https://sachet.rbi.org.in"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 26,
+    "word_count": 1,
+    "sha256": "dacae7efd26433a97b79428da63cb3938acb3dda7369879b6158fb3e3bcb5e6f"
+  },
+  {
+    "sample_id": "SCAM-DATA-00077",
+    "content": "HDFC Bank: OTP for netbanking transaction of Rs 1,500 to Reliance Power is 918234. Valid for 3 mins. Never share OTP.",
+    "content_type": "message",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 117,
+    "word_count": 21,
+    "sha256": "8107f9c68c962a18679151133b18c3eb0fd89e7cf13399ebdae24e5193e68487"
+  },
+  {
+    "sample_id": "SCAM-DATA-00101",
+    "content": "https://apple.com/in",
+    "content_type": "url",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "en",
+    "source": "tranco_anchor",
+    "extracted_urls": [
+      "https://apple.com/in"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 20,
+    "word_count": 1,
+    "sha256": "cb341ad052f642b7ff79cc33484e32e726ad30327a8106293e2527ab1195f765"
+  },
+  {
+    "sample_id": "SCAM-DATA-00066",
+    "content": "Your electricity bill for consumer #10293847 of Rs 850 is due on 28-Nov. Pay through official Mahavitaran mobile app or mahadiscom.in.",
+    "content_type": "message",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://mahadiscom.in"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 134,
+    "word_count": 21,
+    "sha256": "2fe765a02db44bfda490c3c4b14a6f48eb6bf7789c5ef51415a8bd4ac6c3e0ca"
+  },
+  {
+    "sample_id": "SCAM-DATA-00079",
+    "content": "Your Netflix subscription payment of Rs 649 was successful on your credit card ending 9921.",
+    "content_type": "message",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 91,
+    "word_count": 15,
+    "sha256": "793fb921cc738d4135ea4dc2e44355ea2262b6aaa4d2ea05f69fc9e9f473de9e"
+  },
+  {
+    "sample_id": "SCAM-DATA-00104",
+    "content": "https://hdfc-bank-secure-login.xyz/portal",
+    "content_type": "url",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "PHISHING_URL",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://hdfc-bank-secure-login.xyz/portal"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 41,
+    "word_count": 1,
+    "sha256": "21e970b86a0843fc9ad3bd83658407cb012b68e4bed6c84e0aa8be93a54144ed"
+  },
+  {
+    "sample_id": "SCAM-DATA-00109",
+    "content": "https://adani-bill-pay.top/meter",
+    "content_type": "url",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "PHISHING_URL",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://adani-bill-pay.top/meter"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 32,
+    "word_count": 1,
+    "sha256": "b334080709c29c4d3c00e8ef4dd150309e1bac6b50d3d52cd59f50a939bd1943"
+  },
+  {
+    "sample_id": "SCAM-DATA-00113",
+    "content": "https://tinyurl.com/sbi-pan-kyc-now",
+    "content_type": "url",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "PHISHING_URL",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://tinyurl.com/sbi-pan-kyc-now"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 35,
+    "word_count": 1,
+    "sha256": "338a6ef4f520783854ac2a3a93d022f6a666042dba01e46ddc556cee1fba07b6"
+  }
+]

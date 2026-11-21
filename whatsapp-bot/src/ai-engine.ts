@@ -83,6 +83,11 @@ Message text:
 ${messageText}
 """
 
+Grounding Rules:
+- Genuine courier or delivery updates containing official domains (e.g. bluedart.com, amazon.in, flipkart.com) without coercive threats, demands for fees, or OTP must be classified as SAFE with riskLevel LOW.
+- Legitimate bank credit alerts, standard receipts, or non-coercive messages should be classified as SAFE.
+- Do not classify a message as SUSPICIOUS merely because it contains a link or was received via WhatsApp, unless the link is unverified, suspicious, or accompanies a lure/threat.
+
 Evaluate the message and return ONLY a valid, raw JSON object matching this exact schema:
 {
   "classification": "SAFE" | "SUSPICIOUS" | "SCAM" | "MALICIOUS",
@@ -465,6 +470,31 @@ Evaluate the message and return ONLY a valid, raw JSON object matching this exac
     const urls = text.match(/(?:https?:\/\/|www\.)[^\s<>"'{}|\\^`[\]]+/gi) || [];
     const phones = text.match(/(?:\+91[\s-]?)?[6-9]\d{4}[\s-]?\d{5}\b/g) || [];
 
+    const trustedDomains = [
+      'bluedart.com',
+      'amazon.in',
+      'amazon.com',
+      'flipkart.com',
+      'google.com',
+      'swiggy.com',
+      'zomato.com',
+      'irctc.co.in',
+      'delhivery.com',
+      'dtdc.in',
+      'indiapost.gov.in',
+    ];
+
+    const isUrlTrusted = (u: string) => {
+      try {
+        const parsed = new URL(u.startsWith('http') ? u : `https://${u}`);
+        return trustedDomains.some((d) => parsed.hostname === d || parsed.hostname.endsWith(`.${d}`));
+      } catch {
+        return false;
+      }
+    };
+
+    const onlyTrustedUrls = urls.length > 0 && urls.every(isUrlTrusted);
+
     const indicators: any[] = [];
     if (brand) {
       indicators.push({
@@ -488,11 +518,13 @@ Evaluate the message and return ONLY a valid, raw JSON object matching this exac
       });
     }
     for (const u of urls) {
-      indicators.push({
-        type: 'SUSPICIOUS_URL',
-        description: `Contains external unverified link: ${u}`,
-        severity: 'HIGH',
-      });
+      if (!isUrlTrusted(u)) {
+        indicators.push({
+          type: 'SUSPICIOUS_URL',
+          description: `Contains external unverified link: ${u}`,
+          severity: 'HIGH',
+        });
+      }
     }
     for (const p of phones) {
       indicators.push({
@@ -527,7 +559,7 @@ Evaluate the message and return ONLY a valid, raw JSON object matching this exac
       riskLevel = 'HIGH';
       confidenceScore = 0.80;
       scamCategory = 'URGENT_COERCION_PHISHING';
-    } else if (urls.length > 0) {
+    } else if (urls.length > 0 && !onlyTrustedUrls) {
       classification = 'SUSPICIOUS';
       riskLevel = 'MEDIUM';
       confidenceScore = 0.50;

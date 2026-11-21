@@ -75,6 +75,23 @@ ScamShield operates across two distinctly separated, production-grade security i
 | **Phase 7: High-Density Response Formatter** | P0 | **Completed** | Professional WhatsApp layout formatting for Threat Alerts (`CRITICAL`/`HIGH`), Caution Alerts (`SUSPICIOUS`), Clean Advisories (`SAFE`), Unverified Image alerts, URL deep scan consent prompts, and scam reporting confirmations. |
 | **Phase 8: Simulator & Demo API Endpoint** | P0 | **Completed** | Dedicated `POST /api/v1/bot/message` and `POST /api/v1/bot/investigate-url` endpoints enabling instant integration testing, demonstration, and simulator interaction. |
 
+### C. Autonomous ML Intelligence Lab (`ml-lab/`) — Lead: Vinit
+
+| Module / Milestone | Priority | Status | Details |
+|---|---|---|---|
+| **Phase 1: Persistent State Store** | P0 | **Completed** | SQLite-backed transactional state store (`state/scamshield_ml.db`) tracking 12 pipeline phases, active job leases, experiment registry, and structured logs. |
+| **Phase 2: Multilingual Dataset Collection** | P0 | **Completed** | 138 curated samples spanning English, Hinglish, Hindi, and Marathi across 9 fraud categories (Banking KYC, UPI, Electricity, Digital Arrest, Delivery, Lottery, etc.). |
+| **Phase 3: Preprocessing & NFC Normalization** | P0 | **Completed** | Unicode NFC normalization, control character purging, whitespace standardizing, URL canonicalization. |
+| **Phase 4: Validation & Zero-Leakage Split** | P0 | **Completed** | SHA-256 deduplication, Jaccard near-duplicate checking, stratified split (70% Train, 15% Val, 15% Test) with verified zero data leakage. |
+| **Phase 5: Baseline Logistic Regression** | P0 | **Completed** | Word + Char n-gram TF-IDF with balanced L2-regularized Logistic Regression (85.7% accuracy, 100% recall). |
+| **Phase 6: K-Nearest Neighbors (KNN)** | P1 | **Completed** | TF-IDF + TruncatedSVD dimensionality reduction + Cosine KNN (85.7% accuracy, 100% recall). |
+| **Phase 7: Artificial Neural Network (ANN)** | P1 | **Completed** | MLP Neural Network with warm-start checkpointing to `state/checkpoints/`, early stopping, and `--resume` support (75.0% accuracy, 100% recall). |
+| **Phase 8: Dedicated URL Classifier** | P1 | **Completed** | GradientBoostingClassifier on 20 lexical & structural URL features (85.7% accuracy, 100% recall). |
+| **Phase 9: Soft-Voting Ensemble** | P0 | **Completed** | Calibrated soft-voting ensemble combining all models with input-aware weighting (**89.3% accuracy, 100% recall, 93.3% F1 score, 0.980 ROC-AUC**). |
+| **Phase 10: 8-Agent Threat Intelligence Engine** | P0 | **Completed** | 8 typed specialized agents + evidence-aware Main Orchestrator with contradiction resolution (e.g. valid TLS vs phishing kit) and typed verdicts. |
+| **Phase 11: Multi-Key Cloud AI Manager** | P0 | **Completed** | Round-robin key rotation across Gemini and Groq pools, HTTP 429 rate-limit cooldown recovery, and masked diagnostic logging. |
+| **Phase 12: Inference Server & Verification** | P0 | **Completed** | High-throughput FastAPI REST server (`GET /health`, `GET /api/v1/models/status`, `POST /api/v1/analyze`), Rich CLI (`scamshield-ml`), and 24/24 unit & integration tests passing. |
+
 ---
 
 ## 4. WhatsApp Bot Comprehensive 20-Scenario Verification Matrix
@@ -114,8 +131,10 @@ ScamShield operates across two distinctly separated, production-grade security i
 |---|---|---|---|---|
 | **Extension Unit & Integration Tests** | Vitest v5.1.1 | `extension/tests/*.test.ts` | **97 / 97 PASS** | 15 test files passing |
 | **WhatsApp Bot Tests** | Vitest v3.2.7 | `whatsapp-bot/tests/*.test.ts` | **35 / 35 PASS** | 3 test files passing (20 scenarios + SSRF + AI) |
-| **Total Automated Tests** | Vitest (Dual Runner) | Entire Monorepo | **132 / 132 PASS** | **100% test pass rate across all suites** |
+| **ML Intelligence Lab Tests** | Pytest v9.2.0 | `ml-lab/tests/*.py` | **24 / 24 PASS** | 5 test modules passing (State, Dataset, Models, Agents, Inference) |
+| **Total Automated Tests** | Vitest + Pytest | Entire Platform | **156 / 156 PASS** | **100% test pass rate across all suites** |
 | **Extension TypeScript Typecheck** | `tsc --noEmit` | `extension/tsconfig.json` | **0 Errors** | Strict mode enabled |
 | **WhatsApp Bot TypeScript Typecheck** | `tsc --noEmit` | `whatsapp-bot/tsconfig.json` | **0 Errors** | Clean build with zero warnings |
 | **Extension Production Build** | Vite v6.4.6 + Node script | `extension/scripts/build.js` | **SUCCESS** | Bundles popup, options, interstitial, test-lab, background, content, gmail |
-| **WhatsApp Bot Production Build** | `tsc` | `whatsapp-bot/` ➔ `dist/` | **SUCCESS** | Standalone Node.js service ready on port 3001 |
+| **WhatsApp Bot Production Build** | `tsc` | `whatsapp-bot/` ➔ `dist/` | **SUCCESS** | Standalone Node.js service running on port 3001 |
+| **ML Model Training & Export** | `scamshield-ml` | `ml-lab/artifacts/` | **SUCCESS** | Best soft-voting ensemble model exported to `artifacts/models/best_model.joblib` |

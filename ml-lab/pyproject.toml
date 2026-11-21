@@ -1,0 +1,34 @@
+[project]
+name = "scamshield-ml"
+version = "0.1.0"
+description = "ScamShield Autonomous ML Intelligence Lab & Multi-Agent Threat Engine"
+readme = "README.md"
+authors = [
+    { name = "Vinit Surve", email = "survevinit5006@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.165.0",
+    "httpx>=0.28.1",
+    "joblib>=1.4.0",
+    "numpy>=2.0.0",
+    "pillow>=10.0.0",
+    "pydantic>=2.7.0",
+    "pytest>=8.0.0",
+    "pyyaml>=6.0.0",
+    "rich>=13.7.0",
+    "scikit-learn>=1.5.0",
+    "scipy>=1.13.0",
+    "typer>=0.12.0",
+    "uvicorn[standard]>=0.30.0",
+]
+
+[project.scripts]
+scamshield-ml = "scamshield_ml.cli:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/scamshield_ml"]

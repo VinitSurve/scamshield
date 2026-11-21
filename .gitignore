@@ -41,6 +41,30 @@ lerna-debug.log*
 *.key
 Thumbs.db
 
+# Python / ML Lab
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+ml-lab/.venv/
+*.joblib
+*.pkl
+*.pt
+*.onnx
+ml-lab/artifacts/models/*
+!ml-lab/artifacts/models/.gitkeep
+ml-lab/artifacts/checkpoints/*
+!ml-lab/artifacts/checkpoints/.gitkeep
+ml-lab/state/*.db*
+ml-lab/state/checkpoints/*
+!ml-lab/state/checkpoints/.gitkeep
+ml-lab/logs/*.log
+ml-lab/logs/*.jsonl
+!ml-lab/logs/.gitkeep
+
 # IDE
 .idea/
 .vscode/

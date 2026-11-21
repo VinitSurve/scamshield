@@ -295,9 +295,51 @@ export class ScannerClient {
       riskScore = Math.max(riskScore, 88);
     }
 
+    // Legitimacy override: Messages containing ONLY official trusted domains and NO threat signals
+    const trustedDomains = [
+      'bluedart.com',
+      'amazon.in',
+      'amazon.com',
+      'flipkart.com',
+      'google.com',
+      'swiggy.com',
+      'zomato.com',
+      'irctc.co.in',
+      'delhivery.com',
+      'dtdc.in',
+      'indiapost.gov.in',
+    ];
+    const isOnlyLegitNotification =
+      allUrls.length > 0 &&
+      allUrls.every((u) => {
+        try {
+          const parsed = new URL(u.startsWith('http') ? u : `https://${u}`);
+          return trustedDomains.some((d) => parsed.hostname === d || parsed.hostname.endsWith(`.${d}`));
+        } catch {
+          return false;
+        }
+      }) &&
+      !lower.includes('kyc') &&
+      !lower.includes('blocked') &&
+      !lower.includes('suspend') &&
+      !lower.includes('pin') &&
+      !lower.includes('otp') &&
+      !lower.includes('refund') &&
+      !lower.includes('fee') &&
+      !lower.includes('lottery') &&
+      !lower.includes('urgent') &&
+      !lower.includes('penalty');
+
+    if (isOnlyLegitNotification) {
+      verdict = 'SAFE';
+      riskScore = 5;
+    }
+
     // Build category
     let category = aiResult.scamCategory || 'UNKNOWN_COMMUNICATION';
-    if (category === 'BANKING_KYC_PHISHING' || (lower.includes('kyc') && verdict !== 'SAFE')) {
+    if (isOnlyLegitNotification) {
+      category = 'LEGITIMATE_COMMUNICATION';
+    } else if (category === 'BANKING_KYC_PHISHING' || (lower.includes('kyc') && verdict !== 'SAFE')) {
       category = 'FAKE_KYC';
     } else if (category === 'UPI_FRAUD' || (allUpis.length > 0 && verdict !== 'SAFE')) {
       category = 'UPI_FRAUD';

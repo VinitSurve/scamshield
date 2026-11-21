@@ -1,0 +1,48 @@
+{
+  "dataset_name": "ScamShield-IndiaFirst-Cybersecurity-Benchmark",
+  "version": "v1.0.0-07e9087db727",
+  "dataset_hash": "07e9087db727",
+  "created_at": "2026-11-22T00:00:00Z",
+  "total_samples": 138,
+  "splits": {
+    "train_count": 91,
+    "val_count": 19,
+    "test_count": 28
+  },
+  "class_distribution": {
+    "scam": 95,
+    "legitimate": 43
+  },
+  "language_distribution": {
+    "en": 101,
+    "hinglish": 17,
+    "hi": 8,
+    "mr": 11,
+    "romanized_mr": 1
+  },
+  "category_distribution": {
+    "BANKING_KYC": 21,
+    "UPI_FRAUD": 11,
+    "ELECTRICITY": 11,
+    "DELIVERY": 7,
+    "LOTTERY": 7,
+    "JOB_OFFER": 6,
+    "DIGITAL_ARREST": 7,
+    "OTP_THEFT": 5,
+    "LEGITIMATE": 43,
+    "PHISHING_URL": 20
+  },
+  "content_type_distribution": {
+    "message": 93,
+    "url": 40,
+    "ocr_text": 5
+  },
+  "quality_metrics": {
+    "raw_inputs": 138,
+    "duplicates_removed": 0,
+    "near_duplicate_pairs": 5,
+    "invalid_labels": 0,
+    "missing_fields": 0,
+    "data_leakage_detected": false
+  }
+}

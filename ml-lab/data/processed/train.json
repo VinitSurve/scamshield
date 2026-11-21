@@ -1,0 +1,1614 @@
+[
+  {
+    "sample_id": "SCAM-DATA-00129",
+    "content": "Axis Bank notice: Account deactivated due to document mismatch. Reactive now: https://axis-online-kyc.top or call 919123456789",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "BANKING_KYC",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://axis-online-kyc.top"
+    ],
+    "extracted_phones": [
+      "9123456789"
+    ],
+    "extracted_upis": [],
+    "char_length": 126,
+    "word_count": 15,
+    "sha256": "a18d73ee073c8620e1c721c17dd01148955ac0c00960c9ee4ca97dd756440736"
+  },
+  {
+    "sample_id": "SCAM-DATA-00006",
+    "content": "प्रिय ग्राहक, आपका एसबीआई बैंक खाता आज ब्लॉक कर दिया जाएगा। तुरंत केवाईसी अपडेट करने के लिए इस लिंक पर जाएं: https://sbi-bank-seva.top",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "BANKING_KYC",
+    "language": "hi",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://sbi-bank-seva.top"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 134,
+    "word_count": 22,
+    "sha256": "efd94e08a1e4d4b2867c8c08729d6e378e9d3f21dd2ba9a0e0f846d38523d915"
+  },
+  {
+    "sample_id": "SCAM-DATA-00015",
+    "content": "तुमचे स्टेट बँक खाते तात्काळ बंद करण्यात आले आहे. पुन्हा सुरू करण्यासाठी त्वरित संपर्क साधा: ९८७६५४३२१०",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "BANKING_KYC",
+    "language": "mr",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [
+      "९८७६५४३२१०"
+    ],
+    "extracted_upis": [],
+    "char_length": 103,
+    "word_count": 16,
+    "sha256": "5915f83d63cb4e69d7be75f165ab7e6620cdd5d9eff5ecf836875e38759e0a32"
+  },
+  {
+    "sample_id": "SCAM-DATA-00005",
+    "content": "Aapka HDFC khata band kar diya gaya hai. Chalu rakhne ke liye yahan KYC kare https://hdfc-kyc.top nahi toh fine lagega.",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "BANKING_KYC",
+    "language": "hinglish",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://hdfc-kyc.top"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 119,
+    "word_count": 20,
+    "sha256": "c9c35520a318af961d1c7b30c5487c681e4e7b4cacf3bd0411495692cf273850"
+  },
+  {
+    "sample_id": "SCAM-DATA-00010",
+    "content": "PNB Alert: Your debit card is blocked. Reactivate instantly by updating KYC details at https://pnb-card-verify.top/debit",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "BANKING_KYC",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://pnb-card-verify.top/debit"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 120,
+    "word_count": 15,
+    "sha256": "95d4c2fb030006204d9f74a0048983ec685135662793b8893c40b30a60e60972"
+  },
+  {
+    "sample_id": "SCAM-DATA-00014",
+    "content": "Aapka Bank of Baroda account freeze kar diya gaya hai. Unfreeze karne ke liye OTP share kare helpline number 9811223344 par.",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "BANKING_KYC",
+    "language": "hinglish",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [
+      "9811223344"
+    ],
+    "extracted_upis": [],
+    "char_length": 124,
+    "word_count": 21,
+    "sha256": "1e93fceb1b9936203d38ab500d9b5e10d88f8e7535dab0d5750f9db4ab0be973"
+  },
+  {
+    "sample_id": "SCAM-DATA-00122",
+    "content": "Dear Customer your Icici bank Accounts KYC has been suspended please update your KYC click in link and activate your icici bank Accounts https://is.gd/J9gaHq.iciciBank.KYC Helpline: +91 9876543210",
+    "content_type": "ocr_text",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "BANKING_KYC",
+    "language": "en",
+    "source": "reported_scam",
+    "extracted_urls": [
+      "https://is.gd/J9gaHq.iciciBank.KYC"
+    ],
+    "extracted_phones": [
+      "+91 9876543210"
+    ],
+    "extracted_upis": [],
+    "char_length": 196,
+    "word_count": 27,
+    "sha256": "48d35578316c1f147bd028b40f7e325d4cbfb964d76f8b536e1b1dd406732344"
+  },
+  {
+    "sample_id": "SCAM-DATA-00128",
+    "content": "Priya Grahak, aapka State Bank account aaj raat block ho jayega KYC update na hone par. Turant link open kare: https://sbi-kyc-alert.top/pan",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "BANKING_KYC",
+    "language": "hinglish",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://sbi-kyc-alert.top/pan"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 140,
+    "word_count": 21,
+    "sha256": "4fe13ab86e9d4e81eda3f63ef3b242ec3bf6deb27ff459a277674c0d29f2853d"
+  },
+  {
+    "sample_id": "SCAM-DATA-00007",
+    "content": "सावधान: तुमचा बँक ऑफ महाराष्ट्र खात्याचे केवायसी प्रलंबित आहे. आजच लिंकवर क्लिक करून केवायसी पूर्ण करा: https://mah-bank-kyc.xyz",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "BANKING_KYC",
+    "language": "mr",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://mah-bank-kyc.xyz"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 128,
+    "word_count": 17,
+    "sha256": "0b7baecfabbfe2a9bfdc09dbdf9423947912fb5137183306a27847556c779796"
+  },
+  {
+    "sample_id": "SCAM-DATA-00013",
+    "content": "Canara Bank: Netbanking locked. Complete re-KYC at https://canara-secure-login.top/rekyc or contact branch manager on 9822334455",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "BANKING_KYC",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://canara-secure-login.top/rekyc"
+    ],
+    "extracted_phones": [
+      "9822334455"
+    ],
+    "extracted_upis": [],
+    "char_length": 128,
+    "word_count": 14,
+    "sha256": "eb7514d03013641d6cc1f60abbafc097055f1f6d81322a642ee5fa566ff1fd2e"
+  },
+  {
+    "sample_id": "SCAM-DATA-00127",
+    "content": "Dear Customer, Your State Bank account has been blocked today due to pending KYC. Click immediately to update: https://sbi-online-kyc.top/verify Helpline: 9123456789",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "BANKING_KYC",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://sbi-online-kyc.top/verify"
+    ],
+    "extracted_phones": [
+      "9123456789"
+    ],
+    "extracted_upis": [],
+    "char_length": 165,
+    "word_count": 21,
+    "sha256": "9142102b0bfc3884c8432fa2d2b6847b200af978df309a49c09fb6a272f5535d"
+  },
+  {
+    "sample_id": "SCAM-DATA-00011",
+    "content": "YONO SBI: Dear customer, reward points worth Rs 9,850 expired. Redeem cash to bank account now at https://sbi-yono-reward.top",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "BANKING_KYC",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://sbi-yono-reward.top"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 125,
+    "word_count": 18,
+    "sha256": "ac0f1fa960be28b7fdeaa02ae2e2a6e5022f06b147cb388f0b39310cc762d631"
+  },
+  {
+    "sample_id": "SCAM-DATA-00002",
+    "content": "URGENT: Your ICICI bank account KYC was suspended. Please update your KYC immediately at https://is.gd/icici-kyc or call +91 9823456789.",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "BANKING_KYC",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://is.gd/icici-kyc"
+    ],
+    "extracted_phones": [
+      "+91 9823456789"
+    ],
+    "extracted_upis": [],
+    "char_length": 136,
+    "word_count": 19,
+    "sha256": "fdc7a828a5e5f6f49de48820517bc31cdd7aef032fd0313b9cd6b226c3a16277"
+  },
+  {
+    "sample_id": "SCAM-DATA-00012",
+    "content": "Kotak Bank: KYC mandatory verification required to avoid Rs 500 penalty. Verify Aadhaar link: https://kotak-aadhaar-kyc.xyz",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "BANKING_KYC",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://kotak-aadhaar-kyc.xyz"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 123,
+    "word_count": 15,
+    "sha256": "f5147c33324069073321f2e58a28a2e8b32a36706d686b87a659cdd81ae51d64"
+  },
+  {
+    "sample_id": "SCAM-DATA-00023",
+    "content": "QR Code Fraud: Scan this QR code on any UPI app to receive Rs 15,000 instant festival cashback into your bank account immediately.",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "UPI_FRAUD",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 130,
+    "word_count": 23,
+    "sha256": "9f011e4bfd36dd556b88b7ea0192358810aed4a73c2a8af3f493372a8586ff99"
+  },
+  {
+    "sample_id": "SCAM-DATA-00021",
+    "content": "गूगल पे ग्राहक सेवा: आपके खाते में ₹ 3,500 की वापसी भेजी गई है। कृपया कलेक्ट रिक्वेस्ट को स्वीकार करें और अपना यूपीआई पिन दर्ज करें।",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "UPI_FRAUD",
+    "language": "hi",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [],
+    "extracted_upis": [
+      "refund@okaxis"
+    ],
+    "char_length": 132,
+    "word_count": 26,
+    "sha256": "f36755a9281ab33cf1b371a15cfb0239f9ed310918f51c52d57ac9fcb3098e50"
+  },
+  {
+    "sample_id": "SCAM-DATA-00016",
+    "content": "Google Pay Desk: You have received a cashback refund of Rs 2,500. Approve the collect request from refund-desk@upi and enter your UPI PIN to credit your bank account.",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "UPI_FRAUD",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [],
+    "extracted_upis": [
+      "refund-desk@upi"
+    ],
+    "char_length": 166,
+    "word_count": 28,
+    "sha256": "7eaf3b95480028761ecdd62eb2e31b137ccdafebe5df35f54bf3659023588fb2"
+  },
+  {
+    "sample_id": "SCAM-DATA-00018",
+    "content": "Paytm Refund: Rs 1,850 refund approved for failed transaction #88921. Open PhonePe/GPay and accept request from paytm-support@paytm to receive funds.",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "UPI_FRAUD",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [],
+    "extracted_upis": [
+      "paytm-support@paytm"
+    ],
+    "char_length": 149,
+    "word_count": 20,
+    "sha256": "b3f06d322196d99675a898fc8c7586dd55a634ba797e4fe1dc8ce46fb449a201"
+  },
+  {
+    "sample_id": "SCAM-DATA-00020",
+    "content": "Aapko PhonePe par 5000 rupaye lottery mili hai. Paane ke liye collect request approve kare aur PIN enter kare.",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "UPI_FRAUD",
+    "language": "hinglish",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 110,
+    "word_count": 19,
+    "sha256": "704c4f7ac18ff440a3159a931c7259136cda0c7af6516c33ff588fca45467b9f"
+  },
+  {
+    "sample_id": "SCAM-DATA-00025",
+    "content": "Zomato Refund Desk: Your meal cancellation refund of Rs 640 is pending. Click https://zomato-refund.xyz/collect and enter UPI PIN.",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "UPI_FRAUD",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://zomato-refund.xyz/collect"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 130,
+    "word_count": 18,
+    "sha256": "95c00cab8755fc6615bab92714d501374dcc6325c0318f4309c192fd97549575"
+  },
+  {
+    "sample_id": "SCAM-DATA-00017",
+    "content": "PhonePe Support: Rs 4,999 cashback credited to your wallet. Tap to approve request from merchant-cashback@okhdfcbank and input PIN.",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "UPI_FRAUD",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [],
+    "extracted_upis": [
+      "merchant-cashback@okhdfcbank"
+    ],
+    "char_length": 131,
+    "word_count": 18,
+    "sha256": "5f4f9d41ca7bea01679e3d30b6687f6219c7b5005797f8ff4abecf5856f6c9d9"
+  },
+  {
+    "sample_id": "SCAM-DATA-00131",
+    "content": "Dear Customer, Your electricity connection will be disconnected tonight at 9:30 PM because your previous month bill was not updated. Immediately call electricity officer on +91 9123456789.",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "ELECTRICITY",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [
+      "9123456789"
+    ],
+    "extracted_upis": [],
+    "char_length": 188,
+    "word_count": 27,
+    "sha256": "b0f79779fb905cfc384a922ad03b943ecab13bf691e0dee0a582a94ce03a5a3d"
+  },
+  {
+    "sample_id": "SCAM-DATA-00029",
+    "content": "Aapka Bijli meter disconnect kiya ja raha hai. Power supply maintain rakhne ke liye turant is number par sampark kare: 9765432100",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "ELECTRICITY",
+    "language": "hinglish",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [
+      "9765432100"
+    ],
+    "extracted_upis": [],
+    "char_length": 129,
+    "word_count": 21,
+    "sha256": "0ee25342fd02f285bda764a3dadc9db50e4261e09dbc8215685e1074ce08c438"
+  },
+  {
+    "sample_id": "SCAM-DATA-00132",
+    "content": "प्रिय ग्राहक, आपका बिजली कनेक्शन आज रात 9:30 बजे काट दिया जाएगा क्योंकि पिछले महीने का बिल अपडेट नहीं हुआ है। अधिकारी से संपर्क करें: 9123456789",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "ELECTRICITY",
+    "language": "hi",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [
+      "9123456789"
+    ],
+    "extracted_upis": [],
+    "char_length": 144,
+    "word_count": 26,
+    "sha256": "0435a6461e4de4c4cf3150099fff140501009503e27c6844e17754db8e5feeab"
+  },
+  {
+    "sample_id": "SCAM-DATA-00124",
+    "content": "Electricity Bill Alert: Connection disconnect tonight 9:30 PM. Call officer: 9822001122",
+    "content_type": "ocr_text",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "ELECTRICITY",
+    "language": "en",
+    "source": "reported_scam",
+    "extracted_urls": [],
+    "extracted_phones": [
+      "9822001122"
+    ],
+    "extracted_upis": [],
+    "char_length": 87,
+    "word_count": 11,
+    "sha256": "771b6cd4d2162a365c11c2fef280dd3d015c4fe2d718c4d416eca1c7ecebdea1"
+  },
+  {
+    "sample_id": "SCAM-DATA-00026",
+    "content": "Dear Customer, Your electricity connection will be disconnected tonight at 9:30 PM because your previous month bill was not updated. Immediately call electricity officer on +91 9876543210.",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "ELECTRICITY",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [
+      "+91 9876543210"
+    ],
+    "extracted_upis": [],
+    "char_length": 188,
+    "word_count": 27,
+    "sha256": "f507ce2afc65831f70ba5c26568ad2ff8fa84788345b5a27b191b1080f19cb17"
+  },
+  {
+    "sample_id": "SCAM-DATA-00033",
+    "content": "Indane Gas Alert: Your LPG subsidy is on hold due to missing Aadhaar KYC. Update online: https://indane-lpg-kyc.top",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "ELECTRICITY",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://indane-lpg-kyc.top"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 115,
+    "word_count": 17,
+    "sha256": "dafe6dffd65d1712b1ae3cb18054b02e872bd4966f3081566dce4e8f7cc24395"
+  },
+  {
+    "sample_id": "SCAM-DATA-00027",
+    "content": "MAHAVITARAN Alert: Your power supply will be cut off today at 9:00 PM due to unpaid bill of Rs 1,420. Call electricity officer Mr. Joshi on 9822114455.",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "ELECTRICITY",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [
+      "9822114455"
+    ],
+    "extracted_upis": [],
+    "char_length": 151,
+    "word_count": 27,
+    "sha256": "b16a4b0135ef6cb86d2220b7c792984e0bd0702347dde08e4821c4ea194b2dac"
+  },
+  {
+    "sample_id": "SCAM-DATA-00037",
+    "content": "India Post: Aapka parcel delivery address galat hone ki wajah se ruka hua hai. Rs 35 update fee bhare https://indiapost-package.xyz",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "DELIVERY",
+    "language": "hinglish",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://indiapost-package.xyz"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 131,
+    "word_count": 20,
+    "sha256": "a373af4966ddd3c9ff6c5e1ef212bc405781f59d1680057c3f5be351ec27471a"
+  },
+  {
+    "sample_id": "SCAM-DATA-00035",
+    "content": "BlueDart Express: Delivery attempt failed for shipment #BD99281. Reschedule delivery and verify address here: https://bluedart-shipment-verify.xyz",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "DELIVERY",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://bluedart-shipment-verify.xyz"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 146,
+    "word_count": 15,
+    "sha256": "182cf76f632140f4a1df2dcc8f29fdf793665dcbc85b4dfb28eca103dcab4af8"
+  },
+  {
+    "sample_id": "SCAM-DATA-00034",
+    "content": "India Post: Your package #IN89218 cannot be delivered due to incomplete street address. Please pay redelivery fee of Rs 25 at https://indiapost-redelivery.top/pay within 24 hours.",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "DELIVERY",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://indiapost-redelivery.top/pay"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 179,
+    "word_count": 25,
+    "sha256": "6838c97a7bf0128b878ef1e44736e666d9caa8669f04f8704baaa7998b4aa41d"
+  },
+  {
+    "sample_id": "SCAM-DATA-00039",
+    "content": "तुमचे पार्सल डिलिव्हरी पत्ता अपूर्ण असल्यामुळे थांबवले आहे. पुन्हा डिलिव्हरीसाठी येथे क्लिक करा: https://india-post-hold.top",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "DELIVERY",
+    "language": "mr",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://india-post-hold.top"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 124,
+    "word_count": 14,
+    "sha256": "b04d3f1d6a8f5b86caa5102cb8204c94c74537327918e1c7a892c93167bd84d3"
+  },
+  {
+    "sample_id": "SCAM-DATA-00133",
+    "content": "Badhai ho! Aapne KBC Kaun Banega Crorepati me 25 Lakh rupaye jeete hai. Apna prize money lene ke liye KBC WhatsApp number 9123456789 par call kare.",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "LOTTERY",
+    "language": "hinglish",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [
+      "9123456789"
+    ],
+    "extracted_upis": [],
+    "char_length": 147,
+    "word_count": 26,
+    "sha256": "6b8d648a87be32664f3bded29fdbaa17962a4141bca7d79e861d6ee74193d960"
+  },
+  {
+    "sample_id": "SCAM-DATA-00042",
+    "content": "Badhai ho! Aapne KBC Kaun Banega Crorepati me 25 Lakh rupaye jeete hai. Apna prize money lene ke liye KBC WhatsApp number 9876543210 par call kare.",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "LOTTERY",
+    "language": "hinglish",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [
+      "9876543210"
+    ],
+    "extracted_upis": [],
+    "char_length": 147,
+    "word_count": 26,
+    "sha256": "413deb185bde0e4ba62f574c82dcb180ba4cfbf7a913b2d8831aab2267e6f50a"
+  },
+  {
+    "sample_id": "SCAM-DATA-00043",
+    "content": "बधाई हो! आपके मोबाइल नंबर पर ₹ 25,00,000 की केबीसी लॉटरी लगी है। अपना पुरस्कार प्राप्त करने के लिए तुरंत व्हाट्सएप करें: 9811223344",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "LOTTERY",
+    "language": "hi",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [
+      "9811223344"
+    ],
+    "extracted_upis": [],
+    "char_length": 131,
+    "word_count": 23,
+    "sha256": "67468d4ee34eb39916775e3c926796701acab7e3b48353ccfe6e048fedc3b961"
+  },
+  {
+    "sample_id": "SCAM-DATA-00046",
+    "content": "Amazon Diwali Mega Lucky Draw: You won Apple iPhone 15 Pro! Claim your gift by paying delivery charges Rs 499 at https://amazon-lucky-gift.top",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "LOTTERY",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://amazon-lucky-gift.top"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 142,
+    "word_count": 22,
+    "sha256": "9bb069f37e48d323fe89a6bce65ddcfdd197516a40a7cce3ef86c8c7cc0ec66f"
+  },
+  {
+    "sample_id": "SCAM-DATA-00048",
+    "content": "Ghar baithe kamaye 5000 se 10000 rupaye rozana! Bas YouTube video like kare aur review de. Abhi WhatsApp kare: 9876543210",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "JOB_OFFER",
+    "language": "hinglish",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [
+      "9876543210"
+    ],
+    "extracted_upis": [],
+    "char_length": 121,
+    "word_count": 20,
+    "sha256": "1d96b5c1156277ef34db33244ee4c358b15d924a90bbadb0cad5c3862515fade"
+  },
+  {
+    "sample_id": "SCAM-DATA-00047",
+    "content": "Part-time online job opportunity! Earn Rs 3,000 to Rs 8,000 daily by simply liking YouTube videos and rating hotels on Google Maps. No experience needed. WhatsApp: +91 9123456789.",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "JOB_OFFER",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [
+      "+91 9123456789"
+    ],
+    "extracted_upis": [],
+    "char_length": 179,
+    "word_count": 28,
+    "sha256": "a8fec8a0748693f7b9988f94e1b5b94a950744025737a9f18762b7d5b46014d1"
+  },
+  {
+    "sample_id": "SCAM-DATA-00050",
+    "content": "घरबसल्या दररोज ३००० ते ५००० रुपये कमवा. काम: फक्त व्हिडिओ लाईक करणे. अधिक माहितीसाठी व्हॉट्सॲप करा: ९८२२११४४५५",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "JOB_OFFER",
+    "language": "mr",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [
+      "९८२२११४४५५"
+    ],
+    "extracted_upis": [],
+    "char_length": 110,
+    "word_count": 17,
+    "sha256": "497177d4beca39f854779227b51bc9a1a9df8e349f30d57db7bb9799047d8d8e"
+  },
+  {
+    "sample_id": "SCAM-DATA-00049",
+    "content": "घर बैठे पार्ट टाइम काम करके रोज ₹ 3000-8000 कमाएं। यूट्यूब वीडियो लाइक करें और तुरंत भुगतान पाएं। संपर्क: 9811002200",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "JOB_OFFER",
+    "language": "hi",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [
+      "9811002200"
+    ],
+    "extracted_upis": [],
+    "char_length": 116,
+    "word_count": 20,
+    "sha256": "2021b879af1cf9fb2f93e31cd15c2347474b70244a98f54613c8ae0d4698989e"
+  },
+  {
+    "sample_id": "SCAM-DATA-00054",
+    "content": "Delhi Police Traffic Challan: Unpaid challan of Rs 2,000 pending against vehicle #DL01AB1234. Pay immediately at https://echallan-parivahan-delhi.top or court summons will be issued.",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "DIGITAL_ARREST",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://echallan-parivahan-delhi.top"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 182,
+    "word_count": 23,
+    "sha256": "ab323054b899a1c4154fb87cffc561c7549dbfc6149f1de4cdc2f6b371535cac"
+  },
+  {
+    "sample_id": "SCAM-DATA-00056",
+    "content": "Mumbai Police: Aapke naam par narcotics parcel mila hai. Case darj ho chuka hai. Turant investigator se WhatsApp video call par judiye: 9811223344",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "DIGITAL_ARREST",
+    "language": "hinglish",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [
+      "9811223344"
+    ],
+    "extracted_upis": [],
+    "char_length": 146,
+    "word_count": 23,
+    "sha256": "4e9a6b1c604e9c7bdad91f8f24f7a4cd296e7ad3ae37273c12eb30612fbf004c"
+  },
+  {
+    "sample_id": "SCAM-DATA-00055",
+    "content": "CBI Headquarters New Delhi: Investigation ongoing regarding money laundering linked to your bank account. Do not leave your room. Join video interrogation link immediately.",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "DIGITAL_ARREST",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 172,
+    "word_count": 24,
+    "sha256": "3c6f01c3d57a06339be24671d3c9cbd1a11028908e8f3fbedcb7c00478f4e5a7"
+  },
+  {
+    "sample_id": "SCAM-DATA-00053",
+    "content": "TRAI Notice: Your mobile number will be disconnected within 2 hours by order of Telecom Regulatory Authority for spreading illegal advertisements. Press 9 or call 9123456789 to connect to officer.",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "DIGITAL_ARREST",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [
+      "9123456789"
+    ],
+    "extracted_upis": [],
+    "char_length": 196,
+    "word_count": 30,
+    "sha256": "845c93f85e9a7aa21e82fd990d80491eef4b82b593c589aac8075d2e2dbc9f99"
+  },
+  {
+    "sample_id": "SCAM-DATA-00061",
+    "content": "सुरक्षा चेतावणी: तुमच्या खात्यातून ₹ ४५,००० कापण्यात येत आहेत. व्यवहार रद्द करण्यासाठी त्वरित ओटीपी सांगा.",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "OTP_THEFT",
+    "language": "mr",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 106,
+    "word_count": 15,
+    "sha256": "8b0ad6d46e893064c081a1b2691fe0ffce343b1f8d05d62988a3c125a1db7233"
+  },
+  {
+    "sample_id": "SCAM-DATA-00060",
+    "content": "Bank verification: Aapke khate se 25,000 katne ka request aya hai. Rokne ke liye phone par aya hua OTP bataye.",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "OTP_THEFT",
+    "language": "hinglish",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 110,
+    "word_count": 20,
+    "sha256": "3cedc8d0c666c1a4bead51309a4e64a2610b41e11e55f0d1c15c33e4da6db109"
+  },
+  {
+    "sample_id": "SCAM-DATA-00136",
+    "content": "Security Alert: Unauthorized login from IP 185.220.101.4 detected on your bank account. To cancel this login, provide the 6-digit OTP received on your mobile to executive on 9123456789.",
+    "content_type": "message",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "OTP_THEFT",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [
+      "9123456789"
+    ],
+    "extracted_upis": [],
+    "char_length": 185,
+    "word_count": 28,
+    "sha256": "6e02cec0e68629d336fe175649cb50702ad4f43be3ffdff0ca9ada8b12004e22"
+  },
+  {
+    "sample_id": "SCAM-DATA-00062",
+    "content": "Your order #402-9982141 has been shipped via BlueDart. Track delivery at https://bluedart.com/track/4029982141. Expected delivery: Tomorrow by 5 PM.",
+    "content_type": "message",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://bluedart.com/track/4029982141"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 148,
+    "word_count": 18,
+    "sha256": "cae243b1900dbb026f949b637cd808bdc8b8a7595fee7029c8acd5b3fd7a9546"
+  },
+  {
+    "sample_id": "SCAM-DATA-00080",
+    "content": "Airtel Thanks: You have used 50% of your daily 2GB data quota. Recharge data pack via Airtel app.",
+    "content_type": "message",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 97,
+    "word_count": 18,
+    "sha256": "bf4e526efe2dd524f1e00b9d59888462e4129cfc3eff45ffc17d223d94741dfe"
+  },
+  {
+    "sample_id": "SCAM-DATA-00087",
+    "content": "https://www.icicibank.com/",
+    "content_type": "url",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "en",
+    "source": "tranco_anchor",
+    "extracted_urls": [
+      "https://www.icicibank.com"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 26,
+    "word_count": 1,
+    "sha256": "d4347fe6a72cee0ef4325c172d9567c456173679b9b0a0233ae8029e3168d80c"
+  },
+  {
+    "sample_id": "SCAM-DATA-00096",
+    "content": "https://uidai.gov.in/en/my-aadhaar.html",
+    "content_type": "url",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "en",
+    "source": "tranco_anchor",
+    "extracted_urls": [
+      "https://uidai.gov.in/en/my-aadhaar.html"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 39,
+    "word_count": 1,
+    "sha256": "f54a115535bf48a867627230012d8efd3ff521c8d61aa5f82171f0238724fbaa"
+  },
+  {
+    "sample_id": "SCAM-DATA-00078",
+    "content": "Govt of India: Income tax refund of Rs 4,200 for AY 2026-27 has been credited to your bank account via ECS.",
+    "content_type": "message",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 107,
+    "word_count": 21,
+    "sha256": "0331aad214898fdeca5540229c762759cc6235c922d7e332fe69af68d7c8dea4"
+  },
+  {
+    "sample_id": "SCAM-DATA-00094",
+    "content": "https://cybercrime.gov.in/report",
+    "content_type": "url",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "en",
+    "source": "tranco_anchor",
+    "extracted_urls": [
+      "https://cybercrime.gov.in/report"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 32,
+    "word_count": 1,
+    "sha256": "e7e926cdf19367c27503a4ffbf24d997fb84cb0a2180d464375eb2ba9cf77282"
+  },
+  {
+    "sample_id": "SCAM-DATA-00081",
+    "content": "Meeting reminder: Engineering all-hands today at 4:30 PM in Conference Room B. See calendar invite.",
+    "content_type": "message",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 99,
+    "word_count": 15,
+    "sha256": "95347ce560a4859defabee6c407826c2d53ca88f73c8a65ed3d8c0a8bfca979d"
+  },
+  {
+    "sample_id": "SCAM-DATA-00098",
+    "content": "https://irctc.co.in/nget/train-search",
+    "content_type": "url",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "en",
+    "source": "tranco_anchor",
+    "extracted_urls": [
+      "https://irctc.co.in/nget/train-search"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 37,
+    "word_count": 1,
+    "sha256": "c132d8e8570120e9a1f08bba733aef0a316e7705917c1d5ebbb5d7438851804e"
+  },
+  {
+    "sample_id": "SCAM-DATA-00068",
+    "content": "Swiggy Instamart: Your groceries order will arrive in 8 minutes. Delivery partner Ravi is on the way.",
+    "content_type": "message",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 101,
+    "word_count": 17,
+    "sha256": "a6fb48973f0b3c54df0fe4187703ee29be259b09e31266d8c7be1fcdcb799fcb"
+  },
+  {
+    "sample_id": "SCAM-DATA-00089",
+    "content": "https://bluedart.com/track/99812",
+    "content_type": "url",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "en",
+    "source": "tranco_anchor",
+    "extracted_urls": [
+      "https://bluedart.com/track/99812"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 32,
+    "word_count": 1,
+    "sha256": "65088d943facc51f9b682db121e320562deed0e311437818dd72f092c471c3a7"
+  },
+  {
+    "sample_id": "SCAM-DATA-00092",
+    "content": "https://amazon.in/dp/B08N5WRWNW",
+    "content_type": "url",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "en",
+    "source": "tranco_anchor",
+    "extracted_urls": [
+      "https://amazon.in/dp/B08N5WRWNW"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 31,
+    "word_count": 1,
+    "sha256": "b95d85d12d679dd7efdaa63cc807f46c8606fffd2cb2f502f1c5f6488deaf0d7"
+  },
+  {
+    "sample_id": "SCAM-DATA-00067",
+    "content": "Zomato: Your food order from Punjab Grill has been delivered. Rate your meal and delivery partner in the app.",
+    "content_type": "message",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 109,
+    "word_count": 19,
+    "sha256": "9c22993c71498f8aafe4ac7d17c6db68719ed9f3cdd4e481f8883fa0ab6e0ab2"
+  },
+  {
+    "sample_id": "SCAM-DATA-00073",
+    "content": "तुमचा फ्लिपकार्ट ऑर्डर रवाना करण्यात आला आहे. ट्रॅकिंगसाठी अधिकृत ॲप तपासा.",
+    "content_type": "message",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "mr",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 75,
+    "word_count": 11,
+    "sha256": "df9124ee47250bd50a37388efd03f3403e56f31bb13ef54da42518833b8ae6e4"
+  },
+  {
+    "sample_id": "SCAM-DATA-00071",
+    "content": "प्रिय ग्राहक, आपके एसबीआई खाते XX9812 में ₹ 5,000 जमा किए गए हैं। कुल शेष ₹ 18,450 है। - भारतीय स्टेट बैंक",
+    "content_type": "message",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "hi",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 106,
+    "word_count": 22,
+    "sha256": "4787d74bc72822c2b502b8d55021fb4c08f561e937894c013a1425e4fab1b326"
+  },
+  {
+    "sample_id": "SCAM-DATA-00065",
+    "content": "Amazon.in: OTP for your order delivery is 482194. Share with delivery associate only at the time of delivery. Never share over phone.",
+    "content_type": "message",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 133,
+    "word_count": 22,
+    "sha256": "3f0b7878be1eb405307032fc9001db34795699ea4c111f6b3f0a9071897f0555"
+  },
+  {
+    "sample_id": "SCAM-DATA-00064",
+    "content": "Dear Customer, Rs 250.00 spent on your HDFC Bank Card ending 1234 at RELIANCE RETAIL on 21-NOV-26. Not you? SMS BLOCK to 5676712.",
+    "content_type": "message",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 129,
+    "word_count": 23,
+    "sha256": "647aa56365192d9275ba0ef0588dd0cbd340903c43ab88955216ae80b58ee6f4"
+  },
+  {
+    "sample_id": "SCAM-DATA-00090",
+    "content": "https://indiapost.gov.in/",
+    "content_type": "url",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "en",
+    "source": "tranco_anchor",
+    "extracted_urls": [
+      "https://indiapost.gov.in"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 25,
+    "word_count": 1,
+    "sha256": "3f0ac46217b925831d4113fc7ef69348c02baf4f5ba5f574d63e89faa7d363cd"
+  },
+  {
+    "sample_id": "SCAM-DATA-00138",
+    "content": "Your electricity bill for consumer #10293847 of Rs 1,120 is due on 28-Nov. Pay through official Mahavitaran mobile app or mahadiscom.in.",
+    "content_type": "message",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://mahadiscom.in"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 136,
+    "word_count": 21,
+    "sha256": "661c04e6d71904b5fcee4f12d55898b185ceef3004b529516823958b9790db86"
+  },
+  {
+    "sample_id": "SCAM-DATA-00088",
+    "content": "https://www.axisbank.com/",
+    "content_type": "url",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "en",
+    "source": "tranco_anchor",
+    "extracted_urls": [
+      "https://www.axisbank.com"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 25,
+    "word_count": 1,
+    "sha256": "db148067df2e5547d6ec39998ab1f65db697b6fe775eced6f4fd6c15425fb507"
+  },
+  {
+    "sample_id": "SCAM-DATA-00100",
+    "content": "https://phonepe.com/",
+    "content_type": "url",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "en",
+    "source": "tranco_anchor",
+    "extracted_urls": [
+      "https://phonepe.com"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 20,
+    "word_count": 1,
+    "sha256": "80ac46a14cea7aafc381354d586c2a6c53a9c97a8b8952db6459979546c84856"
+  },
+  {
+    "sample_id": "SCAM-DATA-00086",
+    "content": "https://www.hdfcbank.com/",
+    "content_type": "url",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "en",
+    "source": "tranco_anchor",
+    "extracted_urls": [
+      "https://www.hdfcbank.com"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 25,
+    "word_count": 1,
+    "sha256": "e78f0b8dddf0c058b16691af1cfb8b42b545879e064b582b0e5a9b4688f02647"
+  },
+  {
+    "sample_id": "SCAM-DATA-00063",
+    "content": "Your account XX4812 has been credited with Rs 45,000 on 20-Nov-2026 by NEFT salary credit. Available balance: Rs 82,340. State Bank of India.",
+    "content_type": "message",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 141,
+    "word_count": 23,
+    "sha256": "dc0ec0127e8617d4c807b09e538ece54140eccff42fea38d3b7fe18a0f5f7c6c"
+  },
+  {
+    "sample_id": "SCAM-DATA-00093",
+    "content": "https://github.com/VinitSurve/scamshield",
+    "content_type": "url",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "en",
+    "source": "tranco_anchor",
+    "extracted_urls": [
+      "https://github.com/VinitSurve/scamshield"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 40,
+    "word_count": 1,
+    "sha256": "a180148141c04358c5846d6300bdae48c38e5bf922ae7be77432beda2cee017b"
+  },
+  {
+    "sample_id": "SCAM-DATA-00083",
+    "content": "https://www.google.co.in/",
+    "content_type": "url",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "en",
+    "source": "tranco_anchor",
+    "extracted_urls": [
+      "https://www.google.co.in"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 25,
+    "word_count": 1,
+    "sha256": "e04fe4a0c920e34af08099bdb06347e58227c3127a242bbdfb960cec0d97e7b2"
+  },
+  {
+    "sample_id": "SCAM-DATA-00069",
+    "content": "Aapka order ship ho gaya hai. Kal sham 4 baje tak delivery ho jayegi. Official shopping app me status check kare.",
+    "content_type": "message",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "hinglish",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 113,
+    "word_count": 21,
+    "sha256": "63399c3b3286e20aaa7343bb3c42e7570189f3047f0485b3d3beca31165955f5"
+  },
+  {
+    "sample_id": "SCAM-DATA-00097",
+    "content": "https://incometax.gov.in/iec/foportal",
+    "content_type": "url",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "en",
+    "source": "tranco_anchor",
+    "extracted_urls": [
+      "https://incometax.gov.in/iec/foportal"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 37,
+    "word_count": 1,
+    "sha256": "1b616eb5793532ffcdd146932bdb45bc06ddb1dc5c009df233f52fcad0f0b136"
+  },
+  {
+    "sample_id": "SCAM-DATA-00099",
+    "content": "https://paytm.com/recharge",
+    "content_type": "url",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "en",
+    "source": "tranco_anchor",
+    "extracted_urls": [
+      "https://paytm.com/recharge"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 26,
+    "word_count": 1,
+    "sha256": "62541542e91f2f9be35fffa6a26dd0188d38928c16c9129197bdc285af6468c0"
+  },
+  {
+    "sample_id": "SCAM-DATA-00082",
+    "content": "https://google.com/",
+    "content_type": "url",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "en",
+    "source": "tranco_anchor",
+    "extracted_urls": [
+      "https://google.com"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 19,
+    "word_count": 1,
+    "sha256": "9d116b1b0c1200ca75016e4c010bc94836366881b021a658ea7f8548b6543c1e"
+  },
+  {
+    "sample_id": "SCAM-DATA-00070",
+    "content": "Aapka mobile recharge Rs 299 successfully complete ho gaya hai. Valid till 20-Dec-2026. Data: 1.5GB/day. Jio.",
+    "content_type": "message",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "hinglish",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 109,
+    "word_count": 16,
+    "sha256": "9f75e29c1f322450f6f055e8ecb9797bff44471e2d3cd290e82fa039667010b5"
+  },
+  {
+    "sample_id": "SCAM-DATA-00074",
+    "content": "Google: 2-step verification code is 881294. Do not share this code with anyone.",
+    "content_type": "message",
+    "label": "legitimate",
+    "is_scam": 0,
+    "category": "LEGITIMATE",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 79,
+    "word_count": 13,
+    "sha256": "595bfb6604ad2002f979389e806e4b5f011e0afec8b26064117bb3e025d122eb"
+  },
+  {
+    "sample_id": "SCAM-DATA-00106",
+    "content": "https://is.gd/J9gaHq.iciciBank.KYC",
+    "content_type": "url",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "PHISHING_URL",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://is.gd/J9gaHq.iciciBank.KYC"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 34,
+    "word_count": 1,
+    "sha256": "4f79686184d6153b5f914fd472dee16801c71f1f63220dfec8f6f1e2883170c9"
+  },
+  {
+    "sample_id": "SCAM-DATA-00119",
+    "content": "https://canara-secure-login.top/rekyc",
+    "content_type": "url",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "PHISHING_URL",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://canara-secure-login.top/rekyc"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 37,
+    "word_count": 1,
+    "sha256": "d93ede8adeac90e740bf2d8c1f2cf20c7d6c687a2d27551878f0d5d1b768404d"
+  },
+  {
+    "sample_id": "SCAM-DATA-00111",
+    "content": "https://kbc-jio-lottery-winner.xyz/claim",
+    "content_type": "url",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "PHISHING_URL",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://kbc-jio-lottery-winner.xyz/claim"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 40,
+    "word_count": 1,
+    "sha256": "ee146997bc95dd9f4ceb2cfbd1f30a02eca3a2b995674c20ea8cac6b70ec8c76"
+  },
+  {
+    "sample_id": "SCAM-DATA-00112",
+    "content": "https://testsafebrowsing.appspot.com/s/malware.html",
+    "content_type": "url",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "PHISHING_URL",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://testsafebrowsing.appspot.com/s/malware.html"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 51,
+    "word_count": 1,
+    "sha256": "64aaaf954421553707448008e1f79eabe284e674d2313d59670554284de6ee08"
+  },
+  {
+    "sample_id": "SCAM-DATA-00105",
+    "content": "https://icicibank-accounts-kyc.top/verify",
+    "content_type": "url",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "PHISHING_URL",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://icicibank-accounts-kyc.top/verify"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 41,
+    "word_count": 1,
+    "sha256": "a6199dd5c20a080b01ad84b5eb829e40243eeea6f4f6756756f18afd241eb2ca"
+  },
+  {
+    "sample_id": "SCAM-DATA-00107",
+    "content": "https://bit.ly/sbi-kyc-urgent-2026",
+    "content_type": "url",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "PHISHING_URL",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://bit.ly/sbi-kyc-urgent-2026"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 34,
+    "word_count": 1,
+    "sha256": "cf3c92213cc831fbbd6a3adc2d0e5bd2345bf31180964a42e775335e22a0d081"
+  },
+  {
+    "sample_id": "SCAM-DATA-00108",
+    "content": "https://indiapost-redelivery.top/pay",
+    "content_type": "url",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "PHISHING_URL",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://indiapost-redelivery.top/pay"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 36,
+    "word_count": 1,
+    "sha256": "18504961f811bd69dca66fb52c32d502707be0177f374ed98b45878ac8466c65"
+  },
+  {
+    "sample_id": "SCAM-DATA-00121",
+    "content": "https://shorturl.at/sbiKYC99",
+    "content_type": "url",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "PHISHING_URL",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://shorturl.at/sbiKYC99"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 28,
+    "word_count": 1,
+    "sha256": "d716886d51067c026757f30929fadcf05422e694ec1d1fb2eae9e3582523a523"
+  },
+  {
+    "sample_id": "SCAM-DATA-00116",
+    "content": "https://bank-kyc-verify.top/",
+    "content_type": "url",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "PHISHING_URL",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://bank-kyc-verify.top"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 28,
+    "word_count": 1,
+    "sha256": "c3972a9dddd57f65802dba247792a644897b6a1f17884b7cd40838477b69f60a"
+  },
+  {
+    "sample_id": "SCAM-DATA-00118",
+    "content": "https://kotak-aadhaar-kyc.xyz/auth",
+    "content_type": "url",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "PHISHING_URL",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://kotak-aadhaar-kyc.xyz/auth"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 34,
+    "word_count": 1,
+    "sha256": "94a38fb7f5d14a5cd0310938006703e47d5b80181d97b46151246538a02294fd"
+  },
+  {
+    "sample_id": "SCAM-DATA-00102",
+    "content": "https://sbi-online-kyc-verification.top/auth",
+    "content_type": "url",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "PHISHING_URL",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://sbi-online-kyc-verification.top/auth"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 44,
+    "word_count": 1,
+    "sha256": "14526cdb86aec9f4beb534b29e85423cd4c4d4695f70f8f754f5faef4eb5ecc6"
+  },
+  {
+    "sample_id": "SCAM-DATA-00103",
+    "content": "https://sbi-kyc-verify.top/pan",
+    "content_type": "url",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "PHISHING_URL",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://sbi-kyc-verify.top/pan"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 30,
+    "word_count": 1,
+    "sha256": "be0670ca941a7b047c6841766a4cf112204b01f7e2220ef2f553afea3e8e1417"
+  },
+  {
+    "sample_id": "SCAM-DATA-00117",
+    "content": "https://pnb-card-verify.top/debit",
+    "content_type": "url",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "PHISHING_URL",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://pnb-card-verify.top/debit"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 33,
+    "word_count": 1,
+    "sha256": "3c75e589e1adbde942d49900b260d26599c7112ec2fe837c325ab6db92ed3c21"
+  },
+  {
+    "sample_id": "SCAM-DATA-00110",
+    "content": "https://echallan-parivahan-delhi.top/fine",
+    "content_type": "url",
+    "label": "scam",
+    "is_scam": 1,
+    "category": "PHISHING_URL",
+    "language": "en",
+    "source": "curated_threat_intel",
+    "extracted_urls": [
+      "https://echallan-parivahan-delhi.top/fine"
+    ],
+    "extracted_phones": [],
+    "extracted_upis": [],
+    "char_length": 41,
+    "word_count": 1,
+    "sha256": "b8e2e71ba5b368198b14b644908adf34f5c21af32b29aad48ac7ff0d53356ff4"
+  }
+]

@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ScamShieldDatasetSample",
+  "type": "object",
+  "required": [
+    "sample_id",
+    "content",
+    "content_type",
+    "label",
+    "is_scam",
+    "category",
+    "language"
+  ],
+  "properties": {
+    "sample_id": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    },
+    "content_type": {
+      "type": "string",
+      "enum": [
+        "message",
+        "url",
+        "ocr_text"
+      ]
+    },
+    "label": {
+      "type": "string",
+      "enum": [
+        "scam",
+        "legitimate",
+        "suspicious"
+      ]
+    },
+    "is_scam": {
+      "type": "integer",
+      "enum": [
+        0,
+        1
+      ]
+    },
+    "category": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string"
+    },
+    "extracted_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "extracted_phones": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "extracted_upis": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
