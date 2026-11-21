@@ -85,7 +85,7 @@ export const CONTROLLED_TEST_CASES: TestCase[] = [
     expectedSource: 'HEURISTIC',
   },
 
-  // 3. Known Threat Simulation (Offline Threat Fixture)
+  // 3. Known Threat Simulation (Offline Threat Fixtures & URL-Level Protection)
   {
     id: 'MALICIOUS_OFFLINE_KYC',
     title: 'Known Threat Simulation — Verified Phishing Fixture',
@@ -95,6 +95,26 @@ export const CONTROLLED_TEST_CASES: TestCase[] = [
     expectedSeverity: 'CRITICAL',
     expectedCategory: 'FAKE_KYC',
     expectedSource: 'OFFLINE_RULE',
+  },
+  {
+    id: 'MALWARE_GOOGLE_TEST_URL',
+    title: 'Path-Specific Threat — Google Malware Test Endpoint',
+    categoryLabel: 'Known Threat Fixture',
+    targetUrl: 'https://testsafebrowsing.appspot.com/s/malware.html',
+    description: 'Official Google Safe Browsing synthetic malware verification fixture testing path-specific detection.',
+    expectedSeverity: 'CRITICAL',
+    expectedCategory: 'MALWARE',
+    expectedSource: 'OFFLINE_RULE',
+  },
+  {
+    id: 'CLEAN_DOMAIN_CLEAN_PATH',
+    title: 'Path-Specific Isolation — Parent Domain Root',
+    categoryLabel: 'Known Threat Fixture',
+    targetUrl: 'https://testsafebrowsing.appspot.com/',
+    description: 'Validates that root hosting domain is NOT falsely flagged as malware when only a sub-path is malicious.',
+    expectedSeverity: ['SAFE', 'UNKNOWN'],
+    expectedCategory: ['NO_KNOWN_THREAT', 'ANALYSIS_UNAVAILABLE', 'UNVERIFIED', 'UNKNOWN'],
+    expectedSource: ['FALLBACK', 'REMOTE_API'],
   },
 
   // 4. Suspicious Deceptive Redirect Chain Simulation

@@ -68,6 +68,24 @@ export const StatusCard: React.FC<StatusCardProps> = ({
       };
     }
 
+    if (verdict.category === 'ANALYSIS_UNAVAILABLE') {
+      return {
+        bg: 'bg-amber-950/40 text-amber-300 border-amber-700/50',
+        text: 'Analysis Unavailable',
+        subtext: 'Threat intelligence gateway unreachable',
+        icon: <HelpCircle className="w-4 h-4 text-amber-400" />,
+      };
+    }
+
+    if (verdict.category === 'UNVERIFIED') {
+      return {
+        bg: 'bg-slate-800 text-slate-300 border-slate-700',
+        text: 'Unverified Destination',
+        subtext: 'Insufficient intelligence records',
+        icon: <HelpCircle className="w-4 h-4 text-slate-400" />,
+      };
+    }
+
     if (verdict.category === 'NO_KNOWN_THREAT') {
       return {
         bg: 'bg-emerald-950/40 text-emerald-300 border-emerald-700/50',
@@ -96,7 +114,7 @@ export const StatusCard: React.FC<StatusCardProps> = ({
       case 'CRITICAL':
         return {
           bg: 'bg-threat-dangerBg text-threat-danger border-red-500/30',
-          text: t.statusDangerous,
+          text: verdict.category === 'MALWARE' ? 'Malware Detected' : t.statusDangerous,
           subtext: 'Confirmed malicious threat',
           icon: <ShieldAlert className="w-4 h-4 text-threat-danger" />,
         };
@@ -104,7 +122,7 @@ export const StatusCard: React.FC<StatusCardProps> = ({
         return {
           bg: 'bg-threat-neutralBg text-slate-300 border-slate-700',
           text: 'Unverified Website',
-          subtext: 'No malicious records found',
+          subtext: 'Inconclusive threat intelligence',
           icon: <Info className="w-4 h-4 text-slate-400" />,
         };
     }
@@ -263,20 +281,31 @@ export const StatusCard: React.FC<StatusCardProps> = ({
                       <AlertTriangle className="w-3 h-3 text-amber-400 shrink-0 mt-0.5" />
                     ) : chk.result === 'FAIL' ? (
                       <XCircle className="w-3 h-3 text-red-400 shrink-0 mt-0.5" />
+                    ) : chk.result === 'UNAVAILABLE' ? (
+                      <HelpCircle className="w-3 h-3 text-amber-400 shrink-0 mt-0.5" />
                     ) : (
                       <HelpCircle className="w-3 h-3 text-slate-500 shrink-0 mt-0.5" />
                     )}
                     <div className="flex-1 overflow-hidden">
                       <div className="flex items-center justify-between">
-                        <span className="font-semibold text-slate-200">{chk.label}</span>
+                        <div className="flex items-center space-x-1.5 truncate">
+                          <span className="font-semibold text-slate-200">{chk.label}</span>
+                          {chk.inputType && (
+                            <span className="text-[8px] font-mono px-1 py-0.2 bg-slate-800 text-slate-400 rounded">
+                              {chk.inputType}
+                            </span>
+                          )}
+                        </div>
                         <span
-                          className={`font-mono uppercase text-[9px] ${
+                          className={`font-mono uppercase text-[9px] shrink-0 ml-1.5 ${
                             chk.result === 'PASS' || chk.result === 'CLEAN'
                               ? 'text-emerald-400'
                               : chk.result === 'WARN'
                               ? 'text-amber-400'
                               : chk.result === 'FAIL'
                               ? 'text-red-400'
+                              : chk.result === 'UNAVAILABLE'
+                              ? 'text-amber-400'
                               : 'text-slate-400'
                           }`}
                         >
@@ -284,6 +313,9 @@ export const StatusCard: React.FC<StatusCardProps> = ({
                         </span>
                       </div>
                       <p className="text-slate-400 truncate">{chk.details}</p>
+                      {chk.error && (
+                        <p className="text-red-400 text-[9px] truncate">Error: {chk.error}</p>
+                      )}
                     </div>
                   </div>
                 ))}

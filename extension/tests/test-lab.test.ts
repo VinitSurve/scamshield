@@ -10,8 +10,8 @@ describe('Security Test Lab — Automated Verification Suite', () => {
     await SettingsService.resetSettings();
   });
 
-  it('contains exactly 15 predefined controlled test cases covering all security and AI categories', () => {
-    expect(CONTROLLED_TEST_CASES).toHaveLength(15);
+  it('contains exactly 17 predefined controlled test cases covering all security and AI categories', () => {
+    expect(CONTROLLED_TEST_CASES).toHaveLength(17);
 
     const categories = new Set(CONTROLLED_TEST_CASES.map((tc) => tc.categoryLabel));
     expect(categories.has('Legitimate Mainstream')).toBe(true);
@@ -61,6 +61,29 @@ describe('Security Test Lab — Automated Verification Suite', () => {
     expect(result.actualVerdict?.source).toBe('OFFLINE_RULE');
   });
 
+  it('passes the official Google Safe Browsing malware test fixture via path-specific threat matching', async () => {
+    const malwareCase = CONTROLLED_TEST_CASES.find((tc) => tc.id === 'MALWARE_GOOGLE_TEST_URL');
+    expect(malwareCase).toBeDefined();
+
+    const result = await TestRunner.runSingleTest(malwareCase!);
+    expect(result.status).toBe('PASS');
+    expect(result.actualVerdict?.severity).toBe('CRITICAL');
+    expect(result.actualVerdict?.category).toBe('MALWARE');
+    expect(result.actualVerdict?.isBlocked).toBe(true);
+    expect(result.actualVerdict?.source).toBe('OFFLINE_RULE');
+    expect(result.actualVerdict?.matchedPattern).toBe('testsafebrowsing.appspot.com/s/malware.html');
+  });
+
+  it('passes the parent root domain path-isolation test without flagging malware', async () => {
+    const cleanPathCase = CONTROLLED_TEST_CASES.find((tc) => tc.id === 'CLEAN_DOMAIN_CLEAN_PATH');
+    expect(cleanPathCase).toBeDefined();
+
+    const result = await TestRunner.runSingleTest(cleanPathCase!);
+    expect(result.status).toBe('PASS');
+    expect(result.actualVerdict?.category).not.toBe('MALWARE');
+    expect(result.actualVerdict?.isBlocked).toBe(false);
+  });
+
   it('passes the simulated multi-hop deceptive redirect chain test', async () => {
     const redirectCase = CONTROLLED_TEST_CASES.find((tc) => tc.id === 'SIMULATED_REDIRECT_CHAIN');
     expect(redirectCase).toBeDefined();
@@ -99,13 +122,13 @@ describe('Security Test Lab — Automated Verification Suite', () => {
 
     const allResults = await TestRunner.runAllTests(CONTROLLED_TEST_CASES, (completed, total) => {
       progressUpdates.push(completed);
-      expect(total).toBe(15);
+      expect(total).toBe(17);
     });
 
-    expect(allResults).toHaveLength(15);
-    expect(progressUpdates).toHaveLength(15);
+    expect(allResults).toHaveLength(17);
+    expect(progressUpdates).toHaveLength(17);
 
     const passedCount = allResults.filter((r) => r.status === 'PASS').length;
-    expect(passedCount).toBe(15); // All 15 tests must pass
+    expect(passedCount).toBe(17); // All 17 tests must pass
   });
 });

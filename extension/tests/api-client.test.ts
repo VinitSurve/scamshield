@@ -44,7 +44,31 @@ describe('ApiClient & Threat Intelligence Integration', () => {
     const res = await client.getPrefixMatches('3a7f82b1');
     expect(res).toBeNull();
 
+    // Verify structured response distinguishes offline from clean
+    const detailed = await client.getPrefixLookup('3a7f82b1');
+    expect(detailed.success).toBe(false);
+    expect(detailed.isOffline).toBe(true);
+    expect(detailed.status).toBe(0);
+    expect(detailed.error).toContain('Network offline');
+
     // Restore fetch mock
+    (globalThis as any).fetch = originalFetch;
+  });
+
+  it('provides structured ApiResponse with timeout indicator when request aborts', async () => {
+    const originalFetch = globalThis.fetch;
+    (globalThis as any).fetch = vi.fn(async () => {
+      const abortErr = new Error('The operation was aborted');
+      abortErr.name = 'AbortError';
+      throw abortErr;
+    });
+
+    const detailed = await client.getPrefixLookup('3a7f82b1');
+    expect(detailed.success).toBe(false);
+    expect(detailed.isTimeout).toBe(true);
+    expect(detailed.status).toBe(0);
+    expect(detailed.error).toContain('timed out');
+
     (globalThis as any).fetch = originalFetch;
   });
 });

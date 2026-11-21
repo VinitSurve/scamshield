@@ -1,5 +1,5 @@
-import { ReputationVerdict, ScannerCheckItem } from '../types/threat';
-import { canonicalizeUrl, isPrivateOrLoopbackHost } from '../security/url-validator';
+import { ReputationVerdict, ScannerCheckItem, ThreatCategory, ThreatSeverity } from '../types/threat';
+import { canonicalizeUrl, isPrivateOrLoopbackHost, getUrlThreatExpressions } from '../security/url-validator';
 import { detectBrandImpersonation, isPunycode } from '../security/domain-normalizer';
 import { sha256Hex, get32BitPrefix } from '../utils/crypto';
 import { CacheService } from '../storage/cache-service';
@@ -179,16 +179,20 @@ export class ReputationService {
       return anchorVerdict;
     }
 
-    // 6. Offline Malicious Threat Intelligence Signatures
+    // 6. Offline Malicious Threat Intelligence Signatures (URL & Domain Matching)
     const offlineThreat = CacheService.checkLocalIntelligence(domain, canonical.canonicalUrl, true);
     if (offlineThreat && offlineThreat.source === 'OFFLINE_RULE') {
       const durationMs = Math.round(performance.now() - startTime);
+      const isPathSpecific = offlineThreat.matchedPattern?.includes('/') ?? false;
       checksSummary.push({
         name: 'OFFLINE_SIGNATURES',
         label: 'Known Threat Signature Database',
         status: 'completed',
+        inputType: isPathSpecific ? 'full_url' : 'domain',
         result: 'FAIL',
-        details: `Confirmed signature match in ScamShield emergency threat registry: ${offlineThreat.category}`,
+        details: isPathSpecific
+          ? `Confirmed path-specific malware signature: ${offlineThreat.matchedPattern}`
+          : `Confirmed signature match in ScamShield emergency threat registry: ${offlineThreat.category}`,
       });
 
       return {
@@ -203,8 +207,9 @@ export class ReputationService {
         name: 'OFFLINE_SIGNATURES',
         label: 'Known Threat Signature Database',
         status: 'completed',
+        inputType: 'url_patterns',
         result: 'CLEAN',
-        details: 'No match in local offline malicious threat signatures',
+        details: 'No match in local offline malicious threat signatures for URL or domain',
       });
     }
 
@@ -297,76 +302,152 @@ export class ReputationService {
       });
     }
 
-    // 9. Global Threat Intelligence Lookup (k-Anonymity SHA-256 Prefix)
+    // 9. Global Threat Intelligence Lookup (Hierarchical k-Anonymity SHA-256 Prefixes)
     let apiStatus: 'completed' | 'unavailable' = 'unavailable';
+    let apiResult: 'FAIL' | 'CLEAN' | 'UNKNOWN' | 'UNAVAILABLE' = 'UNAVAILABLE';
     let apiMatchDetails = 'Threat intelligence gateway unreachable (offline)';
+    let apiError: string | undefined;
 
     try {
       const settings = await SettingsService.getSettings();
       const client = new ApiClient(settings.apiBaseUrl);
 
-      const fullHash = await sha256Hex(domain);
-      const prefix = get32BitPrefix(fullHash);
+      // Generate hierarchical URL expressions (full URL, host+path, hostname, domain)
+      const expressions = getUrlThreatExpressions(canonical);
+      const prefixToExprMap = new Map<
+        string,
+        { expression: string; inputType: 'full_url' | 'hostname' | 'domain'; fullHash: string }
+      >();
 
-      const remoteData = await client.getPrefixMatches(prefix);
-      apiStatus = 'completed';
-
-      if (remoteData && remoteData.matches && remoteData.matches.length > 0) {
-        const matchedThreat = remoteData.matches.find(
-          (m) => m.full_hash.toLowerCase() === fullHash.toLowerCase()
-        );
-
-        if (matchedThreat) {
-          const durationMs = Math.round(performance.now() - startTime);
-          checksSummary.push({
-            name: 'GLOBAL_THREAT_API',
-            label: 'Global Threat Intelligence Database',
-            status: 'completed',
-            result: 'FAIL',
-            details: `Known malicious entity: ${matchedThreat.threat_type} (Severity: ${matchedThreat.severity})`,
+      for (const item of expressions) {
+        const fullHash = await sha256Hex(item.expression);
+        const prefix = get32BitPrefix(fullHash);
+        if (!prefixToExprMap.has(prefix)) {
+          prefixToExprMap.set(prefix, {
+            expression: item.expression,
+            inputType: item.inputType,
+            fullHash,
           });
-
-          const isBlocked = matchedThreat.severity === 'HIGH' || matchedThreat.severity === 'CRITICAL';
-          const verdict: ReputationVerdict = {
-            domain,
-            canonicalUrl: canonical.canonicalUrl,
-            severity: matchedThreat.severity,
-            category: matchedThreat.threat_type,
-            riskScore: matchedThreat.severity === 'CRITICAL' ? 0.96 : 0.85,
-            confidence: 'HIGH',
-            impersonatedBrand: matchedThreat.impersonated_brand,
-            communityReportCount: matchedThreat.reported_count || 1,
-            evidence: [
-              `Verified threat in ScamShield Global Threat Intelligence Network`,
-              `Threat Category: ${matchedThreat.threat_type}`,
-              matchedThreat.impersonated_brand ? `Impersonates: ${matchedThreat.impersonated_brand}` : '',
-              matchedThreat.reported_count ? `Reported by ${matchedThreat.reported_count} users` : '',
-            ].filter(Boolean),
-            source: 'REMOTE_API',
-            isBlocked,
-            evaluatedAt: Date.now(),
-            scanId,
-            scanDurationMs: durationMs,
-            isFreshScan: skipCache,
-            checksSummary,
-          };
-
-          await CacheService.set(domain, verdict);
-          return verdict;
         }
       }
 
-      apiMatchDetails = 'Domain verified clean in Global Threat Intelligence prefix database';
+      // Query prefix lookups
+      let matchedThreatFromApi: {
+        threat: {
+          full_hash: string;
+          threat_type: ThreatCategory;
+          severity: ThreatSeverity;
+          impersonated_brand?: string;
+          reported_count?: number;
+        };
+        expression: string;
+        inputType: 'full_url' | 'hostname' | 'domain';
+      } | null = null;
+
+      let allQueriesSucceeded = true;
+      let atLeastOneQuerySucceeded = false;
+
+      for (const [prefix, exprInfo] of prefixToExprMap.entries()) {
+        const lookupResult = await client.getPrefixLookup(prefix);
+
+        if (!lookupResult.success || !lookupResult.data) {
+          allQueriesSucceeded = false;
+          apiError = lookupResult.error || `Failed lookup for prefix ${prefix}`;
+          continue;
+        }
+
+        atLeastOneQuerySucceeded = true;
+        const remoteData = lookupResult.data;
+
+        if (remoteData.matches && remoteData.matches.length > 0) {
+          const matched = remoteData.matches.find(
+            (m) => m.full_hash.toLowerCase() === exprInfo.fullHash.toLowerCase()
+          );
+
+          if (matched) {
+            matchedThreatFromApi = {
+              threat: matched,
+              expression: exprInfo.expression,
+              inputType: exprInfo.inputType,
+            };
+            break;
+          }
+        }
+      }
+
+      if (matchedThreatFromApi) {
+        const durationMs = Math.round(performance.now() - startTime);
+        const { threat, expression, inputType } = matchedThreatFromApi;
+        checksSummary.push({
+          name: 'GLOBAL_THREAT_API',
+          label: 'Global Threat Intelligence Database',
+          status: 'completed',
+          inputType,
+          result: 'FAIL',
+          details: `Confirmed malicious match for ${inputType}: ${threat.threat_type} (Severity: ${threat.severity})`,
+        });
+
+        const isBlocked = threat.severity === 'HIGH' || threat.severity === 'CRITICAL';
+        const verdict: ReputationVerdict = {
+          domain,
+          canonicalUrl: canonical.canonicalUrl,
+          severity: threat.severity,
+          category: threat.threat_type,
+          riskScore: threat.severity === 'CRITICAL' ? 0.96 : 0.85,
+          confidence: 'HIGH',
+          impersonatedBrand: threat.impersonated_brand,
+          communityReportCount: threat.reported_count || 1,
+          evidence: [
+            `Verified threat in ScamShield Global Threat Intelligence Network`,
+            `Matched Target: ${expression} (${inputType})`,
+            `Threat Category: ${threat.threat_type}`,
+            threat.impersonated_brand ? `Impersonates: ${threat.impersonated_brand}` : '',
+            threat.reported_count ? `Reported by ${threat.reported_count} users` : '',
+          ].filter(Boolean),
+          source: 'REMOTE_API',
+          isBlocked,
+          evaluatedAt: Date.now(),
+          scanId,
+          scanDurationMs: durationMs,
+          isFreshScan: skipCache,
+          checksSummary,
+          matchedPattern: expression,
+        };
+
+        await CacheService.set(domain, verdict, canonical.canonicalUrl);
+        return verdict;
+      }
+
+      if (allQueriesSucceeded && atLeastOneQuerySucceeded) {
+        apiStatus = 'completed';
+        apiResult = 'CLEAN';
+        apiMatchDetails = 'Completed k-anonymity threat database lookup (0 matching records for URL or domain)';
+      } else if (atLeastOneQuerySucceeded) {
+        apiStatus = 'completed';
+        apiResult = 'CLEAN';
+        apiMatchDetails = 'Partial threat lookup completed; no threats found in responsive shards';
+      } else {
+        // All queries failed or network offline
+        apiStatus = 'unavailable';
+        apiResult = 'UNAVAILABLE';
+        apiMatchDetails = `Threat intelligence gateway unreachable: ${apiError || 'offline'}`;
+      }
     } catch (err) {
       logger.debug('Remote prefix lookup failed, proceeding to dynamic evidence synthesis:', err);
+      apiStatus = 'unavailable';
+      apiResult = 'UNAVAILABLE';
+      apiError = err instanceof Error ? err.message : String(err);
+      apiMatchDetails = `Threat intelligence lookup error: ${apiError}`;
     }
 
     checksSummary.push({
       name: 'GLOBAL_THREAT_API',
       label: 'Global Threat Intelligence Database',
       status: apiStatus,
-      result: apiStatus === 'completed' ? 'CLEAN' : 'UNKNOWN',
+      inputType: 'url_patterns',
+      result: apiResult,
       details: apiMatchDetails,
+      error: apiError,
     });
 
     // 10. AI Engine Evidence Reasoning (if configured and during fresh scans)
@@ -408,11 +489,14 @@ export class ReputationService {
       }
     }
 
-    // 11. Dynamic Verdict Synthesis (Never hardcode 15%! Evidence-based computation)
-    // A domain with 0 risk signals and clean structure is NOT 15% risky.
+    // 11. Dynamic Verdict Synthesis
+    // Critical Security Rule: UNKNOWN or UNAVAILABLE must NEVER be treated as CLEAN or assigned 2%!
     const durationMs = Math.round(performance.now() - startTime);
-    const confidence = apiStatus === 'completed' ? 'MEDIUM' : 'LOW';
-    const computedRiskScore = apiStatus === 'completed' ? 0.02 : 0.04; // 2% to 4% dynamic base for clean unindexed websites
+
+    let finalSeverity: ThreatSeverity;
+    let finalCategory: ThreatCategory;
+    let confidence: 'HIGH' | 'MEDIUM' | 'LOW';
+    let computedRiskScore: number;
 
     const evidenceList: string[] = [
       'URL structure: Valid canonical syntax, standard protocol',
@@ -420,21 +504,32 @@ export class ReputationService {
       'Homoglyph analysis: Clean (standard character encoding)',
     ];
 
-    if (apiStatus === 'completed') {
-      evidenceList.push('Global Threat Gateway: Clean (zero malicious reports on record)');
+    if (apiStatus === 'completed' && apiResult === 'CLEAN') {
+      finalSeverity = 'SAFE';
+      finalCategory = 'NO_KNOWN_THREAT';
+      confidence = 'MEDIUM';
+      computedRiskScore = 0.05; // 5% baseline risk acknowledging zero-day possibility on unindexed websites
+      evidenceList.push('Global Threat Gateway: Completed lookup across URL expressions and domain (no known malicious reports on record)');
+      evidenceList.push("Notice: 'No known threat' indicates absence of recorded reports in threat feeds, not a verified safety certification.");
     } else {
-      evidenceList.push('Global Threat Gateway: Offline (local heuristics verified clean)');
+      // Threat Intelligence is UNAVAILABLE / OFFLINE / FAILED
+      finalSeverity = 'UNKNOWN';
+      finalCategory = 'ANALYSIS_UNAVAILABLE';
+      confidence = 'LOW';
+      computedRiskScore = 0.20; // 20% conservative score reflecting uncertainty / incomplete threat data
+      evidenceList.push(`Global Threat Gateway: Unavailable (${apiMatchDetails})`);
+      evidenceList.push('Warning: Critical threat intelligence checks could not execute. Absence of remote data is NOT proof of safety.');
     }
 
     if (aiExplanationText) {
       evidenceList.push(`AI Assessment: ${aiExplanationText}`);
     }
 
-    const cleanVerdict: ReputationVerdict = {
+    const unverifiedVerdict: ReputationVerdict = {
       domain,
       canonicalUrl: canonical.canonicalUrl,
-      severity: apiStatus === 'completed' ? 'SAFE' : 'UNKNOWN',
-      category: 'NO_KNOWN_THREAT',
+      severity: finalSeverity,
+      category: finalCategory,
       riskScore: computedRiskScore,
       confidence,
       evidence: evidenceList,
@@ -447,8 +542,8 @@ export class ReputationService {
       checksSummary,
     };
 
-    // Cache neutral clean verdict for 24 hours
-    await CacheService.set(domain, cleanVerdict);
-    return cleanVerdict;
+    // Cache neutral verdict
+    await CacheService.set(domain, unverifiedVerdict, canonical.canonicalUrl);
+    return unverifiedVerdict;
   }
 }

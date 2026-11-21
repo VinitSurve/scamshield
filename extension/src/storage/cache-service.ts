@@ -1,4 +1,5 @@
 import { ReputationVerdict, ThreatCategory, ThreatSeverity } from '../types/threat';
+import { canonicalizeUrl, getUrlThreatExpressions } from '../security/url-validator';
 import { logger } from '../utils/logger';
 
 export interface CachedReputationEntry {
@@ -165,13 +166,25 @@ export const OFFLINE_MALICIOUS_THREATS: Record<
       'Simulated credential-harvesting environment',
     ],
   },
+  // Google Safe Browsing Official Malware Test Fixture (Path-Specific Threat)
+  'testsafebrowsing.appspot.com/s/malware.html': {
+    category: 'MALWARE',
+    severity: 'CRITICAL',
+    impersonatedBrand: 'Google Safe Browsing Test Suite',
+    evidence: [
+      'Standard Google Safe Browsing synthetic malware verification endpoint',
+      'Confirmed path-level malicious test fixture for browser protection',
+      'Targeted malware distribution test path (/s/malware.html)',
+    ],
+  },
 };
 
 export class CacheService {
   private static l1MemoryCache = new Map<string, CachedReputationEntry>();
 
   /**
-   * Check local offline intelligence first (0ms latency)
+   * Check local offline intelligence first (0ms latency).
+   * Hierarchically matches full URL expressions (path-specific) first, then domain-level threats.
    */
   static checkLocalIntelligence(
     domain: string,
@@ -180,7 +193,56 @@ export class CacheService {
   ): ReputationVerdict | null {
     const cleanDomain = domain.toLowerCase().trim();
 
-    // 1. Tranco Protected Anchor Check
+    // 1. High-Confidence Offline Malicious Threats Check (Hierarchical URL & Domain Matching)
+    // Check path-specific and full URL expressions FIRST so path threats on cloud/hosting are not masked
+    const canonical = canonicalizeUrl(canonicalUrl);
+    const expressions = getUrlThreatExpressions(canonical);
+
+    for (const item of expressions) {
+      const expr = item.expression;
+      if (OFFLINE_MALICIOUS_THREATS[expr]) {
+        const threat = OFFLINE_MALICIOUS_THREATS[expr];
+        const isPathSpecific = expr.includes('/');
+        return {
+          domain: cleanDomain,
+          canonicalUrl,
+          severity: threat.severity,
+          category: threat.category,
+          riskScore: 0.98,
+          evidence: [
+            ...threat.evidence,
+            isPathSpecific
+              ? `Path-specific threat signature matched: ${expr}`
+              : `Domain-level threat signature matched: ${expr}`,
+          ],
+          impersonatedBrand: threat.impersonatedBrand,
+          source: 'OFFLINE_RULE',
+          isBlocked: true,
+          evaluatedAt: Date.now(),
+          matchedPattern: expr,
+        };
+      }
+    }
+
+    // Direct domain fallback check if expressions were empty
+    if (OFFLINE_MALICIOUS_THREATS[cleanDomain]) {
+      const threat = OFFLINE_MALICIOUS_THREATS[cleanDomain];
+      return {
+        domain: cleanDomain,
+        canonicalUrl,
+        severity: threat.severity,
+        category: threat.category,
+        riskScore: 0.98,
+        evidence: threat.evidence,
+        impersonatedBrand: threat.impersonatedBrand,
+        source: 'OFFLINE_RULE',
+        isBlocked: true,
+        evaluatedAt: Date.now(),
+        matchedPattern: cleanDomain,
+      };
+    }
+
+    // 2. Tranco Protected Anchor Check
     if (this.isTrancoProtectedAnchor(cleanDomain)) {
       return {
         domain: cleanDomain,
@@ -195,26 +257,10 @@ export class CacheService {
       };
     }
 
-    // 2. High-Confidence Offline Malicious Threats Check
-    if (OFFLINE_MALICIOUS_THREATS[cleanDomain]) {
-      const threat = OFFLINE_MALICIOUS_THREATS[cleanDomain];
-      return {
-        domain: cleanDomain,
-        canonicalUrl,
-        severity: threat.severity,
-        category: threat.category,
-        riskScore: 0.98,
-        evidence: threat.evidence,
-        impersonatedBrand: threat.impersonatedBrand,
-        source: 'OFFLINE_RULE',
-        isBlocked: true,
-        evaluatedAt: Date.now(),
-      };
-    }
-
     // 3. L1 Memory Cache Check (skipped if skipDynamicCache is true)
     if (!skipDynamicCache) {
-      const memEntry = this.l1MemoryCache.get(cleanDomain);
+      const cacheKey = canonicalUrl && canonicalUrl !== `https://${cleanDomain}/` ? `url_${canonicalUrl}` : cleanDomain;
+      const memEntry = this.l1MemoryCache.get(cacheKey) || this.l1MemoryCache.get(cleanDomain);
       if (memEntry && memEntry.expiresAt > Date.now()) {
         return memEntry.verdict;
       }
@@ -238,9 +284,10 @@ export class CacheService {
   /**
    * Read from L2 Chrome Local Storage Cache
    */
-  static async getFromStorage(domain: string): Promise<ReputationVerdict | null> {
+  static async getFromStorage(domain: string, canonicalUrl?: string): Promise<ReputationVerdict | null> {
     const cleanDomain = domain.toLowerCase().trim();
-    const key = `${CACHE_STORAGE_PREFIX}${cleanDomain}`;
+    const cacheKey = canonicalUrl && canonicalUrl !== `https://${cleanDomain}/` ? `url_${canonicalUrl}` : cleanDomain;
+    const key = `${CACHE_STORAGE_PREFIX}${cacheKey}`;
 
     try {
       const data = await chrome.storage.local.get(key);
@@ -248,7 +295,7 @@ export class CacheService {
         const entry: CachedReputationEntry = data[key];
         if (entry.expiresAt > Date.now()) {
           // Populate L1 cache for fast subsequent hits
-          this.l1MemoryCache.set(cleanDomain, entry);
+          this.l1MemoryCache.set(cacheKey, entry);
           return entry.verdict;
         } else {
           // Expired, delete from storage
@@ -265,8 +312,9 @@ export class CacheService {
   /**
    * Save a verdict into both L1 Memory and L2 Storage Cache
    */
-  static async set(domain: string, verdict: ReputationVerdict): Promise<void> {
+  static async set(domain: string, verdict: ReputationVerdict, canonicalUrl?: string): Promise<void> {
     const cleanDomain = domain.toLowerCase().trim();
+    const cacheKey = canonicalUrl && canonicalUrl !== `https://${cleanDomain}/` ? `url_${canonicalUrl}` : cleanDomain;
     const now = Date.now();
     const entry: CachedReputationEntry = {
       verdict,
@@ -275,10 +323,15 @@ export class CacheService {
     };
 
     // Save in L1 memory
-    this.l1MemoryCache.set(cleanDomain, entry);
+    this.l1MemoryCache.set(cacheKey, entry);
+    if (cacheKey !== cleanDomain) {
+      // If path-specific, do not overwrite domain-level cache
+    } else {
+      this.l1MemoryCache.set(cleanDomain, entry);
+    }
 
     // Save in L2 chrome storage
-    const key = `${CACHE_STORAGE_PREFIX}${cleanDomain}`;
+    const key = `${CACHE_STORAGE_PREFIX}${cacheKey}`;
     try {
       await chrome.storage.local.set({ [key]: entry });
     } catch (err) {

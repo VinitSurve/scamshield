@@ -195,3 +195,95 @@ export function canonicalizeUrl(rawUrl: string): CanonicalUrlResult {
     };
   }
 }
+
+export interface ThreatExpressionItem {
+  expression: string;
+  inputType: 'full_url' | 'hostname' | 'domain';
+}
+
+/**
+ * Generates hierarchical URL expressions for threat matching.
+ * Covers full URL, protocol-relative path, path sub-prefixes, root host, and registered domain.
+ * This mirrors Google Safe Browsing and k-anonymity canonical expression standards.
+ */
+export function getUrlThreatExpressions(canonical: CanonicalUrlResult): ThreatExpressionItem[] {
+  if (!canonical.isValid || canonical.isInternal || !canonical.hostname) {
+    return [];
+  }
+
+  const results: ThreatExpressionItem[] = [];
+  const seen = new Set<string>();
+
+  const addExpr = (expr: string, inputType: 'full_url' | 'hostname' | 'domain') => {
+    const clean = expr.trim().toLowerCase();
+    if (clean && !seen.has(clean)) {
+      seen.add(clean);
+      results.push({ expression: clean, inputType });
+    }
+  };
+
+  const hostname = canonical.hostname.toLowerCase();
+  const pathname = canonical.pathname || '/';
+  const canonicalUrl = canonical.canonicalUrl;
+
+  // 1. Exact canonical URL (with protocol, path, and sanitized query)
+  addExpr(canonicalUrl, 'full_url');
+
+  // 2. Protocol-relative URL (hostname + path + query if query exists)
+  try {
+    const parsed = new URL(canonicalUrl);
+    const searchPart = parsed.search || '';
+    if (searchPart) {
+      addExpr(`${hostname}${pathname}${searchPart}`, 'full_url');
+    }
+  } catch {
+    // ignore
+  }
+
+  // 3. Host + Full Path (without query)
+  if (pathname !== '/' && pathname !== '') {
+    addExpr(`${canonical.protocol}//${hostname}${pathname}`, 'full_url');
+    addExpr(`${hostname}${pathname}`, 'full_url');
+
+    // 4. Path sub-prefixes (e.g. /s/malware.html -> /s/)
+    const segments = pathname.split('/').filter(Boolean);
+    if (segments.length > 1) {
+      let subPath = '';
+      for (let i = 0; i < segments.length - 1; i++) {
+        subPath += `/${segments[i]}`;
+        addExpr(`${hostname}${subPath}/`, 'full_url');
+      }
+    }
+  }
+
+  // 5. Host root with trailing slash
+  addExpr(`${hostname}/`, 'hostname');
+
+  // 6. Hostname
+  addExpr(hostname, 'hostname');
+
+  // 7. Strip www. prefix if present
+  if (hostname.startsWith('www.')) {
+    const noWww = hostname.slice(4);
+    if (pathname !== '/' && pathname !== '') {
+      addExpr(`${noWww}${pathname}`, 'full_url');
+    }
+    addExpr(noWww, 'domain');
+  }
+
+  // 8. Registered parent domain if hostname is a multi-level subdomain (e.g. testsafebrowsing.appspot.com -> appspot.com)
+  const hostParts = hostname.split('.');
+  if (hostParts.length > 2) {
+    const commonTwoPartTlds = new Set(['co.uk', 'co.in', 'com.au', 'gov.in', 'edu.in', 'net.in', 'org.in', 'ac.in']);
+    const potentialTwoPartTld = hostParts.slice(-2).join('.');
+    if (commonTwoPartTlds.has(potentialTwoPartTld) && hostParts.length > 3) {
+      const ccParent = hostParts.slice(-3).join('.');
+      addExpr(ccParent, 'domain');
+    } else if (!commonTwoPartTlds.has(potentialTwoPartTld)) {
+      const parentDomain = hostParts.slice(-2).join('.');
+      addExpr(parentDomain, 'domain');
+    }
+  }
+
+  return results;
+}

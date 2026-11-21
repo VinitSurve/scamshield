@@ -11,6 +11,8 @@ export type ThreatCategory =
   | 'SUSPICIOUS_LOGIN'
   | 'LEGITIMATE'
   | 'NO_KNOWN_THREAT'
+  | 'UNVERIFIED'
+  | 'ANALYSIS_UNAVAILABLE'
   | 'UNKNOWN';
 
 export type ReputationSource =
@@ -32,9 +34,12 @@ export interface ThreatEvidenceItem {
 export interface ScannerCheckItem {
   name: string;
   label: string;
-  status: 'completed' | 'unavailable' | 'skipped';
-  result: 'PASS' | 'WARN' | 'FAIL' | 'CLEAN' | 'UNKNOWN';
+  status: 'completed' | 'unavailable' | 'failed' | 'skipped';
+  inputType?: 'full_url' | 'hostname' | 'domain' | 'url_patterns';
+  result: 'PASS' | 'WARN' | 'FAIL' | 'CLEAN' | 'UNKNOWN' | 'UNAVAILABLE';
   details: string;
+  error?: string;
+  durationMs?: number;
 }
 
 export interface ReputationVerdict {
@@ -54,6 +59,7 @@ export interface ReputationVerdict {
   scanDurationMs?: number;
   isFreshScan?: boolean;
   checksSummary?: ScannerCheckItem[];
+  matchedPattern?: string;
 }
 
 export interface RedirectHop {

@@ -99,8 +99,11 @@ export class TestRunner {
       notes.push(`Verdict mismatch: Got ${actualVerdict.severity}/${actualVerdict.category}, expected ${expectedSeverities.join('/')}/${expectedCategories.join('/')}`);
     }
 
-    if (testCase.expectedSource && actualVerdict.source === testCase.expectedSource) {
-      notes.push(`Detection source matched: ${actualVerdict.source}`);
+    if (testCase.expectedSource) {
+      const sources = Array.isArray(testCase.expectedSource) ? testCase.expectedSource : [testCase.expectedSource];
+      if (sources.includes(actualVerdict.source)) {
+        notes.push(`Detection source matched: ${actualVerdict.source}`);
+      }
     }
 
     return {

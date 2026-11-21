@@ -10,6 +10,8 @@ export type TestCaseId =
   | 'IMPERSONATION_HDFC'
   | 'IMPERSONATION_PHONEPE'
   | 'MALICIOUS_OFFLINE_KYC'
+  | 'MALWARE_GOOGLE_TEST_URL'
+  | 'CLEAN_DOMAIN_CLEAN_PATH'
   | 'SIMULATED_REDIRECT_CHAIN'
   | 'INVALID_URL_SAFETY'
   | 'AI_KEY_ROTATION'
@@ -33,7 +35,7 @@ export interface TestCase {
   description: string;
   expectedSeverity: ThreatSeverity | ThreatSeverity[];
   expectedCategory: ThreatCategory | ThreatCategory[];
-  expectedSource?: string;
+  expectedSource?: string | string[];
   isRedirectSimulation?: boolean;
   simulationHops?: string[];
   isAiDiagnostic?: boolean;

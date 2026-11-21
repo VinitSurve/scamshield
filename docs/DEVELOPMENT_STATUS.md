@@ -43,7 +43,7 @@ ScamShield is being actively developed across two parallel, decoupled workstream
 | **Phase 6: In-Browser Website Heuristics** | P1 | **Completed** | Content script (`content-script.ts`) DOM analysis, zero-keystroke scanning, login form detection on unrated domains, Punycode/homoglyph detection. |
 | **Phase 7: Gmail Web Protection** | P2 | **Completed** | Gmail content script (`gmail.ts`) detecting display-name vs. SMTP address spoofing with injected security pills. |
 | **Phase 8: Extension UI Shells** | P0 | **Completed** | Responsive Popup UI (`popup.html`), full Options/Settings page (`options.html`), threat history, telemetry toggles, and multilingual i18n support. |
-| **Phase 9: Security Test Lab (Dev Mode)** | P0 (Dev) | **Completed** | Controlled testing dashboard (`test-lab.html`) with 15 synthetic/anchor/AI test cases, real-time progress, latency tracking, and diagnostic evidence inspection. |
+| **Phase 9: Security Test Lab (Dev Mode)** | P0 (Dev) | **Completed** | Controlled testing dashboard (`test-lab.html`) with 17 synthetic/anchor/AI/path-threat test cases, real-time progress, latency tracking, and diagnostic evidence inspection. |
 | **Phase 10: Multi-Provider AI Engine** | P0 | **Completed** | Dual-provider support (Google Gemini & Groq), multi-key pools, health-aware round-robin rotation, HTTP 429 rate-limit cooldown recovery, provider fallback, PII scrubber, structured scam message analyzer in Popup, and AI Settings UI in Options. |
 
 ### B. Security Test Lab Matrix (`test-lab.html`)
@@ -59,6 +59,8 @@ ScamShield is being actively developed across two parallel, decoupled workstream
 | `IMPERSONATION_HDFC` | `https://hdfc-bank-secure-login.example` | `Brand Impersonation` | Suspicious (Score ≥ 40) | **PASS** | Local Brand Impersonation Heuristics |
 | `IMPERSONATION_PHONEPE` | `https://phonepe-account-verify.example` | `Brand Impersonation` | Suspicious (Score ≥ 40) | **PASS** | Local Brand Impersonation Heuristics |
 | `MALICIOUS_OFFLINE_KYC` | `https://sbi-online-kyc-verification.top` | `Known Threat Fixture` | Malicious (Score = 95) | **PASS** | Local Threat Intelligence Cache |
+| `MALWARE_GOOGLE_TEST_URL` | `https://testsafebrowsing.appspot.com/s/malware.html` | `Known Threat Fixture` | Critical Malware (Score ≥ 95) | **PASS** | Path-Specific Threat Signature |
+| `CLEAN_DOMAIN_CLEAN_PATH` | `https://testsafebrowsing.appspot.com/` | `Known Threat Fixture` | Non-Malicious Parent Root | **PASS** | Path-Level Isolation / Fallback |
 | `SIMULATED_REDIRECT_CHAIN` | `https://shortener.example/promo` (3 hops) | `Redirect Chain` | Suspicious (Score ≥ 35) | **PASS** | `RedirectTracker` Multi-Hop Engine |
 | `INVALID_URL_SAFETY` | `javascript:alert("XSS")` | `Input Resilience` | Safe / Handled Gracefully | **PASS** | `UrlValidator` Sanitization Pipeline |
 | `AI_KEY_ROTATION` | `ai://key-manager/rotation-test` | `AI Engine Diagnostic` | Safe / Operational | **PASS** | Round-robin key rotation across healthy pool |
@@ -72,7 +74,7 @@ ScamShield is being actively developed across two parallel, decoupled workstream
 
 | Check | Tool / Runner | Target | Result | Details |
 |---|---|---|---|---|
-| **Unit & Integration Tests** | Vitest v5.1.1 | `extension/tests/*.test.ts` | **69 / 69 PASS** | 13 test files passing in 205ms |
+| **Unit & Integration Tests** | Vitest v5.1.1 | `extension/tests/*.test.ts` | **75 / 75 PASS** | 13 test files passing in 236ms |
 | **TypeScript Typecheck** | `tsc --noEmit` | `extension/tsconfig.json` | **0 Errors** | Strict mode enabled |
 | **Production Build** | Vite v6.4.6 + Node script | `extension/scripts/build.js` | **SUCCESS** | Bundles `popup`, `options`, `interstitial`, `test-lab`, `background`, `content`, `gmail` |
 | **Lint & Formatting** | ESLint & Prettier configs | `extension/src` | **Compliant** | Zero unused variables / strict security boundaries |
@@ -92,6 +94,7 @@ ScamShield is being actively developed across two parallel, decoupled workstream
 
 ## 6. Audit & Change Log
 
+- **2026-11-21 (`vinit-browser-extension-mvp`):** Fixed critical false-negative vulnerability on Google Safe Browsing malware test URL (`https://testsafebrowsing.appspot.com/s/malware.html`). Eliminated silent promotion of offline/failed API lookups to `CLEAN` / `2%`. Implemented hierarchical URL expression threat matching (`getUrlThreatExpressions`) supporting path-specific threats, full URL hashes, and domain lookups. Established strict verdict distinction: `MALICIOUS`, `SUSPICIOUS`, `LEGITIMATE`, `NO_KNOWN_THREAT`, `UNVERIFIED`, `ANALYSIS_UNAVAILABLE`. Unknown sites with offline threat intelligence now conservatively receive `ANALYSIS_UNAVAILABLE` (20% caution score, LOW confidence, never clean). Expanded Security Test Lab to 17 test cases with path-level malware verification and path-isolation regression tests. All 75 unit/integration tests passing.
 - **2026-11-21 (`vinit-browser-extension-mvp`):** Fixed website scanning pipeline and active tab detection bug. Removed hardcoded 15% fallback score, added observable scan lifecycle (scanId, latency in ms, fresh scan vs cached indicator), expanded Tranco Top 100K anchor registry with LinkedIn and top global/Indian platforms, integrated dynamic evidence calculation (`NO_KNOWN_THREAT`, `LEGITIMATE`), added completed checks checklist accordion, and added LinkedIn verification test. 69/69 tests passing across 13 test suites.
 - **2026-11-21 (`vinit-browser-extension-mvp`):** Implemented complete Multi-Provider AI Engine (Google Gemini + Groq) with multi-key pool, round-robin rotation, 429 rate limit cooldown recovery, provider fallback routing, PII scrubber, AI Settings UI in Options, and AI Scam Message Scanner & Threat Explanation Modals in Popup. All 68 tests passing across 13 suites.
 - **2026-11-21 (`a4371c9`):** Merged `vinit-add-docs` into `main` with project master context and initial development status tracker.
