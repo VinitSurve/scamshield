@@ -409,6 +409,78 @@ def evaluate_cmd():
     leaderboard_cmd()
 
 
+@app.command("adversarial")
+def adversarial_cmd():
+    """Evaluate models against the adversarial robustness benchmark (edge cases, hard benigns, evasions)."""
+    adv_path = ML_LAB_DIR / "datasets" / "adversarial_benchmark.json"
+    if not adv_path.exists():
+        console.print("[red]Adversarial benchmark not found at datasets/adversarial_benchmark.json[/red]")
+        raise typer.Exit(code=1)
+
+    with open(adv_path, "r", encoding="utf-8") as f:
+        adv_data = json.load(f)
+
+    from scamshield_ml.models.ann import ANNScamModel
+    from scamshield_ml.models.ensemble import EnsembleScamModel
+    from scamshield_ml.models.knn import KNNScamModel
+    from scamshield_ml.models.logistic_regression import LogisticRegressionScamModel
+    from scamshield_ml.models.url_classifier import URLFeatureClassifier
+
+    models_map = [
+        ("Logistic Regression", LogisticRegressionScamModel(), "logistic.joblib"),
+        ("KNN", KNNScamModel(), "knn.joblib"),
+        ("ANN (MLP)", ANNScamModel(), "ann.joblib"),
+        ("URL Classifier", URLFeatureClassifier(), "url.joblib"),
+        ("Ensemble (Voting)", EnsembleScamModel(), "ensemble.joblib"),
+    ]
+
+    table = Table(title=f"SCAMSHIELD ADVERSARIAL BENCHMARK ({len(adv_data)} Challenging Samples)", box=box.ROUNDED)
+    table.add_column("Model Name", style="bold")
+    table.add_column("Accuracy", justify="right")
+    table.add_column("Scams Caught (Recall)", justify="right", style="green")
+    table.add_column("False Alarms (FPR)", justify="right")
+    table.add_column("False Negatives", justify="right")
+    table.add_column("Avg Latency", justify="right")
+
+    for display_name, model, fname in models_map:
+        m_file = ARTIFACTS_DIR / "models" / fname
+        if not m_file.exists():
+            table.add_row(display_name, "[dim]Not trained[/dim]", "-", "-", "-", "-")
+            continue
+
+        model.load(str(m_file))
+        preds = [model.predict_one(s["content"]) for s in adv_data]
+        y_pred = [p.is_scam for p in preds]
+        y_true = [int(s["is_scam"]) for s in adv_data]
+
+        benign_cnt = sum(1 for y in y_true if y == 0)
+        scam_cnt = sum(1 for y in y_true if y == 1)
+
+        fp = sum(1 for yt, yp in zip(y_true, y_pred) if yt == 0 and yp == 1)
+        fn = sum(1 for yt, yp in zip(y_true, y_pred) if yt == 1 and yp == 0)
+        tp = sum(1 for yt, yp in zip(y_true, y_pred) if yt == 1 and yp == 1)
+        tn = sum(1 for yt, yp in zip(y_true, y_pred) if yt == 0 and yp == 0)
+
+        acc = (tp + tn) / max(1, len(y_true))
+        recall = tp / max(1, scam_cnt)
+        fpr = fp / max(1, benign_cnt)
+        avg_lat = sum(p.latency_ms for p in preds) / max(1, len(preds))
+
+        fpr_style = "green" if fpr <= 0.20 else "yellow" if fpr <= 0.40 else "red"
+        rec_style = "green" if recall >= 0.85 else "yellow" if recall >= 0.70 else "red"
+
+        table.add_row(
+            display_name,
+            f"{acc*100:.1f}%",
+            f"[{rec_style}]{tp}/{scam_cnt} ({recall*100:.1f}%)[/{rec_style}]",
+            f"[{fpr_style}]{fp}/{benign_cnt} ({fpr*100:.1f}%)[/{fpr_style}]",
+            f"{fn}/{scam_cnt}",
+            f"{avg_lat:.2f}ms",
+        )
+
+    console.print(table)
+
+
 @experiment_app.command("list")
 def experiments_list_cmd():
     """List all permanent experiment runs."""

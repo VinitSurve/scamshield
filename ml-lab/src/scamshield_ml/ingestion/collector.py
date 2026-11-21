@@ -22,6 +22,8 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from scamshield_ml.ingestion.dataset_expansion import build_expanded_samples
+
 logger = logging.getLogger(__name__)
 
 
@@ -32,12 +34,18 @@ class DatasetSample:
     content_type: str  # "message", "url", "ocr_text"
     label: str  # "scam", "legitimate", "suspicious"
     is_scam: int  # 1 for scam/suspicious, 0 for legitimate
-    category: str  # "BANKING_KYC", "UPI_FRAUD", "ELECTRICITY", "DELIVERY", "LOTTERY", "JOB_OFFER", "DIGITAL_ARREST", "OTP_THEFT", "LEGITIMATE"
+    category: str  # "BANKING_KYC", "UPI_FRAUD", "ELECTRICITY", "DELIVERY", "LOTTERY", "JOB_OFFER", "DIGITAL_ARREST", "OTP_THEFT", "LEGITIMATE", etc.
     language: str  # "en", "hi", "mr", "hinglish", "romanized_mr"
     source: str  # "curated_threat_intel", "reported_scam", "tranco_anchor", "synthetic_edge"
     extracted_urls: List[str]
     extracted_phones: List[str]
     extracted_upis: List[str]
+    synthetic: bool = False
+    brand: Optional[str] = None
+    explanation: str = ""
+    confidence: float = 1.0
+    timestamp: str = "2026-11-22T04:00:00Z"
+    dataset_version: str = "v2.0.0"
 
 
 class DatasetCollector:
@@ -294,7 +302,7 @@ class DatasetCollector:
             ("https://kbc-jio-lottery-winner.xyz/claim", "en", "curated_threat_intel"),
             ("https://testsafebrowsing.appspot.com/s/malware.html", "en", "curated_threat_intel"),
             ("https://tinyurl.com/sbi-pan-kyc-now", "en", "curated_threat_intel"),
-            ("http://192.168.1.1/sbi/login.php", "en", "curated_threat_intel"),
+            ("http://103.21.244.42/sbi/login.php", "en", "curated_threat_intel"),
             ("https://sbi-yono-reward-points.xyz/redeem", "en", "curated_threat_intel"),
             ("https://bank-kyc-verify.top", "en", "curated_threat_intel"),
             ("https://pnb-card-verify.top/debit", "en", "curated_threat_intel"),
@@ -321,49 +329,33 @@ class DatasetCollector:
             add_sample(text, c_type, label, cat, lang, src, urls, phones, upis)
 
         # ----------------------------------------------------
-        # Augment with variations to form a robust 120+ sample seed benchmark
+        # 12. Incorporate Expanded India-First Curation Benchmark
+        # Replaces artificial clone variations with authentic multi-category,
+        # multilingual and hard benign samples.
         # ----------------------------------------------------
-        variations = []
-        for s in samples:
-            if s.content_type == "message" and s.label == "scam":
-                # Create subtle variation (different phone or slightly modified wording)
-                var_content = s.content.replace("9876543210", "9123456789").replace("SBI", "State Bank")
-                if var_content != s.content:
-                    variations.append(
-                        DatasetSample(
-                            sample_id=f"SCAM-DATA-{counter:05d}",
-                            content=var_content,
-                            content_type="message",
-                            label=s.label,
-                            is_scam=s.is_scam,
-                            category=s.category,
-                            language=s.language,
-                            source="curated_threat_intel",
-                            extracted_urls=s.extracted_urls,
-                            extracted_phones=["9123456789"] if s.extracted_phones else [],
-                            extracted_upis=s.extracted_upis,
-                        )
-                    )
-                    counter += 1
-            elif s.content_type == "message" and s.label == "legitimate":
-                var_content = s.content.replace("Rs 45,000", "Rs 52,000").replace("Rs 850", "Rs 1,120")
-                if var_content != s.content:
-                    variations.append(
-                        DatasetSample(
-                            sample_id=f"SCAM-DATA-{counter:05d}",
-                            content=var_content,
-                            content_type="message",
-                            label=s.label,
-                            is_scam=s.is_scam,
-                            category=s.category,
-                            language=s.language,
-                            source="curated_threat_intel",
-                            extracted_urls=s.extracted_urls,
-                            extracted_phones=s.extracted_phones,
-                            extracted_upis=s.extracted_upis,
-                        )
-                    )
-                    counter += 1
+        expanded_raw = build_expanded_samples()
+        for item in expanded_raw:
+            samples.append(
+                DatasetSample(
+                    sample_id=f"SCAM-DATA-{counter:05d}",
+                    content=item["content"],
+                    content_type=item["content_type"],
+                    label=item["label"],
+                    is_scam=item["is_scam"],
+                    category=item["category"],
+                    language=item["language"],
+                    source=item["source"],
+                    extracted_urls=item["extracted_urls"],
+                    extracted_phones=item["extracted_phones"],
+                    extracted_upis=item["extracted_upis"],
+                    synthetic=item.get("synthetic", False),
+                    brand=item.get("brand"),
+                    explanation=item.get("explanation", ""),
+                    confidence=item.get("confidence", 1.0),
+                    timestamp=item.get("timestamp", "2026-11-22T04:00:00Z"),
+                    dataset_version=item.get("dataset_version", "v2.0.0"),
+                )
+            )
+            counter += 1
 
-        samples.extend(variations)
         return samples

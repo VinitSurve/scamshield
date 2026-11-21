@@ -1,48 +1,55 @@
 {
   "dataset_name": "ScamShield-IndiaFirst-Cybersecurity-Benchmark",
-  "version": "v1.0.0-07e9087db727",
-  "dataset_hash": "07e9087db727",
-  "created_at": "2026-11-22T00:00:00Z",
-  "total_samples": 138,
+  "version": "v2.0.0-ca6930eccd7f",
+  "dataset_hash": "ca6930eccd7f",
+  "created_at": "2026-11-22T04:00:00Z",
+  "total_samples": 343,
   "splits": {
-    "train_count": 91,
-    "val_count": 19,
-    "test_count": 28
+    "train_count": 231,
+    "val_count": 52,
+    "test_count": 60
   },
   "class_distribution": {
-    "scam": 95,
-    "legitimate": 43
+    "scam": 187,
+    "legitimate": 156
   },
   "language_distribution": {
-    "en": 101,
-    "hinglish": 17,
-    "hi": 8,
-    "mr": 11,
-    "romanized_mr": 1
+    "en": 244,
+    "hinglish": 37,
+    "hi": 26,
+    "mr": 34,
+    "romanized_mr": 2
   },
   "category_distribution": {
-    "BANKING_KYC": 21,
-    "UPI_FRAUD": 11,
-    "ELECTRICITY": 11,
-    "DELIVERY": 7,
-    "LOTTERY": 7,
-    "JOB_OFFER": 6,
-    "DIGITAL_ARREST": 7,
-    "OTP_THEFT": 5,
-    "LEGITIMATE": 43,
-    "PHISHING_URL": 20
+    "BANKING_KYC": 27,
+    "UPI_FRAUD": 19,
+    "ELECTRICITY": 16,
+    "DELIVERY": 14,
+    "LOTTERY": 6,
+    "JOB_OFFER": 13,
+    "DIGITAL_ARREST": 14,
+    "OTP_THEFT": 4,
+    "LEGITIMATE": 156,
+    "PHISHING_URL": 43,
+    "LOAN_FRAUD": 5,
+    "REMOTE_ACCESS_FRAUD": 5,
+    "SIM_DEACTIVATION": 6,
+    "TAX_CHALLAN_FRAUD": 5,
+    "CUSTOMER_SUPPORT_SCAM": 4,
+    "EVASION_PERTURBATION": 6
   },
   "content_type_distribution": {
-    "message": 93,
-    "url": 40,
+    "message": 252,
+    "url": 86,
     "ocr_text": 5
   },
   "quality_metrics": {
-    "raw_inputs": 138,
-    "duplicates_removed": 0,
-    "near_duplicate_pairs": 5,
+    "raw_inputs": 345,
+    "duplicates_removed": 2,
+    "near_duplicate_pairs": 0,
     "invalid_labels": 0,
     "missing_fields": 0,
-    "data_leakage_detected": false
+    "data_leakage_detected": false,
+    "domain_overlap_test": 0
   }
 }

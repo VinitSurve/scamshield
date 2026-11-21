@@ -5,9 +5,12 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
-from collections import Counter
+import random
+import re
+from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
+from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
 
@@ -91,35 +94,56 @@ class DatasetValidator:
             if not s.get("content") or not s.get("category"):
                 missing_fields += 1
 
-        # 4. Stratified Split (70% train, 15% val, 15% test) without leakage
-        # Group by (category, is_scam)
-        groups: Dict[Tuple[str, int], List[Dict[str, Any]]] = {}
+        # 4. Cluster-Aware Group-Stratified Split (Eliminating Domain & Near-Duplicate Leakage)
+        def get_cluster_key(s: Dict[str, Any]) -> str:
+            urls = s.get("extracted_urls", [])
+            if not urls:
+                urls = re.findall(r"https?://[^\s<>\"'()]+", s.get("content", ""))
+            if urls:
+                dom = urlparse(urls[0] if "://" in urls[0] else "http://" + urls[0]).netloc.lower()
+                if dom.startswith("www."):
+                    dom = dom[4:]
+                if dom:
+                    return f"dom:{dom}"
+            return f"sample:{s['sample_id']}"
+
+        clusters: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
         for s in unique_samples:
-            key = (s.get("category", "UNKNOWN"), s.get("is_scam", 0))
-            groups.setdefault(key, []).append(s)
+            clusters[get_cluster_key(s)].append(s)
+
+        # Group clusters by (primary_category, is_scam)
+        cluster_groups: Dict[Tuple[str, int], List[List[Dict[str, Any]]]] = defaultdict(list)
+        for key, c_samples in clusters.items():
+            cat = c_samples[0].get("category", "UNKNOWN")
+            is_scam = c_samples[0].get("is_scam", 0)
+            cluster_groups[(cat, is_scam)].append(c_samples)
 
         train_set: List[Dict[str, Any]] = []
         val_set: List[Dict[str, Any]] = []
         test_set: List[Dict[str, Any]] = []
 
-        import random
         rng = random.Random(42)  # Fixed reproducible seed
 
-        for key, group_samples in groups.items():
-            rng.shuffle(group_samples)
-            n = len(group_samples)
-            n_train = max(1, int(n * 0.70))
-            n_val = max(1, int(n * 0.15)) if n >= 3 else 0
+        for g_key, group_clusters in cluster_groups.items():
+            rng.shuffle(group_clusters)
+            total_group_samples = sum(len(c) for c in group_clusters)
 
-            train_set.extend(group_samples[:n_train])
-            val_set.extend(group_samples[n_train : n_train + n_val])
-            test_set.extend(group_samples[n_train + n_val :])
+            tr_target = int(total_group_samples * 0.70)
+            va_target = max(1, int(total_group_samples * 0.15)) if len(group_clusters) >= 3 else 0
 
-        # If test_set is empty for tiny group, balance
-        if not test_set and len(val_set) > 1:
-            test_set.append(val_set.pop())
+            cur_tr, cur_va = 0, 0
+            for c in group_clusters:
+                c_len = len(c)
+                if cur_tr + c_len <= max(1, tr_target):
+                    train_set.extend(c)
+                    cur_tr += c_len
+                elif cur_va < va_target or (len(group_clusters) >= 3 and cur_va == 0):
+                    val_set.extend(c)
+                    cur_va += c_len
+                else:
+                    test_set.extend(c)
 
-        # 5. Data Leakage Verification
+        # 5. Data Leakage & Domain Overlap Verification
         train_hashes = {s["sha256"] for s in train_set}
         val_hashes = {s["sha256"] for s in val_set}
         test_hashes = {s["sha256"] for s in test_set}
@@ -127,7 +151,28 @@ class DatasetValidator:
         leakage_val = len(train_hashes.intersection(val_hashes))
         leakage_test = len(train_hashes.intersection(test_hashes))
         leakage_test_val = len(val_hashes.intersection(test_hashes))
-        has_leakage = (leakage_val + leakage_test + leakage_test_val) > 0
+        has_hash_leakage = (leakage_val + leakage_test + leakage_test_val) > 0
+
+        # Domain overlap audit
+        def extract_domains(sample_list: List[Dict[str, Any]]) -> Set[str]:
+            doms = set()
+            for smp in sample_list:
+                u_list = smp.get("extracted_urls", [])
+                if not u_list:
+                    u_list = re.findall(r"https?://[^\s<>\"'()]+", smp.get("content", ""))
+                for u in u_list:
+                    d = urlparse(u if "://" in u else "http://" + u).netloc.lower()
+                    if d.startswith("www."):
+                        d = d[4:]
+                    if d:
+                        doms.add(d)
+            return doms
+
+        tr_domains = extract_domains(train_set)
+        val_domains = extract_domains(val_set)
+        test_domains = extract_domains(test_set)
+        domain_overlap_test = len(tr_domains.intersection(test_domains))
+        has_leakage = has_hash_leakage or (domain_overlap_test > 0)
 
         # Save splits
         with open(self.data_dir / "train.json", "w", encoding="utf-8") as f:
@@ -149,9 +194,9 @@ class DatasetValidator:
 
         manifest = {
             "dataset_name": "ScamShield-IndiaFirst-Cybersecurity-Benchmark",
-            "version": f"v1.0.0-{dataset_hash}",
+            "version": f"v2.0.0-{dataset_hash}",
             "dataset_hash": dataset_hash,
-            "created_at": "2026-11-22T00:00:00Z",
+            "created_at": "2026-11-22T04:00:00Z",
             "total_samples": len(unique_samples),
             "splits": {
                 "train_count": len(train_set),
@@ -169,6 +214,7 @@ class DatasetValidator:
                 "invalid_labels": invalid_labels,
                 "missing_fields": missing_fields,
                 "data_leakage_detected": has_leakage,
+                "domain_overlap_test": domain_overlap_test,
             },
         }
 
@@ -244,6 +290,7 @@ class DatasetValidator:
         report_md += f"- Exact matches between Train and Test: **{leakage_test}**\n"
         report_md += f"- Exact matches between Train and Val: **{leakage_val}**\n"
         report_md += f"- Exact matches between Val and Test: **{leakage_test_val}**\n"
+        report_md += f"- Domain overlap between Train and Test: **{domain_overlap_test}** (Cluster-aware split)\n"
         report_md += "- Hash verification algorithm: `SHA-256` content hashing\n"
 
         with open(self.reports_dir / "dataset_quality_report.md", "w", encoding="utf-8") as f:

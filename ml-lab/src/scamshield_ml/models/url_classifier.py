@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import re
 import time
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
@@ -77,6 +78,21 @@ class URLFeatureClassifier(BaseModel):
 
     def predict_one(self, content: str) -> PredictionOutput:
         start = time.time()
+        # Verify if content contains any URL candidate
+        has_url = content.strip().startswith(("http://", "https://", "www.")) or bool(
+            re.search(r"https?://[^\s<>\"'()]+|\b[a-zA-Z0-9-]{2,63}\.(?:top|xyz|in|com|org|net|gov|edu|co)\b", content)
+        )
+        if not has_url:
+            return PredictionOutput(
+                is_scam=0,
+                scam_probability=0.0,
+                label="LEGITIMATE",
+                confidence=1.0,
+                model_name=self.name,
+                features_used=["no_url_candidate"],
+                latency_ms=0.05,
+            )
+
         feats = URLFeatureExtractor.extract_features(content)
         vec = np.array([URLFeatureExtractor.to_vector(feats)])
         vec_scaled = self.scaler.transform(vec)

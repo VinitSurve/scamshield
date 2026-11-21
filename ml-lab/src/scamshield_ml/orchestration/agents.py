@@ -240,7 +240,13 @@ class WebsiteContentAgent:
         evidence = []
         risk = 5
 
-        if any(w in lower for w in CREDENTIAL_KEYWORDS):
+        is_anti_sharing_advisory = any(neg in lower for neg in [
+            "do not share", "never share", "don't share", "do not disclose",
+            "never disclose", "kisi ko na de", "kisi se share na kare", "never ask",
+            "bank never asks", "police never", "rbi never", "not share", "ko share karu naka"
+        ])
+
+        if any(w in lower for w in CREDENTIAL_KEYWORDS) and not is_anti_sharing_advisory:
             risk += 50
             evidence.append(asdict(EvidenceItem("content_analysis", "credential_harvesting_signal", "Demands OTP / PIN / Password", "critical")))
 
@@ -336,8 +342,12 @@ class IndianScamIntelligenceAgent:
         evidence = []
         risk = 5
 
+        is_awareness_advisory = any(ad in lower for ad in [
+            "urges citizens", "dial 1930", "report scam", "awareness", "never conduct trials", "no legal procedure", "beware of", "savdhan"
+        ])
+
         # Digital arrest / police
-        if any(w in lower for w in ["digital arrest", "cyber crime branch", "mumbai police", "cbi", "narcotics parcel"]):
+        if any(w in lower for w in ["digital arrest", "cyber crime branch", "mumbai police", "cbi", "narcotics parcel"]) and not is_awareness_advisory:
             risk += 80
             evidence.append(asdict(EvidenceItem("indian_scam", "digital_arrest_coercion", "Police / CBI impersonation threat", "critical")))
 

@@ -125,8 +125,8 @@ class URLFeatureExtractor:
         # Check IP literal
         is_ip = 1 if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", host_lower) else 0
 
-        # Check punycode
-        has_punycode = 1 if "xn--" in host_lower else 0
+        # Check punycode and Unicode homoglyphs (non-ASCII characters)
+        has_punycode = 1 if ("xn--" in host_lower or any(ord(c) > 127 for c in target)) else 0
 
         # Check shortener
         is_shortener = 1 if host_lower in KNOWN_SHORTENERS else 0

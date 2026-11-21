@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import copy
 import logging
 import time
+import warnings
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 import joblib
@@ -22,8 +24,8 @@ class ANNScamModel(BaseModel):
 
     def __init__(
         self,
-        hidden_layer_sizes: tuple = (128, 64),
-        max_epochs: int = 40,
+        hidden_layer_sizes: tuple = (64, 32),
+        max_epochs: int = 25,
         learning_rate: float = 0.001,
         early_stopping_patience: int = 5,
     ) -> None:
@@ -39,9 +41,9 @@ class ANNScamModel(BaseModel):
             activation="relu",
             solver="adam",
             learning_rate_init=self.learning_rate,
-            alpha=0.0001,
+            alpha=0.001,
             warm_start=True,  # Enables epoch-by-epoch resumption
-            max_iter=1,  # 1 iteration per partial_fit/fit call
+            max_iter=1,
             random_state=42,
         )
         self.current_epoch = 0
@@ -69,11 +71,14 @@ class ANNScamModel(BaseModel):
 
         classes = np.array([0, 1])
         best_val_f1 = 0.0
+        best_classifier = None
         patience_counter = 0
 
         for epoch in range(self.current_epoch + 1, self.max_epochs + 1):
-            # One epoch of training
-            self.classifier.partial_fit(X_train, y_train, classes=classes if epoch == 1 else None)
+            self.classifier.set_params(max_iter=epoch)
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                self.classifier.fit(X_train, y_train)
             self.current_epoch = epoch
 
             # Evaluate training loss
@@ -91,6 +96,7 @@ class ANNScamModel(BaseModel):
 
                 if val_f1 > best_val_f1:
                     best_val_f1 = val_f1
+                    best_classifier = copy.deepcopy(self.classifier)
                     patience_counter = 0
                 else:
                     patience_counter += 1
@@ -105,6 +111,9 @@ class ANNScamModel(BaseModel):
             if patience_counter >= self.early_stopping_patience:
                 logger.info("Early stopping triggered at epoch %d (patience=%d)", epoch, self.early_stopping_patience)
                 break
+
+        if best_classifier is not None:
+            self.classifier = best_classifier
 
         self.is_trained = True
         duration = time.time() - start_time

@@ -88,19 +88,19 @@ class EnsembleScamModel(BaseModel):
         if is_lone_url:
             w["url_classifier"] = 0.50
             w["logistic_regression"] = 0.25
-            w["knn"] = 0.15
-            w["ann"] = 0.10
+            w["ann"] = 0.15
+            w["knn"] = 0.10
         elif has_url:
-            w["url_classifier"] = 0.30
-            w["logistic_regression"] = 0.40
-            w["knn"] = 0.20
-            w["ann"] = 0.10
+            w["url_classifier"] = 0.25
+            w["logistic_regression"] = 0.35
+            w["ann"] = 0.25
+            w["knn"] = 0.15
         else:
             # If text contains no URL, URL classifier has zero signal and must not inject false prior bias
             w["url_classifier"] = 0.00
-            w["logistic_regression"] = 0.55
-            w["knn"] = 0.30
-            w["ann"] = 0.15
+            w["logistic_regression"] = 0.45
+            w["ann"] = 0.35
+            w["knn"] = 0.20
 
         p_log = self.logistic.predict_one(content).scam_probability
         p_ann = self.ann.predict_one(content).scam_probability
