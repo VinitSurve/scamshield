@@ -155,7 +155,32 @@ The compiled, loadable extension is emitted into the `extension/dist/` directory
 
 ---
 
-## 7. Verification & Test URLs
+## 7. Security Test Lab [Developer / Hackathon Suite]
+
+ScamShield includes a dedicated, developer-accessible **Security Test Lab** to evaluate website detection, risk scoring, Tranco trust anchors, brand-impersonation heuristics, and redirect chain monitoring in a safe, controlled environment.
+
+### How to Access the Test Lab
+1. Click the ScamShield extension icon in the Chrome toolbar.
+2. Click **"Security Test Lab [Dev Mode]"** at the bottom of the popup (or open `chrome-extension://<id>/test-lab.html` directly in a new tab).
+3. Click **"Run All Tests"** to execute the diagnostic suite sequentially with live progress tracking, or run individual tests on demand.
+
+### Test Matrix (10 Controlled Scenarios)
+| Test Case | Target URL | Expected Category | Expected Severity | Detection Mechanism |
+| :--- | :--- | :--- | :--- | :--- |
+| **Legitimate Google** | `https://google.com` | `LEGITIMATE` | `SAFE` | Tranco Protected Anchor List |
+| **Legitimate GitHub** | `https://github.com` | `LEGITIMATE` | `SAFE` | Tranco Protected Anchor List |
+| **Legitimate Microsoft** | `https://microsoft.com` | `LEGITIMATE` | `SAFE` | Tranco Protected Anchor List |
+| **Legitimate Amazon India** | `https://amazon.in` | `LEGITIMATE` | `SAFE` | Tranco Protected Anchor List |
+| **SBI Impersonation** | `https://sbi-online-kyc-verification.example` | `PHISHING` | `CRITICAL` / `HIGH` | Heuristic Brand Impersonation Registry |
+| **HDFC Impersonation** | `https://hdfc-bank-secure-login.example` | `PHISHING` | `CRITICAL` / `HIGH` | Heuristic Brand Impersonation Registry |
+| **PhonePe Impersonation** | `https://phonepe-account-verify.example` | `PHISHING` | `CRITICAL` / `HIGH` | Heuristic Brand Impersonation Registry |
+| **Known Threat Fixture** | `https://sbi-online-kyc-verification.top` | `FAKE_KYC` | `CRITICAL` | High-Confidence Offline Threat DB |
+| **Deceptive Redirect Chain** | `shortener.example -> tracker.example -> sbi-online-kyc-verification.top` | `FAKE_KYC` | `CRITICAL` / `HIGH` | Multi-Hop Redirect Tracker |
+| **Input Safety Fixture** | `not a valid url %%%` | `LEGITIMATE` / `UNKNOWN` | `SAFE` / `UNKNOWN` | Canonicalizer Exception Handling |
+
+---
+
+## 8. Manual Verification & Test URLs
 
 To safely verify ScamShield's protection mechanisms without visiting dangerous live malware:
 

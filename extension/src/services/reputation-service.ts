@@ -64,12 +64,12 @@ export class ReputationService {
     }
 
     // 4. Local High-Confidence Intelligence Check (0ms)
-    if (!skipCache) {
-      const localVerdict = CacheService.checkLocalIntelligence(domain, canonical.canonicalUrl);
-      if (localVerdict) {
-        return localVerdict;
-      }
+    const localVerdict = CacheService.checkLocalIntelligence(domain, canonical.canonicalUrl, skipCache);
+    if (localVerdict) {
+      return localVerdict;
+    }
 
+    if (!skipCache) {
       // Check L2 storage cache
       const cachedStorageVerdict = await CacheService.getFromStorage(domain);
       if (cachedStorageVerdict) {
