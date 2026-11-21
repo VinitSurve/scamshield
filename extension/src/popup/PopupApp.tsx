@@ -3,6 +3,8 @@ import { Header } from './components/Header';
 import { StatusCard } from './components/StatusCard';
 import { QuickActions } from './components/QuickActions';
 import { ReportModal } from './components/ReportModal';
+import { AIScamAnalyzerModal } from './components/AIScamAnalyzerModal';
+import { AIExplanationModal } from './components/AIExplanationModal';
 import { SafeMessaging } from '../security/safe-messaging';
 import { TabStatusResponse } from '../types/messages';
 import { ReputationVerdict } from '../types/threat';
@@ -15,6 +17,8 @@ export const PopupApp: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isScanning, setIsScanning] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
+  const [isAiAnalyzerOpen, setIsAiAnalyzerOpen] = useState(false);
+  const [isAiExplanationOpen, setIsAiExplanationOpen] = useState(false);
 
   const t = getTranslation(settings.language);
 
@@ -105,6 +109,14 @@ export const PopupApp: React.FC = () => {
     evaluatedAt: Date.now(),
   };
 
+  const canExplainThreat = Boolean(
+    verdict.domain &&
+      (verdict.severity === 'CRITICAL' ||
+        verdict.severity === 'HIGH' ||
+        verdict.severity === 'SUSPICIOUS' ||
+        verdict.riskScore > 30)
+  );
+
   return (
     <div className="w-[380px] min-h-[520px] bg-shield-dark flex flex-col justify-between select-none">
       <div>
@@ -129,6 +141,9 @@ export const PopupApp: React.FC = () => {
         onOpenReport={() => setIsReportOpen(true)}
         onToggleProtection={handleToggleProtection}
         onOpenTestLab={handleOpenTestLab}
+        onOpenAiAnalyzer={() => setIsAiAnalyzerOpen(true)}
+        onOpenAiExplanation={() => setIsAiExplanationOpen(true)}
+        canExplainThreat={canExplainThreat}
         isScanning={isScanning}
         protectionActive={tabStatus?.protectionActive ?? true}
         t={t as unknown as Record<string, string>}
@@ -141,6 +156,27 @@ export const PopupApp: React.FC = () => {
         url={verdict.canonicalUrl}
         t={t as unknown as Record<string, string>}
       />
+
+      <AIScamAnalyzerModal
+        isOpen={isAiAnalyzerOpen}
+        onClose={() => setIsAiAnalyzerOpen(false)}
+        userLanguage={settings.language}
+      />
+
+      {canExplainThreat && (
+        <AIExplanationModal
+          isOpen={isAiExplanationOpen}
+          onClose={() => setIsAiExplanationOpen(false)}
+          url={verdict.canonicalUrl}
+          domain={verdict.domain}
+          severity={verdict.severity}
+          riskScore={verdict.riskScore}
+          evidence={verdict.evidence}
+          redirectHops={tabStatus?.redirectChain?.hops?.length}
+          domIndicators={tabStatus?.heuristics?.impersonationKeywordsFound}
+          userLanguage={settings.language}
+        />
+      )}
     </div>
   );
 };

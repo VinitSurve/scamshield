@@ -11,18 +11,18 @@
 ## 1. Executive Summary
 
 ScamShield is being actively developed across two parallel, decoupled workstreams:
-1. **Browser Extension & Core Threat Detection (Vinit):** Complete Manifest V3 browser protection extension with k-anonymity reputation lookups, Tranco Top 100K anchor protection, multi-hop redirect tracking, brand impersonation heuristics, DOM zero-keystroke scanning, Gmail spear-phishing guard, educational interstitial blocking, and a controlled Security Test Lab. *(All merged into `main` via PR #3 and PR #4).*
+1. **Browser Extension & Core Threat Detection (Vinit):** Complete Manifest V3 browser protection extension with k-anonymity reputation lookups, Tranco Top 100K anchor protection, multi-hop redirect tracking, brand impersonation heuristics, DOM zero-keystroke scanning, Gmail spear-phishing guard, educational interstitial blocking, a controlled Security Test Lab, and a **Production-Grade Multi-Provider AI Engine (Gemini + Groq with multi-key pool, automatic rotation, rate-limit cooldown recovery, and structured scam analysis)**.
 2. **WhatsApp Bot & Ingestion Pipeline (Shubham):** Independent service managing WhatsApp webhooks, message ingestion, forwarded scam analysis, and user consent flows.
 
 ---
 
 ## 2. Branch & Pull Request Status Matrix
 
-| Branch | Purpose / Scope | Target Branch | Status | Latest Commit | PR Reference |
+| Branch | Purpose / Scope | Target Branch | Status | Latest Commit / HEAD | PR Reference |
 |---|---|---|---|---|---|
 | `main` | Production & Integration Baseline | — | **Protected / Stable** | `86cb6a9` | Baseline branch |
-| `vinit-browser-extension-mvp` | Extension MVP + Security Test Lab | `main` | **Merged into `main`** | `8a2b06a` | PR #3 & PR #4 (Merged) |
-| `vinit-add-docs` | Project Documentation & Development Tracker | `main` | **Active / In Progress** | `HEAD` | Active branch |
+| `vinit-browser-extension-mvp` | Extension MVP + Security Test Lab + Multi-Provider AI Engine | `main` | **Active / In Progress** | `HEAD` | PR #3 & #4 (Merged), New PR pending |
+| `vinit-add-docs` | Project Documentation & Context | `main` | **Merged into `main`** | `a4371c9` | PR #5 (Merged) |
 | `vinit-scamshield-architecture` | System Architecture, Threat Model & ADRs | `main` | **Merged into `main`** | `134d965` | PR #1 / #2 (Merged) |
 | `vinit-initial-setup` | Initial repository scaffolding | `main` | **Merged into `main`** | Initial | Scaffolding (Merged) |
 
@@ -30,7 +30,7 @@ ScamShield is being actively developed across two parallel, decoupled workstream
 
 ## 3. Workstream Deliverables & Completion Status
 
-### A. Browser Extension (`extension/`) — Lead: Vinit (Merged into `main`)
+### A. Browser Extension (`extension/`) — Lead: Vinit
 
 | Module / Milestone | Priority | Status | Details |
 |---|---|---|---|
@@ -43,22 +43,27 @@ ScamShield is being actively developed across two parallel, decoupled workstream
 | **Phase 6: In-Browser Website Heuristics** | P1 | **Completed** | Content script (`content-script.ts`) DOM analysis, zero-keystroke scanning, login form detection on unrated domains, Punycode/homoglyph detection. |
 | **Phase 7: Gmail Web Protection** | P2 | **Completed** | Gmail content script (`gmail.ts`) detecting display-name vs. SMTP address spoofing with injected security pills. |
 | **Phase 8: Extension UI Shells** | P0 | **Completed** | Responsive Popup UI (`popup.html`), full Options/Settings page (`options.html`), threat history, telemetry toggles, and multilingual i18n support. |
-| **Phase 9: Security Test Lab (Dev Mode)** | P0 (Dev) | **Completed** | Controlled testing dashboard (`test-lab.html`) with 10 synthetic/anchor test cases, real-time progress, latency tracking, and diagnostic evidence inspection. |
+| **Phase 9: Security Test Lab (Dev Mode)** | P0 (Dev) | **Completed** | Controlled testing dashboard (`test-lab.html`) with 14 synthetic/anchor/AI test cases, real-time progress, latency tracking, and diagnostic evidence inspection. |
+| **Phase 10: Multi-Provider AI Engine** | P0 | **Completed** | Dual-provider support (Google Gemini & Groq), multi-key pools, health-aware round-robin rotation, HTTP 429 rate-limit cooldown recovery, provider fallback, PII scrubber, structured scam message analyzer in Popup, and AI Settings UI in Options. |
 
 ### B. Security Test Lab Matrix (`test-lab.html`)
 
-| Test ID | Domain / URL | Category | Expected Verdict | Verified Result | Detection Source |
+| Test ID | Domain / Target | Category | Expected Verdict | Verified Result | Detection Source |
 |---|---|---|---|---|---|
-| `test-legit-google` | `https://google.com` | `legitimate` | Safe (Score: 0) | **PASS** | Tranco Top 100K Anchor |
-| `test-legit-github` | `https://github.com` | `legitimate` | Safe (Score: 0) | **PASS** | Tranco Top 100K Anchor |
-| `test-legit-microsoft` | `https://microsoft.com` | `legitimate` | Safe (Score: 0) | **PASS** | Tranco Top 100K Anchor |
-| `test-legit-amazon` | `https://amazon.in` | `legitimate` | Safe (Score: 0) | **PASS** | Tranco Top 100K Anchor |
-| `test-impersonation-sbi` | `https://sbi-online-kyc-verification.example` | `suspicious_impersonation` | Suspicious (Score ≥ 40) | **PASS** | Local Brand Impersonation Heuristics |
-| `test-impersonation-hdfc` | `https://hdfc-bank-secure-login.example` | `suspicious_impersonation` | Suspicious (Score ≥ 40) | **PASS** | Local Brand Impersonation Heuristics |
-| `test-impersonation-phonepe` | `https://phonepe-account-verify.example` | `suspicious_impersonation` | Suspicious (Score ≥ 40) | **PASS** | Local Brand Impersonation Heuristics |
-| `test-offline-threat-sbi` | `https://sbi-banking-update.top/login` | `simulated_threat` | Malicious (Score = 95) | **PASS** | Local Threat Intelligence Cache |
-| `test-redirect-chain` | `https://legit-redirector.com/out` (6 hops) | `redirect_simulation` | Suspicious (Score ≥ 35) | **PASS** | `RedirectTracker` Multi-Hop Engine |
-| `test-malformed-url` | `not-a-valid-url` | `resilience` | Safe / Handled Gracefully | **PASS** | `UrlValidator` Sanitization Pipeline |
+| `LEGIT_GOOGLE` | `https://google.com` | `Legitimate Mainstream` | Safe (Score: 0) | **PASS** | Tranco Top 100K Anchor |
+| `LEGIT_GITHUB` | `https://github.com` | `Legitimate Mainstream` | Safe (Score: 0) | **PASS** | Tranco Top 100K Anchor |
+| `LEGIT_MICROSOFT` | `https://microsoft.com` | `Legitimate Mainstream` | Safe (Score: 0) | **PASS** | Tranco Top 100K Anchor |
+| `LEGIT_AMAZON_IN` | `https://amazon.in` | `Legitimate Mainstream` | Safe (Score: 0) | **PASS** | Tranco Top 100K Anchor |
+| `IMPERSONATION_SBI` | `https://sbi-online-kyc-verification.example` | `Brand Impersonation` | Suspicious (Score ≥ 40) | **PASS** | Local Brand Impersonation Heuristics |
+| `IMPERSONATION_HDFC` | `https://hdfc-bank-secure-login.example` | `Brand Impersonation` | Suspicious (Score ≥ 40) | **PASS** | Local Brand Impersonation Heuristics |
+| `IMPERSONATION_PHONEPE` | `https://phonepe-account-verify.example` | `Brand Impersonation` | Suspicious (Score ≥ 40) | **PASS** | Local Brand Impersonation Heuristics |
+| `MALICIOUS_OFFLINE_KYC` | `https://sbi-online-kyc-verification.top` | `Known Threat Fixture` | Malicious (Score = 95) | **PASS** | Local Threat Intelligence Cache |
+| `SIMULATED_REDIRECT_CHAIN` | `https://shortener.example/promo` (3 hops) | `Redirect Chain` | Suspicious (Score ≥ 35) | **PASS** | `RedirectTracker` Multi-Hop Engine |
+| `INVALID_URL_SAFETY` | `javascript:alert("XSS")` | `Input Resilience` | Safe / Handled Gracefully | **PASS** | `UrlValidator` Sanitization Pipeline |
+| `AI_KEY_ROTATION` | `ai://key-manager/rotation-test` | `AI Engine Diagnostic` | Safe / Operational | **PASS** | Round-robin key rotation across healthy pool |
+| `AI_RATE_LIMIT_COOLDOWN` | `ai://key-manager/cooldown-test` | `AI Engine Diagnostic` | Safe / Operational | **PASS** | HTTP 429 cooldown status transition & key skipping |
+| `AI_PROVIDER_FALLBACK` | `ai://provider-router/fallback-test` | `AI Engine Diagnostic` | Safe / Operational | **PASS** | Gemini ➔ Groq automatic fallback routing |
+| `AI_SCAM_PARSING` | `ai://ai-service/pii-and-schema-test` | `AI Engine Diagnostic` | Safe / Operational | **PASS** | PII redaction & markdown-fenced JSON extraction |
 
 ---
 
@@ -66,7 +71,7 @@ ScamShield is being actively developed across two parallel, decoupled workstream
 
 | Check | Tool / Runner | Target | Result | Details |
 |---|---|---|---|---|
-| **Unit & Integration Tests** | Vitest v5.1.1 | `extension/tests/*.test.ts` | **46 / 46 PASS** | 10 test files passing in 155ms |
+| **Unit & Integration Tests** | Vitest v5.1.1 | `extension/tests/*.test.ts` | **68 / 68 PASS** | 13 test files passing in 203ms |
 | **TypeScript Typecheck** | `tsc --noEmit` | `extension/tsconfig.json` | **0 Errors** | Strict mode enabled |
 | **Production Build** | Vite v6.4.6 + Node script | `extension/scripts/build.js` | **SUCCESS** | Bundles `popup`, `options`, `interstitial`, `test-lab`, `background`, `content`, `gmail` |
 | **Lint & Formatting** | ESLint & Prettier configs | `extension/src` | **Compliant** | Zero unused variables / strict security boundaries |
@@ -86,7 +91,8 @@ ScamShield is being actively developed across two parallel, decoupled workstream
 
 ## 6. Audit & Change Log
 
-- **2026-11-21 (`vinit-add-docs`):** Established live `docs/DEVELOPMENT_STATUS.md` tracker to record branch progress, verification metrics, and PR audit history.
-- **2026-11-21 (`86cb6a9`):** PR #4 merged into `main` delivering controlled Security Test Lab (`test-lab.html`, `test-runner.ts`, `test-cases.ts`, `TestLabApp.tsx`), popup launcher in `QuickActions.tsx`, and 7 automated lab verification tests in `tests/test-lab.test.ts`. All 46 tests passing.
+- **2026-11-21 (`vinit-browser-extension-mvp`):** Implemented complete Multi-Provider AI Engine (Google Gemini + Groq) with multi-key pool, round-robin rotation, 429 rate limit cooldown recovery, provider fallback routing, PII scrubber, AI Settings UI in Options, and AI Scam Message Scanner & Threat Explanation Modals in Popup. All 68 tests passing across 13 suites.
+- **2026-11-21 (`a4371c9`):** Merged `vinit-add-docs` into `main` with project master context and initial development status tracker.
+- **2026-11-21 (`86cb6a9`):** PR #4 merged into `main` delivering controlled Security Test Lab (`test-lab.html`, `test-runner.ts`, `test-cases.ts`, `TestLabApp.tsx`), popup launcher in `QuickActions.tsx`.
 - **2026-11-21 (`8636c87`):** PR #3 merged into `main` delivering complete Browser Extension MVP foundation.
 - **2026-11-21 (`134d965`):** Comprehensive engineering documentation, architecture decisions (ADRs), threat model, and API contracts added to `docs/`.

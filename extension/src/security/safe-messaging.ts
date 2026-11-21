@@ -7,7 +7,7 @@ export class SafeMessaging {
   static async sendToBackground<TResponse = unknown, TPayload = unknown>(
     type: ExtensionActionType,
     payload?: TPayload,
-    timeoutMs = 6000
+    timeoutMs = 20000
   ): Promise<TResponse> {
     const message: BaseExtensionMessage<TPayload> = {
       type,

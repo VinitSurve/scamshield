@@ -97,6 +97,77 @@ export const chromeMock = {
       json: async () => ({ report_id: 'test_rep_123', status: 'RECORDED' }),
     };
   }
+  if (urlStr.includes('generativelanguage.googleapis.com')) {
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({
+        candidates: [
+          {
+            content: {
+              parts: [
+                {
+                  text: JSON.stringify({
+                    classification: 'SCAM',
+                    riskLevel: 'HIGH',
+                    confidenceScore: 0.92,
+                    scamCategory: 'BANKING_KYC_PHISHING',
+                    summary: 'Impersonates bank with false urgency to extract credentials.',
+                    socialEngineeringTactics: ['Urgency', 'Fear'],
+                    indicators: [
+                      {
+                        type: 'SUSPICIOUS_URL',
+                        description: 'Directs user to unofficial domain',
+                        severity: 'HIGH',
+                      },
+                    ],
+                    extractedEntities: {
+                      brandImpersonated: 'SBI',
+                      suspiciousUrls: ['http://sbi-kyc-update.top'],
+                    },
+                    recommendedActions: ['Do not click the link.', 'Do not share OTP.'],
+                    explanation: 'Verified banking impersonation pattern.',
+                  }),
+                },
+              ],
+            },
+          },
+        ],
+      }),
+    };
+  }
+  if (urlStr.includes('api.groq.com')) {
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                classification: 'SCAM',
+                riskLevel: 'HIGH',
+                confidenceScore: 0.88,
+                scamCategory: 'BANKING_KYC_PHISHING',
+                summary: 'Groq detection: Urgency scam impersonating bank.',
+                socialEngineeringTactics: ['Urgency'],
+                indicators: [
+                  {
+                    type: 'SUSPICIOUS_URL',
+                    description: 'Directs to unofficial domain',
+                    severity: 'HIGH',
+                  },
+                ],
+                extractedEntities: { brandImpersonated: 'SBI' },
+                recommendedActions: ['Ignore the message.'],
+                explanation: 'Groq inference identifies scam pattern.',
+              }),
+            },
+          },
+        ],
+      }),
+    };
+  }
   return {
     ok: true,
     status: 200,

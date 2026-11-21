@@ -7,6 +7,7 @@ import { CacheService } from '../storage/cache-service';
 import { NavigationMonitor } from './navigation-monitor';
 import { RedirectTracker } from './redirect-tracker';
 import { DnrManager } from './dnr-manager';
+import { AIService } from '../ai/ai-service';
 import { canonicalizeUrl } from '../security/url-validator';
 import { logger } from '../utils/logger';
 
@@ -165,6 +166,68 @@ async function handleExtensionMessage(
     case 'CLEAR_LOCAL_CACHE': {
       await CacheService.clearAll();
       return { success: true };
+    }
+
+    // AI Engine Handlers
+    case 'AI_ANALYZE_MESSAGE': {
+      return AIService.analyzeMessage(message.payload as any);
+    }
+
+    case 'AI_EXPLAIN_URL_THREAT': {
+      return AIService.explainUrlThreat(message.payload as any);
+    }
+
+    case 'AI_GET_CONFIG': {
+      return AIService.getSettings();
+    }
+
+    case 'AI_UPDATE_CONFIG': {
+      return AIService.updateSettings(message.payload as any);
+    }
+
+    case 'AI_GET_KEYS': {
+      const provider = (message.payload as any)?.provider;
+      return AIService.getMaskedKeys(provider);
+    }
+
+    case 'AI_ADD_KEY': {
+      const { provider, key, label } = message.payload as any;
+      if (!provider || !key) throw new Error('Missing provider or key parameter');
+      return AIService.addKey(provider, key, label);
+    }
+
+    case 'AI_REMOVE_KEY': {
+      const { keyId } = message.payload as any;
+      if (!keyId) throw new Error('Missing keyId parameter');
+      return AIService.removeKey(keyId);
+    }
+
+    case 'AI_TOGGLE_KEY': {
+      const { keyId, enabled } = message.payload as any;
+      if (!keyId) throw new Error('Missing keyId parameter');
+      return AIService.toggleKey(keyId, enabled);
+    }
+
+    case 'AI_RESET_KEY_STATUS': {
+      const { keyId } = message.payload as any;
+      if (!keyId) throw new Error('Missing keyId parameter');
+      return AIService.resetKeyStatus(keyId);
+    }
+
+    case 'AI_TEST_KEY': {
+      const { keyId } = message.payload as any;
+      if (!keyId) throw new Error('Missing keyId parameter');
+      return AIService.testKeyById(keyId);
+    }
+
+    case 'AI_TEST_RAW_KEY': {
+      const { providerId, rawKey, model } = message.payload as any;
+      if (!providerId || !rawKey) throw new Error('Missing providerId or rawKey parameter');
+      return AIService.testRawKey(providerId, rawKey, model);
+    }
+
+    case 'AI_GET_HEALTH_STATS': {
+      return AIService.getHealthStats();
     }
 
     default:
