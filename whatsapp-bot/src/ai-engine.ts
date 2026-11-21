@@ -507,7 +507,12 @@ Evaluate the message and return ONLY a valid, raw JSON object matching this exac
     let confidenceScore = 0.05;
     let scamCategory = 'LEGITIMATE_COMMUNICATION';
 
-    if (brand && (kyc || urgency)) {
+    if (brand === 'Electricity Office' || /\b(electricity|bijli)\b/i.test(text)) {
+      classification = 'SCAM';
+      riskLevel = 'HIGH';
+      confidenceScore = 0.90;
+      scamCategory = 'ELECTRICITY_BILL_SCAM';
+    } else if (brand && (kyc || urgency)) {
       classification = 'SCAM';
       riskLevel = 'HIGH';
       confidenceScore = 0.92;
@@ -558,7 +563,12 @@ Evaluate the message and return ONLY a valid, raw JSON object matching this exac
       confidenceScore,
       scamCategory,
       summary,
-      socialEngineeringTactics: urgency ? ['urgency', 'fear'] : [],
+      socialEngineeringTactics: [
+        ...(urgency ? ['Urgency / Deadline pressure'] : []),
+        ...(brand === 'Electricity Office' || /\b(electricity|bijli)\b/i.test(text) ? ['Fear / Disconnection penalty'] : []),
+        ...(kyc ? ['Account blockage fear'] : []),
+        ...(otp ? ['Credential theft'] : []),
+      ],
       indicators,
       extractedEntities: {
         brandImpersonated: brand || undefined,

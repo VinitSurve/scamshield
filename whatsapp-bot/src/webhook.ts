@@ -3,9 +3,10 @@ import { config } from './config.js';
 import { ScannerClient } from './scanner-client.js';
 import { BotSecurity } from './security.js';
 import { BackendAIEngine } from './ai-engine.js';
+import { UrlInvestigator } from './url-investigator.js';
 
 export const app = express();
-app.use(express.json());
+app.use(express.json({ limit: '15mb' }));
 
 // Enable CORS for Browser Extension local communication
 app.use((req, res, next) => {
@@ -134,6 +135,64 @@ app.post('/api/v1/analyze/image-vision', async (req: Request, res: Response) => 
 });
 
 /**
+ * WhatsApp Bot Simulator & Test Endpoint (POST /api/v1/bot/message)
+ * Allows testing full WhatsApp bot pipeline via HTTP requests
+ */
+app.post('/api/v1/bot/message', async (req: Request, res: Response) => {
+  try {
+    const { from, text, mediaUrl, imageData } = req.body;
+    const sender = from || 'test_user';
+
+    if (mediaUrl || imageData) {
+      const targetMedia = mediaUrl || imageData;
+      const scanResult = await ScannerClient.scanImage(targetMedia, sender);
+      res.json({
+        success: true,
+        type: 'image',
+        sender,
+        reply: scanResult.formattedReply,
+        scanResult,
+      });
+      return;
+    }
+
+    if (!text && text !== '') {
+      res.status(400).json({ error: 'Missing text or media in request body' });
+      return;
+    }
+
+    const scanResult = await ScannerClient.scanMessage(text, sender);
+    res.json({
+      success: true,
+      type: 'text',
+      sender,
+      reply: scanResult.formattedReply,
+      scanResult,
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Bot processing failed' });
+  }
+});
+
+/**
+ * Isolated Safe URL Investigation Endpoint (POST /api/v1/bot/investigate-url)
+ */
+app.post('/api/v1/bot/investigate-url', async (req: Request, res: Response) => {
+  try {
+    const { url } = req.body;
+    if (!url || typeof url !== 'string') {
+      res.status(400).json({ error: 'Missing url in request body' });
+      return;
+    }
+
+    const report = await UrlInvestigator.investigateUrl(url);
+    res.json(report);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'URL investigation failed' });
+  }
+});
+
+/**
  * Meta Webhook Verification (GET /webhook)
  */
 app.get('/webhook', (req: Request, res: Response) => {
@@ -186,12 +245,10 @@ app.post('/webhook', async (req: Request, res: Response) => {
 
           if (msgType === 'text') {
             const userText = msg.text?.body || '';
-            const scanResult = await ScannerClient.scanMessage(userText);
+            const scanResult = await ScannerClient.scanMessage(userText, sender);
 
-            // In demo mode, log the formatted reply
             console.log(`[ScamShield WhatsApp] Generated Reply for ${sender}:\n`, scanResult.formattedReply);
 
-            // In cloud_api mode with access token, send WhatsApp reply via Meta Graph API
             if (config.mode === 'cloud_api' && config.accessToken && config.phoneNumberId) {
               await sendWhatsAppMessage(sender, scanResult.formattedReply);
             }
@@ -203,10 +260,14 @@ app.post('/webhook', async (req: Request, res: Response) => {
                 console.warn('[ScamShield WhatsApp] Blocked unsafe media URL (SSRF protection):', mediaUrl);
                 continue;
               }
-            }
 
-            const scanResult = await ScannerClient.scanMessage('Image received: scanning for KYC and payment threats.');
-            console.log(`[ScamShield WhatsApp] Generated Image Reply for ${sender}:\n`, scanResult.formattedReply);
+              const scanResult = await ScannerClient.scanImage(mediaUrl, sender);
+              console.log(`[ScamShield WhatsApp] Generated Image Reply for ${sender}:\n`, scanResult.formattedReply);
+
+              if (config.mode === 'cloud_api' && config.accessToken && config.phoneNumberId) {
+                await sendWhatsAppMessage(sender, scanResult.formattedReply);
+              }
+            }
           }
         }
       }

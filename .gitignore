@@ -6,6 +6,10 @@ node_modules/
 # Testing
 coverage/
 
+# OCR cache
+*.traineddata
+
+
 # Next.js build
 .next/
 out/

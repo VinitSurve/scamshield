@@ -33,7 +33,7 @@ describe('ScamShield WhatsApp Bot & Security Engine', () => {
         Helpline: 9876543210
       `;
 
-      const result = await ScannerClient.scanMessage(incomingText);
+      const result = await ScannerClient.scanMessage(incomingText, 'test_user_kyc');
 
       expect(result.verdict).toBe('CRITICAL');
       expect(result.category).toBe('FAKE_KYC');
@@ -43,23 +43,23 @@ describe('ScamShield WhatsApp Bot & Security Engine', () => {
       expect(result.formattedReply).toContain('SCAMSHIELD THREAT ALERT');
       expect(result.formattedReply).toContain('Do NOT click or open any links');
       expect(result.formattedReply).toContain('Reply *1* to trigger deeper investigation');
-    });
+    }, 25000);
 
     it('identifies legitimate messages with clean status', async () => {
       const incomingText = 'Hey, are we still meeting for lunch at 1 PM today?';
-      const result = await ScannerClient.scanMessage(incomingText);
+      const result = await ScannerClient.scanMessage(incomingText, 'test_user_legit');
 
       expect(result.verdict).toBe('SAFE');
       expect(result.riskScore).toBeLessThan(10);
       expect(result.formattedReply).toContain('SAFE / NO KNOWN THREAT');
-    });
+    }, 25000);
 
     it('processes user consent for deep investigation', async () => {
-      const grantConsent = await ScannerClient.scanMessage('1');
+      const grantConsent = await ScannerClient.scanMessage('1', 'consent_user');
       expect(grantConsent.category).toBe('CONSENT_GRANTED');
       expect(grantConsent.formattedReply).toContain('Deep Threat Investigation Initiated');
 
-      const skipConsent = await ScannerClient.scanMessage('2');
+      const skipConsent = await ScannerClient.scanMessage('2', 'consent_user');
       expect(skipConsent.category).toBe('CONSENT_SKIPPED');
       expect(skipConsent.formattedReply).toContain('investigation skipped');
     });

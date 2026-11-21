@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import {
-  Sparkles,
+  FileText,
   X,
   CheckCircle2,
   Cpu,
+  ShieldAlert,
 } from 'lucide-react';
 import { UrlEvidenceExplanation } from '../../ai/types';
 import { SafeMessaging } from '../../security/safe-messaging';
@@ -61,7 +62,7 @@ export const AIExplanationModal: React.FC<AIExplanationModalProps> = ({
     } catch (err: any) {
       setExplanation({
         success: false,
-        summary: err.message || 'AI threat explanation could not be retrieved.',
+        summary: err.message || 'Security threat explanation could not be retrieved.',
         dangerLevel: 'HIGH',
         tacticsDetected: ['Scanner Detection'],
         safetyGuidance: ['Leave the suspicious page immediately.'],
@@ -72,17 +73,17 @@ export const AIExplanationModal: React.FC<AIExplanationModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-slate-950/85 backdrop-blur-sm animate-fade-in">
       <div className="bg-shield-card border border-shield-border rounded-2xl w-full max-w-sm max-h-[90vh] flex flex-col shadow-2xl overflow-hidden text-xs">
         {/* Header */}
         <div className="flex items-center justify-between p-3.5 border-b border-shield-border bg-shield-dark">
           <div className="flex items-center space-x-2">
-            <div className="p-1.5 bg-indigo-500/20 border border-indigo-500/30 rounded-lg text-indigo-400">
-              <Sparkles className="w-4 h-4" />
+            <div className="p-1.5 bg-shield-accent/15 border border-shield-accent/30 rounded-lg text-shield-accent">
+              <ShieldAlert className="w-4 h-4" />
             </div>
             <div>
               <h3 className="font-bold text-white uppercase tracking-wider text-[11px]">
-                AI Threat Assessment
+                Security Threat Assessment
               </h3>
               <p className="text-[10px] text-slate-400 font-mono truncate max-w-[200px]">
                 {domain}
@@ -123,14 +124,14 @@ export const AIExplanationModal: React.FC<AIExplanationModalProps> = ({
           {!explanation && !isExplaining && (
             <div className="text-center py-4 space-y-3">
               <p className="text-slate-300 text-xs">
-                Request an AI-assisted explanation of why this page was flagged by ScamShield's
+                Request a comprehensive security breakdown of why this page was flagged by ScamShield's
                 deterministic threat scanner.
               </p>
               <button
                 onClick={handleFetchExplanation}
-                className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold rounded-xl text-xs flex items-center justify-center space-x-1.5 mx-auto shadow-md transition-all active:scale-[0.98]"
+                className="px-4 py-2 bg-shield-accent hover:bg-shield-accentHover text-slate-950 font-bold rounded-xl text-xs flex items-center justify-center space-x-1.5 mx-auto shadow-md transition-all active:scale-[0.98]"
               >
-                <Sparkles className="w-3.5 h-3.5" />
+                <FileText className="w-3.5 h-3.5" />
                 <span>Explain Threat Findings</span>
               </button>
             </div>
@@ -138,9 +139,9 @@ export const AIExplanationModal: React.FC<AIExplanationModalProps> = ({
 
           {isExplaining && (
             <div className="text-center py-6 space-y-2">
-              <Sparkles className="w-6 h-6 animate-spin text-indigo-400 mx-auto" />
+              <div className="w-5 h-5 border-2 border-shield-accent border-t-transparent rounded-full animate-spin mx-auto" />
               <p className="text-slate-400 text-xs font-mono">
-                Consulting Gemini & Groq threat reasoning...
+                Aggregating threat intelligence reasoning...
               </p>
             </div>
           )}
@@ -153,7 +154,7 @@ export const AIExplanationModal: React.FC<AIExplanationModalProps> = ({
                     Executive Threat Summary
                   </span>
                   {explanation.providerUsed && (
-                    <span className="text-[9px] font-mono text-indigo-400 flex items-center space-x-1">
+                    <span className="text-[9px] font-mono text-shield-accent flex items-center space-x-1">
                       <Cpu className="w-3 h-3" />
                       <span>{explanation.providerUsed.toUpperCase()}</span>
                     </span>
