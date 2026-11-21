@@ -105,6 +105,12 @@ class DatasetValidator:
                     dom = dom[4:]
                 if dom:
                     return f"dom:{dom}"
+            phones = s.get("extracted_phones", [])
+            if phones:
+                return f"ph:{phones[0].replace(' ', '').replace('-', '')}"
+            upis = s.get("extracted_upis", [])
+            if upis:
+                return f"upi:{upis[0].lower()}"
             return f"sample:{s['sample_id']}"
 
         clusters: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
@@ -192,11 +198,16 @@ class DatasetValidator:
             json.dumps([s["sha256"] for s in unique_samples], sort_keys=True).encode()
         ).hexdigest()[:12]
 
+        sample_ver = unique_samples[0].get("dataset_version", "v3.0.0") if unique_samples else "v3.0.0"
+        ver_base = sample_ver.split("-")[0] if "-" in sample_ver else sample_ver
+        if not ver_base.startswith("v"):
+            ver_base = f"v{ver_base}"
+
         manifest = {
             "dataset_name": "ScamShield-IndiaFirst-Cybersecurity-Benchmark",
-            "version": f"v2.0.0-{dataset_hash}",
+            "version": f"{ver_base}-{dataset_hash}",
             "dataset_hash": dataset_hash,
-            "created_at": "2026-11-22T04:00:00Z",
+            "created_at": "2026-11-22T04:30:00Z",
             "total_samples": len(unique_samples),
             "splits": {
                 "train_count": len(train_set),

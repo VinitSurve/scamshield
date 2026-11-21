@@ -20,8 +20,8 @@ logger = logging.getLogger(__name__)
 class KNNScamModel(BaseModel):
     """K-Nearest Neighbors on dense TF-IDF SVD embeddings with Cosine Distance."""
 
-    def __init__(self, n_neighbors: int = 5, n_components: int = 40) -> None:
-        super().__init__(name="knn")
+    def __init__(self, n_neighbors: int = 5, n_components: int = 40, threshold: float = 0.50) -> None:
+        super().__init__(name="knn", threshold=threshold)
         self.n_neighbors = n_neighbors
         self.n_components = n_components
 
@@ -70,7 +70,7 @@ class KNNScamModel(BaseModel):
         X_dense = self.svd.transform(X_tfidf)
 
         prob = float(self.classifier.predict_proba(X_dense)[0][1])
-        pred = int(prob >= 0.5)
+        pred = int(prob >= self.threshold)
         latency = (time.time() - start) * 1000.0
 
         return PredictionOutput(
@@ -95,7 +95,7 @@ class KNNScamModel(BaseModel):
         X_dense = self.svd.transform(X_tfidf)
 
         y_prob = [float(p[1]) for p in self.classifier.predict_proba(X_dense)]
-        y_pred = [int(p >= 0.5) for p in y_prob]
+        y_pred = [int(p >= self.threshold) for p in y_prob]
 
         total_latency = (time.time() - start) * 1000.0
         avg_latency = total_latency / max(1, len(test_samples))

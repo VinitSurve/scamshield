@@ -1,0 +1,55 @@
+{
+  "dataset_name": "ScamShield-IndiaFirst-Cybersecurity-Benchmark",
+  "version": "v2.0.0-ca6930eccd7f",
+  "dataset_hash": "ca6930eccd7f",
+  "created_at": "2026-11-22T04:00:00Z",
+  "total_samples": 343,
+  "splits": {
+    "train_count": 231,
+    "val_count": 52,
+    "test_count": 60
+  },
+  "class_distribution": {
+    "scam": 187,
+    "legitimate": 156
+  },
+  "language_distribution": {
+    "en": 244,
+    "hinglish": 37,
+    "hi": 26,
+    "mr": 34,
+    "romanized_mr": 2
+  },
+  "category_distribution": {
+    "BANKING_KYC": 27,
+    "UPI_FRAUD": 19,
+    "ELECTRICITY": 16,
+    "DELIVERY": 14,
+    "LOTTERY": 6,
+    "JOB_OFFER": 13,
+    "DIGITAL_ARREST": 14,
+    "OTP_THEFT": 4,
+    "LEGITIMATE": 156,
+    "PHISHING_URL": 43,
+    "LOAN_FRAUD": 5,
+    "REMOTE_ACCESS_FRAUD": 5,
+    "SIM_DEACTIVATION": 6,
+    "TAX_CHALLAN_FRAUD": 5,
+    "CUSTOMER_SUPPORT_SCAM": 4,
+    "EVASION_PERTURBATION": 6
+  },
+  "content_type_distribution": {
+    "message": 252,
+    "url": 86,
+    "ocr_text": 5
+  },
+  "quality_metrics": {
+    "raw_inputs": 345,
+    "duplicates_removed": 2,
+    "near_duplicate_pairs": 0,
+    "invalid_labels": 0,
+    "missing_fields": 0,
+    "data_leakage_detected": false,
+    "domain_overlap_test": 0
+  }
+}

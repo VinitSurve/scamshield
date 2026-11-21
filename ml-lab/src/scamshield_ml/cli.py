@@ -21,6 +21,8 @@ from rich.text import Text
 
 from scamshield_ml.experiments.runner import PipelineRunner
 from scamshield_ml.inference.server import get_orchestrator
+from scamshield_ml.models.ensemble import EnsembleScamModel
+from scamshield_ml.models.logistic_regression import LogisticRegressionScamModel
 from scamshield_ml.orchestration.provider_keys import ProviderKeyManager
 from scamshield_ml.state import (
     ARTIFACTS_DIR,
@@ -277,22 +279,32 @@ def dataset_stats_cmd():
     with open(manifest_file, "r", encoding="utf-8") as f:
         m = json.load(f)
 
-    table = Table(title=f"Dataset Statistics: {m['dataset_name']} ({m['version']})", box=box.ROUNDED)
-    table.add_column("Category / Language", style="bold")
-    table.add_column("Count", style="cyan")
+    total = m.get("total_samples", 1)
+    classes = m.get("class_distribution", {})
+    splits = m.get("splits", {})
+    langs = m.get("language_distribution", {})
+    cats = m.get("category_distribution", {})
 
-    table.add_row("[bold]Total Unique Samples[/bold]", str(m["total_samples"]))
-    table.add_row("[bold]Train Split (70%)[/bold]", str(m["splits"]["train_count"]))
-    table.add_row("[bold]Val Split (15%)[/bold]", str(m["splits"]["val_count"]))
-    table.add_row("[bold]Test Split (15%)[/bold]", str(m["splits"]["test_count"]))
-    table.add_row("---", "---")
+    table = Table(title=f"SCAMSHIELD DATASET V3 SUMMARY: {m.get('version')}", box=box.ROUNDED)
+    table.add_column("Metric / Dimension", style="bold")
+    table.add_column("Count", justify="right", style="cyan")
+    table.add_column("Percentage", justify="right", style="green")
 
-    for lang, cnt in m["language_distribution"].items():
-        table.add_row(f"Language: {lang}", str(cnt))
-    table.add_row("---", "---")
+    table.add_row("[bold white]Total Unique Samples[/bold white]", str(total), "100.0%")
+    table.add_row("Scam / Threat Samples", str(classes.get("scam", 0)), f"{classes.get('scam', 0)/total*100:.1f}%")
+    table.add_row("Legitimate Hard-Negatives", str(classes.get("legitimate", 0)), f"{classes.get('legitimate', 0)/total*100:.1f}%")
+    table.add_row("---", "---", "---")
+    table.add_row("Train Split", str(splits.get("train_count", 0)), f"{splits.get('train_count', 0)/total*100:.1f}%")
+    table.add_row("Validation Split", str(splits.get("val_count", 0)), f"{splits.get('val_count', 0)/total*100:.1f}%")
+    table.add_row("Held-Out Test Split", str(splits.get("test_count", 0)), f"{splits.get('test_count', 0)/total*100:.1f}%")
+    table.add_row("---", "---", "---")
 
-    for cat, cnt in m["category_distribution"].items():
-        table.add_row(f"Category: {cat}", str(cnt))
+    for lang, cnt in sorted(langs.items(), key=lambda x: x[1], reverse=True):
+        table.add_row(f"Language: `{lang}`", str(cnt), f"{cnt/total*100:.1f}%")
+    table.add_row("---", "---", "---")
+
+    for cat, cnt in sorted(cats.items(), key=lambda x: x[1], reverse=True)[:15]:
+        table.add_row(f"Category: `{cat}`", str(cnt), f"{cnt/total*100:.1f}%")
 
     console.print(table)
 
@@ -484,6 +496,156 @@ def adversarial_cmd():
         )
 
     console.print(table)
+
+
+@app.command("regression")
+def regression_cmd():
+    """Run dedicated false-positive regression suite evaluating fixes for previously failed samples."""
+    reg_file = ML_LAB_DIR / "datasets" / "false_positive_regression.json"
+    if not reg_file.exists():
+        console.print("[yellow]No false-positive regression suite found.[/yellow]")
+        return
+
+    with open(reg_file, "r", encoding="utf-8") as f:
+        cases = json.load(f)
+
+    art = ARTIFACTS_DIR / "models" / "ensemble.joblib"
+    if not art.exists():
+        console.print("[yellow]Trained ensemble artifact not found. Run training first.[/yellow]")
+        return
+
+    ens = EnsembleScamModel()
+    ens.load(str(art))
+
+    table = Table(title=f"FALSE-POSITIVE REGRESSION SUITE ({len(cases)} Cases)", box=box.ROUNDED)
+    table.add_column("Case ID", style="bold cyan")
+    table.add_column("True Label")
+    table.add_column("Baseline Prob", justify="right", style="red")
+    table.add_column("v3.0 Prob", justify="right")
+    table.add_column("Status", style="bold")
+    table.add_column("Failure Pattern & Mitigation")
+
+    passed = 0
+    for c in cases:
+        txt = c["content"]
+        res = ens.predict_one(txt)
+        prob = res.scam_probability
+        is_fixed = (res.is_scam == 0)
+        if is_fixed:
+            passed += 1
+
+        stat_str = "[bold green]PASSED (Clean)[/bold green]" if is_fixed else "[bold red]FAILED (Scam)[/bold red]"
+        prob_style = "green" if prob < 0.50 else "red"
+
+        table.add_row(
+            c["regression_id"],
+            c.get("true_label", "legitimate"),
+            f"{c.get('predicted_probability', 0.5)*100:.1f}%",
+            f"[{prob_style}]{prob*100:.1f}%[/{prob_style}]",
+            stat_str,
+            c.get("failure_pattern", "")[:60] + "...",
+        )
+
+    console.print(table)
+    console.print(f"[bold white]Regression Suite Result:[/bold white] [bold green]{passed}/{len(cases)} cases passed successfully[/bold green] ({passed/len(cases)*100:.1f}% resolution rate)\n")
+
+
+@app.command("error-analysis")
+def error_analysis_cmd():
+    """Perform granular sliced error analysis on the held-out test dataset."""
+    test_file = ML_LAB_DIR / "data" / "processed" / "test.json"
+    if not test_file.exists():
+        console.print("[yellow]Test dataset split not found. Run validation first.[/yellow]")
+        return
+
+    with open(test_file, "r", encoding="utf-8") as f:
+        test_samples = json.load(f)
+
+    art = ARTIFACTS_DIR / "models" / "ensemble.joblib"
+    if not art.exists():
+        art = ARTIFACTS_DIR / "models" / "logistic.joblib"
+    if not art.exists():
+        console.print("[yellow]No trained model artifact found.[/yellow]")
+        return
+
+    model: Any
+    if "ensemble" in str(art):
+        model = EnsembleScamModel()
+    else:
+        model = LogisticRegressionScamModel()
+    model.load(str(art))
+
+    metrics = model.evaluate(test_samples)
+    cm = metrics.get("confusion_matrix", {})
+    tp = cm.get("true_positives", 0)
+    tn = cm.get("true_negatives", 0)
+    fp = cm.get("false_positives", 0)
+    fn = cm.get("false_negatives", 0)
+
+    # 1. Confusion Matrix Panel
+    console.print(Panel.fit(
+        f"[bold cyan]CONFUSION MATRIX ON HELD-OUT TEST DATA (N={len(test_samples)})[/bold cyan]\n"
+        f"  [bold green]True Positives (Scams Caught):[/bold green]  {tp} / {tp+fn} ({tp/max(1,tp+fn)*100:.1f}% Recall)\n"
+        f"  [bold green]True Negatives (Benign Passed):[/bold green] {tn} / {tn+fp} ({(1 - fp/max(1,tn+fp))*100:.1f}% Specificity)\n"
+        f"  [bold red]False Positives (False Alarms):[/bold red] {fp} / {tn+fp} ({fp/max(1,tn+fp)*100:.1f}% FPR)\n"
+        f"  [bold red]False Negatives (Missed Scams):[/bold red] {fn} / {tp+fn} ({fn/max(1,tp+fn)*100:.1f}% FNR)\n"
+        f"  [bold white]Overall Accuracy:[/bold white] {metrics.get('accuracy',0)*100:.1f}% | [bold green]Macro F1:[/bold green] {metrics.get('macro_f1',0)*100:.1f}%",
+        box=box.ROUNDED,
+        border_style="cyan",
+    ))
+
+    # 2. Language Slices Table
+    lang_slices = metrics.get("language_breakdown", {})
+    if lang_slices:
+        table = Table(title="PERFORMANCE SLICED BY LANGUAGE", box=box.ROUNDED)
+        table.add_column("Language", style="bold cyan")
+        table.add_column("Samples", justify="right")
+        table.add_column("Accuracy", justify="right")
+        table.add_column("Recall", justify="right", style="green")
+
+        for lang, data in sorted(lang_slices.items(), key=lambda x: x[1].get("count", 0), reverse=True):
+            table.add_row(
+                f"`{lang}`",
+                str(data.get("count", 0)),
+                f"{data.get('accuracy', 0)*100:.1f}%",
+                f"{data.get('recall', 0)*100:.1f}%",
+            )
+        console.print(table)
+
+    # 3. False Positives / False Negatives Detail
+    fps = []
+    fns = []
+    for s in test_samples:
+        pred = model.predict_one(s["content"])
+        true_lbl = int(s["is_scam"])
+        if true_lbl == 0 and pred.is_scam == 1:
+            fps.append((s, pred))
+        elif true_lbl == 1 and pred.is_scam == 0:
+            fns.append((s, pred))
+
+    if fps:
+        fp_table = Table(title=f"FALSE POSITIVE INSPECTION ({len(fps)} Items)", box=box.ROUNDED)
+        fp_table.add_column("ID", style="bold cyan")
+        fp_table.add_column("Category")
+        fp_table.add_column("Prob", justify="right", style="red")
+        fp_table.add_column("Text Excerpt")
+        for s, p in fps[:8]:
+            fp_table.add_row(s["sample_id"], s.get("category", "-"), f"{p.scam_probability*100:.1f}%", s["content"][:70] + "...")
+        console.print(fp_table)
+    else:
+        console.print("[bold green]✓ Zero False Positives in held-out test split![/bold green]")
+
+    if fns:
+        fn_table = Table(title=f"FALSE NEGATIVE INSPECTION ({len(fns)} Items)", box=box.ROUNDED)
+        fn_table.add_column("ID", style="bold cyan")
+        fn_table.add_column("Category")
+        fn_table.add_column("Prob", justify="right", style="yellow")
+        fn_table.add_column("Text Excerpt")
+        for s, p in fns[:8]:
+            fn_table.add_row(s["sample_id"], s.get("category", "-"), f"{p.scam_probability*100:.1f}%", s["content"][:70] + "...")
+        console.print(fn_table)
+    else:
+        console.print("[bold green]✓ Zero False Negatives in held-out test split![/bold green]")
 
 
 @experiment_app.command("list")

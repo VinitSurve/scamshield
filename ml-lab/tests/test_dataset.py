@@ -20,7 +20,7 @@ def test_dataset_collection_generates_samples():
         assert "UPI_FRAUD" in categories
         assert "ELECTRICITY" in categories
         assert "DELIVERY" in categories
-        assert "LEGITIMATE" in categories
+        assert "LEGITIMATE" in categories or any(c.startswith("LEGITIMATE") for c in categories)
 
         languages = {s.language for s in samples}
         assert "en" in languages

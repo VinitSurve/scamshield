@@ -20,8 +20,8 @@ logger = logging.getLogger(__name__)
 class LogisticRegressionScamModel(BaseModel):
     """Word + Character N-Gram TF-IDF with Balanced Logistic Regression."""
 
-    def __init__(self, c_param: float = 1.0, max_iter: int = 1000) -> None:
-        super().__init__(name="logistic_regression")
+    def __init__(self, c_param: float = 1.0, max_iter: int = 1000, threshold: float = 0.50) -> None:
+        super().__init__(name="logistic_regression", threshold=threshold)
         self.c_param = c_param
         self.max_iter = max_iter
 
@@ -72,7 +72,7 @@ class LogisticRegressionScamModel(BaseModel):
         start = time.time()
         X = self.vectorizer.transform([content])
         prob = float(self.classifier.predict_proba(X)[0][1])
-        pred = int(prob >= 0.5)
+        pred = int(prob >= self.threshold)
         latency = (time.time() - start) * 1000.0
 
         return PredictionOutput(
@@ -95,7 +95,7 @@ class LogisticRegressionScamModel(BaseModel):
 
         X_test = self.vectorizer.transform(X_test_raw)
         y_prob = [float(p[1]) for p in self.classifier.predict_proba(X_test)]
-        y_pred = [int(p >= 0.5) for p in y_prob]
+        y_pred = [int(p >= self.threshold) for p in y_prob]
 
         total_latency = (time.time() - start) * 1000.0
         avg_latency = total_latency / max(1, len(test_samples))

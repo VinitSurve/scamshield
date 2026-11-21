@@ -28,8 +28,9 @@ class ANNScamModel(BaseModel):
         max_epochs: int = 25,
         learning_rate: float = 0.001,
         early_stopping_patience: int = 5,
+        threshold: float = 0.50,
     ) -> None:
-        super().__init__(name="ann")
+        super().__init__(name="ann", threshold=threshold)
         self.hidden_layer_sizes = hidden_layer_sizes
         self.max_epochs = max_epochs
         self.learning_rate = learning_rate
@@ -133,7 +134,7 @@ class ANNScamModel(BaseModel):
         start = time.time()
         X = self.vectorizer.transform([content])
         prob = float(self.classifier.predict_proba(X)[0][1])
-        pred = int(prob >= 0.5)
+        pred = int(prob >= self.threshold)
         latency = (time.time() - start) * 1000.0
 
         return PredictionOutput(
@@ -156,7 +157,7 @@ class ANNScamModel(BaseModel):
 
         X_test = self.vectorizer.transform(X_raw)
         y_prob = [float(p[1]) for p in self.classifier.predict_proba(X_test)]
-        y_pred = [int(p >= 0.5) for p in y_prob]
+        y_pred = [int(p >= self.threshold) for p in y_prob]
 
         total_latency = (time.time() - start) * 1000.0
         avg_latency = total_latency / max(1, len(test_samples))

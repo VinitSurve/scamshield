@@ -56,6 +56,17 @@ class MainOrchestrator:
         self.community_agent = CommunityReputationAgent()
         self.indian_scam_agent = IndianScamIntelligenceAgent()
         self.ensemble = ensemble_model
+        if self.ensemble is None:
+            try:
+                base_dir = Path(__file__).resolve().parent.parent.parent.parent
+                model_path = base_dir / "artifacts" / "models" / "ensemble.joblib"
+                if model_path.exists():
+                    from scamshield_ml.models.ensemble import EnsembleScamModel
+                    ens = EnsembleScamModel()
+                    ens.load(str(model_path))
+                    self.ensemble = ens
+            except Exception as e:
+                logger.debug("Could not auto-load ensemble model: %s", e)
 
     def analyze(self, target: str, content_type: Optional[str] = None) -> OrchestratedThreatResult:
         start_time = time.time()

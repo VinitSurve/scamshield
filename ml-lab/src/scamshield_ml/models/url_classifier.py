@@ -22,8 +22,8 @@ logger = logging.getLogger(__name__)
 class URLFeatureClassifier(BaseModel):
     """Dedicated URL security classifier evaluating structural, lexical, and impersonation features."""
 
-    def __init__(self, n_estimators: int = 100, max_depth: int = 4) -> None:
-        super().__init__(name="url_classifier")
+    def __init__(self, n_estimators: int = 100, max_depth: int = 4, threshold: float = 0.50) -> None:
+        super().__init__(name="url_classifier", threshold=threshold)
         self.n_estimators = n_estimators
         self.max_depth = max_depth
 
@@ -98,7 +98,7 @@ class URLFeatureClassifier(BaseModel):
         vec_scaled = self.scaler.transform(vec)
 
         prob = float(self.classifier.predict_proba(vec_scaled)[0][1])
-        pred = int(prob >= 0.5)
+        pred = int(prob >= self.threshold)
         latency = (time.time() - start) * 1000.0
 
         return PredictionOutput(
@@ -121,7 +121,7 @@ class URLFeatureClassifier(BaseModel):
 
         X_scaled = self.scaler.transform(X_raw)
         y_prob = [float(p[1]) for p in self.classifier.predict_proba(X_scaled)]
-        y_pred = [int(p >= 0.5) for p in y_prob]
+        y_pred = [int(p >= self.threshold) for p in y_prob]
 
         total_latency = (time.time() - start) * 1000.0
         avg_latency = total_latency / max(1, len(test_samples))

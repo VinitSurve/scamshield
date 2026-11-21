@@ -13,6 +13,8 @@ from sklearn.metrics import (
     recall_score,
     roc_auc_score,
     brier_score_loss,
+    precision_recall_curve,
+    auc as sk_auc,
 )
 
 
@@ -33,6 +35,9 @@ def compute_metrics(
     f1 = float(f1_score(y_true_arr, y_pred_arr, zero_division=0))
     macro_f1 = float(f1_score(y_true_arr, y_pred_arr, average="macro", zero_division=0))
 
+    f1_scam = float(f1_score(y_true_arr, y_pred_arr, pos_label=1, zero_division=0))
+    f1_legit = float(f1_score(y_true_arr, y_pred_arr, pos_label=0, zero_division=0))
+
     cm = confusion_matrix(y_true_arr, y_pred_arr, labels=[0, 1])
     tn, fp, fn, tp = cm.ravel()
 
@@ -40,11 +45,14 @@ def compute_metrics(
     fnr = float(fn / (fn + tp)) if (fn + tp) > 0 else 0.0
 
     auc = 0.0
+    pr_auc = 0.0
     brier = 0.0
     if y_prob is not None and len(set(y_true)) > 1:
         try:
             auc = float(roc_auc_score(y_true_arr, y_prob))
             brier = float(brier_score_loss(y_true_arr, y_prob))
+            precision_pts, recall_pts, _ = precision_recall_curve(y_true_arr, y_prob)
+            pr_auc = float(sk_auc(recall_pts, precision_pts))
         except Exception:
             pass
 
@@ -54,9 +62,12 @@ def compute_metrics(
         "recall": round(rec, 4),
         "f1": round(f1, 4),
         "macro_f1": round(macro_f1, 4),
+        "f1_scam": round(f1_scam, 4),
+        "f1_legit": round(f1_legit, 4),
         "fpr": round(fpr, 4),
         "fnr": round(fnr, 4),
         "roc_auc": round(auc, 4),
+        "pr_auc": round(pr_auc, 4),
         "brier_score": round(brier, 4),
         "confusion_matrix": {
             "true_negatives": int(tn),

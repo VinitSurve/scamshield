@@ -21,8 +21,9 @@ class PredictionOutput:
 class BaseModel(abc.ABC):
     """Abstract model contract for training, evaluation, checkpointing, and prediction."""
 
-    def __init__(self, name: str) -> None:
+    def __init__(self, name: str, threshold: float = 0.50) -> None:
         self.name = name
+        self.threshold = threshold
         self.is_trained = False
         self.training_metrics: Dict[str, Any] = {}
         self.evaluation_metrics: Dict[str, Any] = {}

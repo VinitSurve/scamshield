@@ -25,8 +25,9 @@ class EnsembleScamModel(BaseModel):
     def __init__(
         self,
         weights: Optional[Dict[str, float]] = None,
+        threshold: float = 0.50,
     ) -> None:
-        super().__init__(name="ensemble")
+        super().__init__(name="ensemble", threshold=threshold)
         self.weights = weights or {
             "logistic_regression": 0.35,
             "ann": 0.35,
@@ -114,7 +115,7 @@ class EnsembleScamModel(BaseModel):
             w["url_classifier"] * p_url
         )
 
-        pred = int(weighted_prob >= 0.5)
+        pred = int(weighted_prob >= self.threshold)
         latency = (time.time() - start) * 1000.0
 
         return PredictionOutput(

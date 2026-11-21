@@ -1,0 +1,57 @@
+[
+  {
+    "regression_id": "FP-REG-001",
+    "sample_id": "SCAM-DATA-00264",
+    "content": "https://retail.onlinesbi.sbi/retail/login.htm",
+    "true_label": "legitimate",
+    "predicted_probability": 0.5116,
+    "decision_threshold": 0.50,
+    "trigger_features": ["word_ngram__login", "word_ngram__sbi", "char_ngram__/log"],
+    "failure_pattern": "Legitimate banking login portal with official bank domain (.sbi) flagged due to 'login' and 'sbi' co-occurring frequently in phishing URLs.",
+    "target_mitigation": "Add authentic official bank portal URLs and login pages across major Indian banks (.sbi, .hdfcbank.com, .icicibank.com, .axisbank.com, .bankofbaroda.in) as hard negatives."
+  },
+  {
+    "regression_id": "FP-REG-002",
+    "sample_id": "SCAM-DATA-00073",
+    "content": "तुमचा फ्लिपकार्ट ऑर्डर रवाना करण्यात आला आहे. ट्रॅकिंगसाठी अधिकृत ॲप तपासा.",
+    "true_label": "legitimate",
+    "predicted_probability": 0.5022,
+    "decision_threshold": 0.50,
+    "trigger_features": ["word_ngram__करण", "word_ngram__मच", "word_ngram__आल"],
+    "failure_pattern": "Legitimate Marathi e-commerce delivery notification flagged due to common Marathi auxiliary verbs/postpositions being skewed toward scams because Marathi benign samples were scarce.",
+    "target_mitigation": "Expand Marathi hard negatives for delivery, government, utility, and everyday communications."
+  },
+  {
+    "regression_id": "FP-REG-003",
+    "sample_id": "SCAM-DATA-00204",
+    "content": "माँ, मैं ठीक हूँ। आज रात हॉस्टल में थोड़ा काम है इसलिए देर से बात करूंगा। आप अपनी दवाइयां समय पर ले लेना।",
+    "true_label": "legitimate",
+    "predicted_probability": 0.5339,
+    "decision_threshold": 0.50,
+    "trigger_features": ["word_ngram__पर", "word_ngram__कर", "word_ngram__अपन"],
+    "failure_pattern": "Everyday personal Hindi family message flagged because common Hindi functional words ('पर', 'कर', 'अपन') lacked negative reinforcement in benign training data.",
+    "target_mitigation": "Add conversational and personal Hindi/Hinglish communications, family check-ins, and workplace messages."
+  },
+  {
+    "regression_id": "FP-REG-004",
+    "sample_id": "SCAM-DATA-00154",
+    "content": "आरबीआई कहता है: जानकार बनिए, सतर्क रहिए। अपना यूपीआई पिन केवल पैसे भेजने के लिए दर्ज करें, पैसे प्राप्त करने के लिए पिन की आवश्यकता नहीं होती। किसी भी अनजान लिंक पर क्लिक न करें।",
+    "true_label": "legitimate",
+    "predicted_probability": 0.5206,
+    "decision_threshold": 0.50,
+    "trigger_features": ["word_ngram__कर", "word_ngram__पर", "word_ngram__अपन"],
+    "failure_pattern": "Authentic RBI public cybersecurity awareness message flagged because it mentions fraud warning terms ('यूपीआई पिन', 'अनजान लिंक', 'क्लिक न करें').",
+    "target_mitigation": "Incorporate official CERT-In, RBI Kehta Hai, and NPCI public awareness advisories as explicit hard-negative samples."
+  },
+  {
+    "regression_id": "FP-REG-005",
+    "sample_id": "SCAM-DATA-00159",
+    "content": "Savdhan: OLX par payment lene ke liye kabhi QR code scan na kare aur UPI PIN na dale. Paise lene ke liye PIN nahi lagta.",
+    "true_label": "legitimate",
+    "predicted_probability": 0.6725,
+    "decision_threshold": 0.50,
+    "trigger_features": ["word_ngram__ke", "word_ngram__ke liye", "word_ngram__kare", "word_ngram__lene"],
+    "failure_pattern": "Hinglish peer-to-peer safety advisory warning users that receiving money does not require entering a PIN; flagged due to terminology overlap ('QR code', 'UPI PIN').",
+    "target_mitigation": "Add peer-to-peer safety advice, banking precautions, and fraud awareness warnings across Hinglish and Romanized Indic."
+  }
+]
