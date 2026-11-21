@@ -10,6 +10,7 @@ export type ThreatCategory =
   | 'LOTTERY_SCAM'
   | 'SUSPICIOUS_LOGIN'
   | 'LEGITIMATE'
+  | 'NO_KNOWN_THREAT'
   | 'UNKNOWN';
 
 export type ReputationSource =
@@ -28,18 +29,31 @@ export interface ThreatEvidenceItem {
   timestamp: number;
 }
 
+export interface ScannerCheckItem {
+  name: string;
+  label: string;
+  status: 'completed' | 'unavailable' | 'skipped';
+  result: 'PASS' | 'WARN' | 'FAIL' | 'CLEAN' | 'UNKNOWN';
+  details: string;
+}
+
 export interface ReputationVerdict {
   domain: string;
   canonicalUrl: string;
   severity: ThreatSeverity;
   category: ThreatCategory;
   riskScore: number; // 0.00 to 1.00
+  confidence?: 'HIGH' | 'MEDIUM' | 'LOW';
   evidence: string[];
   impersonatedBrand?: string;
   communityReportCount?: number;
   source: ReputationSource;
   isBlocked: boolean;
   evaluatedAt: number;
+  scanId?: string;
+  scanDurationMs?: number;
+  isFreshScan?: boolean;
+  checksSummary?: ScannerCheckItem[];
 }
 
 export interface RedirectHop {

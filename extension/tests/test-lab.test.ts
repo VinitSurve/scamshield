@@ -10,8 +10,8 @@ describe('Security Test Lab — Automated Verification Suite', () => {
     await SettingsService.resetSettings();
   });
 
-  it('contains exactly 14 predefined controlled test cases covering all security and AI categories', () => {
-    expect(CONTROLLED_TEST_CASES).toHaveLength(14);
+  it('contains exactly 15 predefined controlled test cases covering all security and AI categories', () => {
+    expect(CONTROLLED_TEST_CASES).toHaveLength(15);
 
     const categories = new Set(CONTROLLED_TEST_CASES.map((tc) => tc.categoryLabel));
     expect(categories.has('Legitimate Mainstream')).toBe(true);
@@ -22,9 +22,9 @@ describe('Security Test Lab — Automated Verification Suite', () => {
     expect(categories.has('AI Engine Diagnostic')).toBe(true);
   });
 
-  it('passes all 4 legitimate mainstream website tests via Tranco Anchor validation', async () => {
+  it('passes all 5 legitimate mainstream website tests (including LinkedIn) via Tranco Anchor validation', async () => {
     const legitCases = CONTROLLED_TEST_CASES.filter((tc) => tc.categoryLabel === 'Legitimate Mainstream');
-    expect(legitCases).toHaveLength(4);
+    expect(legitCases).toHaveLength(5);
 
     for (const tc of legitCases) {
       const result = await TestRunner.runSingleTest(tc);
@@ -99,13 +99,13 @@ describe('Security Test Lab — Automated Verification Suite', () => {
 
     const allResults = await TestRunner.runAllTests(CONTROLLED_TEST_CASES, (completed, total) => {
       progressUpdates.push(completed);
-      expect(total).toBe(14);
+      expect(total).toBe(15);
     });
 
-    expect(allResults).toHaveLength(14);
-    expect(progressUpdates).toHaveLength(14);
+    expect(allResults).toHaveLength(15);
+    expect(progressUpdates).toHaveLength(15);
 
     const passedCount = allResults.filter((r) => r.status === 'PASS').length;
-    expect(passedCount).toBe(14); // All 14 tests must pass
+    expect(passedCount).toBe(15); // All 15 tests must pass
   });
 });

@@ -16,6 +16,8 @@ export const PopupApp: React.FC = () => {
   const [settings, setSettings] = useState<UserSettings>(DEFAULT_SETTINGS);
   const [isLoading, setIsLoading] = useState(true);
   const [isScanning, setIsScanning] = useState(false);
+  const [scanMessage, setScanMessage] = useState<string | null>(null);
+  const [scanError, setScanError] = useState<string | null>(null);
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [isAiAnalyzerOpen, setIsAiAnalyzerOpen] = useState(false);
   const [isAiExplanationOpen, setIsAiExplanationOpen] = useState(false);
@@ -42,16 +44,59 @@ export const PopupApp: React.FC = () => {
   }, []);
 
   const handleManualScan = async () => {
-    if (!tabStatus?.verdict.canonicalUrl) return;
+    if (isScanning) return;
     setIsScanning(true);
+    setScanError(null);
+    setScanMessage('Identifying active browser tab...');
+
     try {
+      // 1. Detect active browser tab
+      let activeUrl = tabStatus?.verdict.canonicalUrl;
+      let activeTabId: number | undefined;
+
+      try {
+        const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (activeTab?.url) {
+          activeUrl = activeTab.url;
+          activeTabId = activeTab.id;
+        }
+      } catch {
+        // Fall back to tabStatus url if tabs.query is unavailable
+      }
+
+      if (!activeUrl) {
+        setScanError('Unable to identify active website URL.');
+        setIsScanning(false);
+        return;
+      }
+
+      // Check for internal schemes
+      if (
+        activeUrl.startsWith('chrome://') ||
+        activeUrl.startsWith('chrome-extension://') ||
+        activeUrl.startsWith('about:') ||
+        activeUrl.startsWith('edge://')
+      ) {
+        setScanError('Internal browser pages cannot be scanned.');
+        setIsScanning(false);
+        return;
+      }
+
+      setScanMessage('Running multi-layer threat intelligence checks...');
+
+      // 2. Trigger fresh live scan through background worker
       const freshVerdict = await SafeMessaging.sendToBackground<ReputationVerdict>(
         'TRIGGER_MANUAL_SCAN',
-        { url: tabStatus.verdict.canonicalUrl }
+        { url: activeUrl, tabId: activeTabId },
+        20000
       );
+
       setTabStatus((prev) => (prev ? { ...prev, verdict: freshVerdict } : null));
-    } catch (err) {
+      setScanMessage(`Scan complete in ${freshVerdict.scanDurationMs || 0}ms`);
+      setTimeout(() => setScanMessage(null), 3000);
+    } catch (err: any) {
       console.error('Manual scan failed:', err);
+      setScanError(err.message || 'Website scan failed. Check network connectivity.');
     } finally {
       setIsScanning(false);
     }
@@ -114,7 +159,7 @@ export const PopupApp: React.FC = () => {
       (verdict.severity === 'CRITICAL' ||
         verdict.severity === 'HIGH' ||
         verdict.severity === 'SUSPICIOUS' ||
-        verdict.riskScore > 30)
+        verdict.riskScore > 0.3)
   );
 
   return (
@@ -132,6 +177,10 @@ export const PopupApp: React.FC = () => {
           verdict={verdict}
           protectionActive={tabStatus?.protectionActive ?? true}
           isWhitelisted={tabStatus?.isWhitelisted ?? false}
+          isScanning={isScanning}
+          scanMessage={scanMessage}
+          scanError={scanError}
+          onScanAgain={handleManualScan}
           t={t as unknown as Record<string, string>}
         />
       </div>
@@ -170,7 +219,7 @@ export const PopupApp: React.FC = () => {
           url={verdict.canonicalUrl}
           domain={verdict.domain}
           severity={verdict.severity}
-          riskScore={verdict.riskScore}
+          riskScore={Math.round(verdict.riskScore * 100)}
           evidence={verdict.evidence}
           redirectHops={tabStatus?.redirectChain?.hops?.length}
           domIndicators={tabStatus?.heuristics?.impersonationKeywordsFound}

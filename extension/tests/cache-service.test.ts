@@ -17,6 +17,11 @@ describe('Threat Cache Service & Tranco Anchor Protection', () => {
     expect(sbiVerdict).not.toBeNull();
     expect(sbiVerdict?.severity).toBe('SAFE');
     expect(sbiVerdict?.source).toBe('TRANCO_ANCHOR');
+
+    const linkedinVerdict = CacheService.checkLocalIntelligence('www.linkedin.com', 'https://www.linkedin.com/feed/for-you/');
+    expect(linkedinVerdict).not.toBeNull();
+    expect(linkedinVerdict?.severity).toBe('SAFE');
+    expect(linkedinVerdict?.source).toBe('TRANCO_ANCHOR');
   });
 
   it('instantly identifies known high-confidence offline malicious threats', () => {

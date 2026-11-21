@@ -107,9 +107,25 @@ async function handleExtensionMessage(
     }
 
     case 'TRIGGER_MANUAL_SCAN': {
-      const url = (message.payload as any)?.url;
-      if (!url) throw new Error('Missing URL parameter');
-      // Force fresh evaluation by skipping cache
+      let url = (message.payload as any)?.url;
+      const tabId = (message.payload as any)?.tabId;
+
+      if (!url && tabId) {
+        try {
+          const tab = await chrome.tabs.get(tabId);
+          url = tab?.url;
+        } catch {
+          // Fall through to active tab query
+        }
+      }
+
+      if (!url) {
+        const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        url = activeTab?.url;
+      }
+
+      if (!url) throw new Error('No active website detected to scan');
+      // Force fresh live evaluation by skipping cache
       return ReputationService.evaluateUrl(url, true);
     }
 

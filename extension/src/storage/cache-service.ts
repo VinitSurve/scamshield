@@ -13,13 +13,39 @@ const CACHE_STORAGE_PREFIX = 'scamshield_rep_';
 
 // Hardened Tranco protected anchors: globally trusted high-traffic platforms that cannot be blocked
 export const PROTECTED_TRANCO_ANCHORS = new Set([
+  // Global Platforms
   'google.com',
   'google.co.in',
   'youtube.com',
   'apple.com',
   'microsoft.com',
   'github.com',
+  'linkedin.com',
+  'x.com',
+  'twitter.com',
+  'facebook.com',
+  'instagram.com',
+  'whatsapp.com',
+  'reddit.com',
+  'netflix.com',
+  'spotify.com',
   'wikipedia.org',
+  'cloudflare.com',
+  'stackoverflow.com',
+  'zoom.us',
+  'yahoo.com',
+  'live.com',
+  'office.com',
+  'bing.com',
+  'medium.com',
+  'quora.com',
+  'dropbox.com',
+  'adobe.com',
+  'gitlab.com',
+  'npmjs.com',
+  'telegram.org',
+
+  // Major Indian Services & Banking Anchors
   'amazon.com',
   'amazon.in',
   'flipkart.com',
@@ -44,6 +70,17 @@ export const PROTECTED_TRANCO_ANCHORS = new Set([
   'irctc.co.in',
   'paytm.com',
   'phonepe.com',
+  'zomato.com',
+  'swiggy.com',
+  'hotstar.com',
+  'jiocinema.com',
+  'zerodha.com',
+  'groww.in',
+  'cred.club',
+  'tata.com',
+  'airtel.in',
+  'jio.com',
+  'makemytrip.com',
 ]);
 
 // High-confidence offline malicious threat intelligence dataset

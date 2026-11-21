@@ -42,6 +42,16 @@ export const CONTROLLED_TEST_CASES: TestCase[] = [
     expectedCategory: 'LEGITIMATE',
     expectedSource: 'TRANCO_ANCHOR',
   },
+  {
+    id: 'LEGIT_LINKEDIN',
+    title: 'Legitimate Mainstream — LinkedIn',
+    categoryLabel: 'Legitimate Mainstream',
+    targetUrl: 'https://www.linkedin.com/feed/for-you/',
+    description: 'Global professional networking platform verified against Tranco Top 100K high-trust anchor list.',
+    expectedSeverity: 'SAFE',
+    expectedCategory: 'LEGITIMATE',
+    expectedSource: 'TRANCO_ANCHOR',
+  },
 
   // 2. Suspicious Brand-Impersonation Domains (Synthetic .example TLDs)
   {

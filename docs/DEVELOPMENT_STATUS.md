@@ -71,7 +71,7 @@ ScamShield is being actively developed across two parallel, decoupled workstream
 
 | Check | Tool / Runner | Target | Result | Details |
 |---|---|---|---|---|
-| **Unit & Integration Tests** | Vitest v5.1.1 | `extension/tests/*.test.ts` | **68 / 68 PASS** | 13 test files passing in 203ms |
+| **Unit & Integration Tests** | Vitest v5.1.1 | `extension/tests/*.test.ts` | **69 / 69 PASS** | 13 test files passing in 205ms |
 | **TypeScript Typecheck** | `tsc --noEmit` | `extension/tsconfig.json` | **0 Errors** | Strict mode enabled |
 | **Production Build** | Vite v6.4.6 + Node script | `extension/scripts/build.js` | **SUCCESS** | Bundles `popup`, `options`, `interstitial`, `test-lab`, `background`, `content`, `gmail` |
 | **Lint & Formatting** | ESLint & Prettier configs | `extension/src` | **Compliant** | Zero unused variables / strict security boundaries |
@@ -91,6 +91,7 @@ ScamShield is being actively developed across two parallel, decoupled workstream
 
 ## 6. Audit & Change Log
 
+- **2026-11-21 (`vinit-browser-extension-mvp`):** Fixed website scanning pipeline and active tab detection bug. Removed hardcoded 15% fallback score, added observable scan lifecycle (scanId, latency in ms, fresh scan vs cached indicator), expanded Tranco Top 100K anchor registry with LinkedIn and top global/Indian platforms, integrated dynamic evidence calculation (`NO_KNOWN_THREAT`, `LEGITIMATE`), added completed checks checklist accordion, and added LinkedIn verification test. 69/69 tests passing across 13 test suites.
 - **2026-11-21 (`vinit-browser-extension-mvp`):** Implemented complete Multi-Provider AI Engine (Google Gemini + Groq) with multi-key pool, round-robin rotation, 429 rate limit cooldown recovery, provider fallback routing, PII scrubber, AI Settings UI in Options, and AI Scam Message Scanner & Threat Explanation Modals in Popup. All 68 tests passing across 13 suites.
 - **2026-11-21 (`a4371c9`):** Merged `vinit-add-docs` into `main` with project master context and initial development status tracker.
 - **2026-11-21 (`86cb6a9`):** PR #4 merged into `main` delivering controlled Security Test Lab (`test-lab.html`, `test-runner.ts`, `test-cases.ts`, `TestLabApp.tsx`), popup launcher in `QuickActions.tsx`.
