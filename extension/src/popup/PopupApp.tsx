@@ -74,6 +74,14 @@ export const PopupApp: React.FC = () => {
     }
   };
 
+  const handleOpenTestLab = () => {
+    if (chrome.tabs && chrome.tabs.create) {
+      chrome.tabs.create({ url: chrome.runtime.getURL('test-lab.html') });
+    } else {
+      window.open(chrome.runtime.getURL('test-lab.html'));
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="w-[380px] h-[520px] flex items-center justify-center bg-shield-dark text-slate-400 text-xs font-mono">
@@ -120,6 +128,7 @@ export const PopupApp: React.FC = () => {
         onScan={handleManualScan}
         onOpenReport={() => setIsReportOpen(true)}
         onToggleProtection={handleToggleProtection}
+        onOpenTestLab={handleOpenTestLab}
         isScanning={isScanning}
         protectionActive={tabStatus?.protectionActive ?? true}
         t={t as unknown as Record<string, string>}

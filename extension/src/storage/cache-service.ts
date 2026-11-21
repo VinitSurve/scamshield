@@ -136,7 +136,11 @@ export class CacheService {
   /**
    * Check local offline intelligence first (0ms latency)
    */
-  static checkLocalIntelligence(domain: string, canonicalUrl: string): ReputationVerdict | null {
+  static checkLocalIntelligence(
+    domain: string,
+    canonicalUrl: string,
+    skipDynamicCache = false
+  ): ReputationVerdict | null {
     const cleanDomain = domain.toLowerCase().trim();
 
     // 1. Tranco Protected Anchor Check
@@ -171,10 +175,12 @@ export class CacheService {
       };
     }
 
-    // 3. L1 Memory Cache Check
-    const memEntry = this.l1MemoryCache.get(cleanDomain);
-    if (memEntry && memEntry.expiresAt > Date.now()) {
-      return memEntry.verdict;
+    // 3. L1 Memory Cache Check (skipped if skipDynamicCache is true)
+    if (!skipDynamicCache) {
+      const memEntry = this.l1MemoryCache.get(cleanDomain);
+      if (memEntry && memEntry.expiresAt > Date.now()) {
+        return memEntry.verdict;
+      }
     }
 
     return null;

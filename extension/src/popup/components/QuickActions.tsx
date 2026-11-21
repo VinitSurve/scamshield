@@ -1,10 +1,11 @@
 import React from 'react';
-import { RefreshCw, Flag, Shield, ShieldOff } from 'lucide-react';
+import { RefreshCw, Flag, Shield, ShieldOff, FlaskConical } from 'lucide-react';
 
 interface QuickActionsProps {
   onScan: () => void;
   onOpenReport: () => void;
   onToggleProtection: () => void;
+  onOpenTestLab: () => void;
   isScanning: boolean;
   protectionActive: boolean;
   t: Record<string, string>;
@@ -14,6 +15,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
   onScan,
   onOpenReport,
   onToggleProtection,
+  onOpenTestLab,
   isScanning,
   protectionActive,
   t,
@@ -61,6 +63,16 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
         <span className="text-[11px] underline text-slate-400">
           {protectionActive ? 'Pause' : 'Resume'}
         </span>
+      </button>
+
+      {/* Developer / Hackathon Security Test Lab Launcher */}
+      <button
+        onClick={onOpenTestLab}
+        className="w-full flex items-center justify-center space-x-1.5 py-1.5 px-3 bg-shield-dark hover:bg-shield-cardHover text-cyan-400 border border-cyan-800/40 rounded-xl text-[11px] font-semibold transition-colors"
+        title="Open Developer Security Test Lab"
+      >
+        <FlaskConical className="w-3.5 h-3.5" />
+        <span>Security Test Lab [Dev Mode]</span>
       </button>
     </div>
   );
