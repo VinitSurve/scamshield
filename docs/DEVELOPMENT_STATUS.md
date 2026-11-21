@@ -11,7 +11,7 @@
 ## 1. Executive Summary
 
 ScamShield is being actively developed across two parallel, decoupled workstreams:
-1. **Browser Extension & Core Threat Detection (Vinit):** Complete Manifest V3 browser protection extension with k-anonymity reputation lookups, Tranco Top 100K anchor protection, multi-hop redirect tracking, brand impersonation heuristics, DOM zero-keystroke scanning, Gmail spear-phishing guard, educational interstitial blocking, and a controlled Security Test Lab.
+1. **Browser Extension & Core Threat Detection (Vinit):** Complete Manifest V3 browser protection extension with k-anonymity reputation lookups, Tranco Top 100K anchor protection, multi-hop redirect tracking, brand impersonation heuristics, DOM zero-keystroke scanning, Gmail spear-phishing guard, educational interstitial blocking, and a controlled Security Test Lab. *(All merged into `main` via PR #3 and PR #4).*
 2. **WhatsApp Bot & Ingestion Pipeline (Shubham):** Independent service managing WhatsApp webhooks, message ingestion, forwarded scam analysis, and user consent flows.
 
 ---
@@ -20,20 +20,21 @@ ScamShield is being actively developed across two parallel, decoupled workstream
 
 | Branch | Purpose / Scope | Target Branch | Status | Latest Commit | PR Reference |
 |---|---|---|---|---|---|
-| `main` | Production & Integration Baseline | — | **Protected / Stable** | `8636c87` | All PRs merge here |
-| `vinit-scamshield-architecture` | System Architecture, Threat Model & ADRs | `main` | **Merged** | `134d965` | PR #1 / #2 |
-| `vinit-browser-extension-mvp` | Full Browser Extension MVP + Security Test Lab | `main` | **Active / Ready for PR** | `8a2b06a` | PR #3 (Merged), New PR pending for `8a2b06a` |
-| `vinit-initial-setup` | Initial repository scaffolding | `main` | **Merged** | Initial | Scaffolding |
+| `main` | Production & Integration Baseline | — | **Protected / Stable** | `86cb6a9` | Baseline branch |
+| `vinit-browser-extension-mvp` | Extension MVP + Security Test Lab | `main` | **Merged into `main`** | `8a2b06a` | PR #3 & PR #4 (Merged) |
+| `vinit-add-docs` | Project Documentation & Development Tracker | `main` | **Active / In Progress** | `HEAD` | Active branch |
+| `vinit-scamshield-architecture` | System Architecture, Threat Model & ADRs | `main` | **Merged into `main`** | `134d965` | PR #1 / #2 (Merged) |
+| `vinit-initial-setup` | Initial repository scaffolding | `main` | **Merged into `main`** | Initial | Scaffolding (Merged) |
 
 ---
 
 ## 3. Workstream Deliverables & Completion Status
 
-### A. Browser Extension (`extension/`) — Lead: Vinit
+### A. Browser Extension (`extension/`) — Lead: Vinit (Merged into `main`)
 
 | Module / Milestone | Priority | Status | Details |
 |---|---|---|---|
-| **Phase 0: Architecture & Specs** | P0 | **Completed** | Full architecture, threat modeling, ADRs, and privacy specifications. |
+| **Phase 0: Architecture & Specs** | P0 | **Completed** | Full architecture, threat modeling, ADRs, and privacy specifications in `docs/`. |
 | **Phase 1: Manifest V3 Foundation** | P0 | **Completed** | Vite + React 19 + TypeScript scaffold, service worker lifecycle, minimal permissions (`storage`, `webNavigation`, `alarms`). |
 | **Phase 2: URL Reputation & Privacy Engine** | P0 | **Completed** | Canonicalizer, SHA-256 hasher, 32-bit k-anonymity prefix client (`ApiClient`), L1 memory & L2 `chrome.storage.local` caching. |
 | **Phase 3: Anchor & Offline Threat Protection** | P0 | **Completed** | Tranco Top 100K whitelist protection (zero false-positives for high-trust anchors) and instant offline phishing signatures. |
@@ -85,6 +86,7 @@ ScamShield is being actively developed across two parallel, decoupled workstream
 
 ## 6. Audit & Change Log
 
-- **2026-11-21 (`8a2b06a`):** Implemented controlled Security Test Lab (`test-lab.html`, `test-runner.ts`, `test-cases.ts`, `TestLabApp.tsx`), popup launcher in `QuickActions.tsx`, 7 automated lab verification tests in `tests/test-lab.test.ts`. All 46 tests passing.
+- **2026-11-21 (`vinit-add-docs`):** Established live `docs/DEVELOPMENT_STATUS.md` tracker to record branch progress, verification metrics, and PR audit history.
+- **2026-11-21 (`86cb6a9`):** PR #4 merged into `main` delivering controlled Security Test Lab (`test-lab.html`, `test-runner.ts`, `test-cases.ts`, `TestLabApp.tsx`), popup launcher in `QuickActions.tsx`, and 7 automated lab verification tests in `tests/test-lab.test.ts`. All 46 tests passing.
 - **2026-11-21 (`8636c87`):** PR #3 merged into `main` delivering complete Browser Extension MVP foundation.
 - **2026-11-21 (`134d965`):** Comprehensive engineering documentation, architecture decisions (ADRs), threat model, and API contracts added to `docs/`.
