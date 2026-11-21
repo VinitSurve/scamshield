@@ -1,5 +1,5 @@
 import React from 'react';
-import { RefreshCw, Flag, Shield, ShieldOff, FlaskConical, Sparkles } from 'lucide-react';
+import { RefreshCw, Flag, Shield, ShieldOff, FlaskConical, Sparkles, Image as ImageIcon, MessageSquare } from 'lucide-react';
 
 interface QuickActionsProps {
   onScan: () => void;
@@ -7,6 +7,8 @@ interface QuickActionsProps {
   onToggleProtection: () => void;
   onOpenTestLab: () => void;
   onOpenAiAnalyzer: () => void;
+  onOpenImageScanner?: () => void;
+  onOpenWhatsAppDemo?: () => void;
   onOpenAiExplanation?: () => void;
   canExplainThreat?: boolean;
   isScanning: boolean;
@@ -20,6 +22,8 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
   onToggleProtection,
   onOpenTestLab,
   onOpenAiAnalyzer,
+  onOpenImageScanner,
+  onOpenWhatsAppDemo,
   onOpenAiExplanation,
   canExplainThreat,
   isScanning,
@@ -50,6 +54,28 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
         </button>
       </div>
 
+      {/* Multimodal Image & Screenshot Scanner Launcher (Mandatory Faculty Requirement) */}
+      {onOpenImageScanner && (
+        <button
+          onClick={onOpenImageScanner}
+          className="w-full flex items-center justify-center space-x-2 py-2 px-3 bg-gradient-to-r from-indigo-900/40 via-purple-900/40 to-slate-900/40 hover:from-indigo-900/60 hover:to-purple-900/60 text-indigo-200 border border-indigo-500/40 rounded-xl text-xs font-bold transition-all active:scale-[0.99] shadow-sm"
+        >
+          <ImageIcon className="w-3.5 h-3.5 text-indigo-400" />
+          <span>Scan Screenshot / Image with OCR</span>
+        </button>
+      )}
+
+      {/* WhatsApp Security Bot Live Simulator Launcher */}
+      {onOpenWhatsAppDemo && (
+        <button
+          onClick={onOpenWhatsAppDemo}
+          className="w-full flex items-center justify-center space-x-2 py-2 px-3 bg-emerald-950/40 hover:bg-emerald-950/70 text-emerald-300 border border-emerald-700/50 rounded-xl text-xs font-semibold transition-all active:scale-[0.99] shadow-sm"
+        >
+          <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
+          <span>Open WhatsApp Bot Simulator</span>
+        </button>
+      )}
+
       {/* AI Threat Explanation Button (Visible when page has threats or warnings) */}
       {canExplainThreat && onOpenAiExplanation && (
         <button
@@ -64,10 +90,10 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
       {/* AI Scam Message Scanner Launcher */}
       <button
         onClick={onOpenAiAnalyzer}
-        className="w-full flex items-center justify-center space-x-2 py-2 px-3 bg-gradient-to-r from-indigo-950/60 to-purple-950/60 hover:from-indigo-900/80 hover:to-purple-900/80 text-white border border-indigo-500/40 rounded-xl text-xs font-bold transition-all active:scale-[0.99] shadow-sm"
+        className="w-full flex items-center justify-center space-x-2 py-1.5 px-3 bg-shield-card hover:bg-shield-cardHover text-slate-300 border border-shield-border rounded-xl text-xs font-medium transition-all active:scale-[0.99]"
       >
-        <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-        <span>Scan Message / SMS with AI</span>
+        <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+        <span>Scan Raw Message / SMS Text</span>
       </button>
 
       {/* Proactive Protection Toggle */}

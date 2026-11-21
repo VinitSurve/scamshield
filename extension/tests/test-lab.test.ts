@@ -10,8 +10,8 @@ describe('Security Test Lab — Automated Verification Suite', () => {
     await SettingsService.resetSettings();
   });
 
-  it('contains exactly 17 predefined controlled test cases covering all security and AI categories', () => {
-    expect(CONTROLLED_TEST_CASES).toHaveLength(17);
+  it('contains exactly 20 predefined controlled test cases covering all security and AI categories', () => {
+    expect(CONTROLLED_TEST_CASES).toHaveLength(20);
 
     const categories = new Set(CONTROLLED_TEST_CASES.map((tc) => tc.categoryLabel));
     expect(categories.has('Legitimate Mainstream')).toBe(true);
@@ -20,6 +20,8 @@ describe('Security Test Lab — Automated Verification Suite', () => {
     expect(categories.has('Redirect Chain')).toBe(true);
     expect(categories.has('Input Resilience')).toBe(true);
     expect(categories.has('AI Engine Diagnostic')).toBe(true);
+    expect(categories.has('Image Scam Diagnostic')).toBe(true);
+    expect(categories.has('WhatsApp Bot Diagnostic')).toBe(true);
   });
 
   it('passes all 5 legitimate mainstream website tests (including LinkedIn) via Tranco Anchor validation', async () => {
@@ -117,18 +119,43 @@ describe('Security Test Lab — Automated Verification Suite', () => {
     }
   });
 
+  it('passes both Image Scam Diagnostic test cases (fake KYC OCR and fraudulent UPI)', async () => {
+    const imageCases = CONTROLLED_TEST_CASES.filter((tc) => tc.categoryLabel === 'Image Scam Diagnostic');
+    expect(imageCases).toHaveLength(2);
+
+    for (const tc of imageCases) {
+      const result = await TestRunner.runSingleTest(tc);
+      expect(result.status).toBe('PASS');
+      expect(result.actualVerdict?.severity).toMatch(/CRITICAL|HIGH/);
+      expect(result.actualVerdict?.category).toMatch(/FAKE_KYC|UPI_FRAUD/);
+      expect(result.notes.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('passes WhatsApp Bot inbound threat detection and consent diagnostic test case', async () => {
+    const waCase = CONTROLLED_TEST_CASES.find((tc) => tc.id === 'WHATSAPP_BOT_DEMO_PIPELINE');
+    expect(waCase).toBeDefined();
+
+    const result = await TestRunner.runSingleTest(waCase!);
+    expect(result.status).toBe('PASS');
+    expect(result.actualVerdict?.severity).toBe('CRITICAL');
+    expect(result.actualVerdict?.category).toBe('FAKE_KYC');
+    expect(result.notes.some((n) => n.includes('Extracted'))).toBe(true);
+    expect(result.notes.some((n) => n.includes('URL scan result'))).toBe(true);
+  });
+
   it('executes runAllTests sequentially with progress tracking and achieves 100% pass rate', async () => {
     const progressUpdates: number[] = [];
 
     const allResults = await TestRunner.runAllTests(CONTROLLED_TEST_CASES, (completed, total) => {
       progressUpdates.push(completed);
-      expect(total).toBe(17);
+      expect(total).toBe(20);
     });
 
-    expect(allResults).toHaveLength(17);
-    expect(progressUpdates).toHaveLength(17);
+    expect(allResults).toHaveLength(20);
+    expect(progressUpdates).toHaveLength(20);
 
     const passedCount = allResults.filter((r) => r.status === 'PASS').length;
-    expect(passedCount).toBe(17); // All 17 tests must pass
+    expect(passedCount).toBe(20); // All 20 tests must pass
   });
 });

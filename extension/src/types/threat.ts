@@ -22,6 +22,8 @@ export type ReputationSource =
   | 'HEURISTIC'
   | 'OFFLINE_RULE'
   | 'AI_DIAGNOSTIC'
+  | 'IMAGE_DIAGNOSTIC'
+  | 'WHATSAPP_DIAGNOSTIC'
   | 'FALLBACK';
 
 export interface ThreatEvidenceItem {

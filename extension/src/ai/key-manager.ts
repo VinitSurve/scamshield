@@ -41,8 +41,9 @@ export class KeyManager {
         this.keys = [];
       }
 
-      // Optional Dev-Seeding from .env.local for local testing
-      if (this.keys.length === 0) {
+      // Optional Dev-Seeding from .env.local for local testing (disabled during automated test runs)
+      const isTestEnv = (import.meta as any).env?.MODE === 'test' || typeof process !== 'undefined' && process.env?.NODE_ENV === 'test';
+      if (this.keys.length === 0 && !isTestEnv) {
         const devGemini = (import.meta as any).env?.VITE_DEV_GEMINI_KEYS;
         const devGroq = (import.meta as any).env?.VITE_DEV_GROQ_KEYS;
 
@@ -457,6 +458,7 @@ export class KeyManager {
    */
   static async clearAllKeys(): Promise<void> {
     this.keys = [];
+    this.isInitialized = true;
     this.roundRobinIndices = { gemini: 0, groq: 0 };
     await this.persist();
   }

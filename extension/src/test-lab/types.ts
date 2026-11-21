@@ -14,6 +14,9 @@ export type TestCaseId =
   | 'CLEAN_DOMAIN_CLEAN_PATH'
   | 'SIMULATED_REDIRECT_CHAIN'
   | 'INVALID_URL_SAFETY'
+  | 'IMAGE_KYC_PHISHING_SCAN'
+  | 'IMAGE_UPI_FRAUD_SCAN'
+  | 'WHATSAPP_BOT_DEMO_PIPELINE'
   | 'AI_KEY_ROTATION'
   | 'AI_RATE_LIMIT_COOLDOWN'
   | 'AI_PROVIDER_FALLBACK'
@@ -25,6 +28,8 @@ export type TestCaseCategory =
   | 'Known Threat Fixture'
   | 'Redirect Chain'
   | 'Input Resilience'
+  | 'Image Scam Diagnostic'
+  | 'WhatsApp Bot Diagnostic'
   | 'AI Engine Diagnostic';
 
 export interface TestCase {
@@ -40,6 +45,8 @@ export interface TestCase {
   simulationHops?: string[];
   isAiDiagnostic?: boolean;
   aiTestType?: 'ROTATION' | 'RATE_LIMIT' | 'FALLBACK' | 'PARSER';
+  isImageDiagnostic?: boolean;
+  isWhatsAppDiagnostic?: boolean;
 }
 
 export type TestExecutionStatus = 'IDLE' | 'RUNNING' | 'PASS' | 'FAIL' | 'WARNING';

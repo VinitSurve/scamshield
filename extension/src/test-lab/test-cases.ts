@@ -191,4 +191,38 @@ export const CONTROLLED_TEST_CASES: TestCase[] = [
     isAiDiagnostic: true,
     aiTestType: 'PARSER',
   },
+
+  // 7. Image Scam Diagnostics
+  {
+    id: 'IMAGE_KYC_PHISHING_SCAN',
+    title: 'Image Diagnostics — Fake Electricity KYC Phishing Notice',
+    categoryLabel: 'Image Scam Diagnostic',
+    targetUrl: 'image://scanner/fake-kyc-fixture',
+    description: 'Runs ImageScanner with OCR & indicator extraction on high-urgency fake KYC notice with phishing URL and spoofed contact.',
+    expectedSeverity: 'CRITICAL',
+    expectedCategory: 'FAKE_KYC',
+    isImageDiagnostic: true,
+  },
+  {
+    id: 'IMAGE_UPI_FRAUD_SCAN',
+    title: 'Image Diagnostics — Fraudulent UPI Financial Lure Scheme',
+    categoryLabel: 'Image Scam Diagnostic',
+    targetUrl: 'image://scanner/upi-fraud-fixture',
+    description: 'Runs ImageScanner on fraudulent UPI payment request soliciting advance fees or refunds with high-risk financial lures.',
+    expectedSeverity: ['CRITICAL', 'HIGH'],
+    expectedCategory: 'UPI_FRAUD',
+    isImageDiagnostic: true,
+  },
+
+  // 8. WhatsApp Bot Diagnostics
+  {
+    id: 'WHATSAPP_BOT_DEMO_PIPELINE',
+    title: 'WhatsApp Bot Diagnostics — Inbound Threat Detection & Consent Pipeline',
+    categoryLabel: 'WhatsApp Bot Diagnostic',
+    targetUrl: 'whatsapp://bot/inbound-scan',
+    description: 'Validates WhatsApp bot message threat analysis pipeline, risk score thresholding, and two-step investigation consent prompt.',
+    expectedSeverity: 'CRITICAL',
+    expectedCategory: 'FAKE_KYC',
+    isWhatsAppDiagnostic: true,
+  },
 ];

@@ -5,6 +5,8 @@ import { QuickActions } from './components/QuickActions';
 import { ReportModal } from './components/ReportModal';
 import { AIScamAnalyzerModal } from './components/AIScamAnalyzerModal';
 import { AIExplanationModal } from './components/AIExplanationModal';
+import { ImageScamScannerModal } from './components/ImageScamScannerModal';
+import { WhatsAppDemoModal } from './components/WhatsAppDemoModal';
 import { SafeMessaging } from '../security/safe-messaging';
 import { TabStatusResponse } from '../types/messages';
 import { ReputationVerdict } from '../types/threat';
@@ -21,6 +23,8 @@ export const PopupApp: React.FC = () => {
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [isAiAnalyzerOpen, setIsAiAnalyzerOpen] = useState(false);
   const [isAiExplanationOpen, setIsAiExplanationOpen] = useState(false);
+  const [isImageScannerOpen, setIsImageScannerOpen] = useState(false);
+  const [isWhatsAppDemoOpen, setIsWhatsAppDemoOpen] = useState(false);
 
   const t = getTranslation(settings.language);
 
@@ -191,6 +195,8 @@ export const PopupApp: React.FC = () => {
         onToggleProtection={handleToggleProtection}
         onOpenTestLab={handleOpenTestLab}
         onOpenAiAnalyzer={() => setIsAiAnalyzerOpen(true)}
+        onOpenImageScanner={() => setIsImageScannerOpen(true)}
+        onOpenWhatsAppDemo={() => setIsWhatsAppDemoOpen(true)}
         onOpenAiExplanation={() => setIsAiExplanationOpen(true)}
         canExplainThreat={canExplainThreat}
         isScanning={isScanning}
@@ -210,6 +216,16 @@ export const PopupApp: React.FC = () => {
         isOpen={isAiAnalyzerOpen}
         onClose={() => setIsAiAnalyzerOpen(false)}
         userLanguage={settings.language}
+      />
+
+      <ImageScamScannerModal
+        isOpen={isImageScannerOpen}
+        onClose={() => setIsImageScannerOpen(false)}
+      />
+
+      <WhatsAppDemoModal
+        isOpen={isWhatsAppDemoOpen}
+        onClose={() => setIsWhatsAppDemoOpen(false)}
       />
 
       {canExplainThreat && (

@@ -10,9 +10,9 @@
 
 ## 1. Executive Summary
 
-ScamShield is being actively developed across two parallel, decoupled workstreams:
-1. **Browser Extension & Core Threat Detection (Vinit):** Complete Manifest V3 browser protection extension with k-anonymity reputation lookups, Tranco Top 100K anchor protection, multi-hop redirect tracking, brand impersonation heuristics, DOM zero-keystroke scanning, Gmail spear-phishing guard, educational interstitial blocking, a controlled Security Test Lab, and a **Production-Grade Multi-Provider AI Engine (Gemini + Groq with multi-key pool, automatic rotation, rate-limit cooldown recovery, and structured scam analysis)**.
-2. **WhatsApp Bot & Ingestion Pipeline (Shubham):** Independent service managing WhatsApp webhooks, message ingestion, forwarded scam analysis, and user consent flows.
+ScamShield is being actively developed across two synchronized, high-velocity workstreams:
+1. **Browser Extension & Core Threat Detection (Vinit):** Complete Manifest V3 browser protection extension with k-anonymity reputation lookups, Tranco Top 100K anchor protection, multi-hop redirect tracking, brand impersonation heuristics, DOM zero-keystroke scanning, Gmail spear-phishing guard, educational interstitial blocking, a controlled Security Test Lab, a **Production-Grade Multi-Provider AI Engine (Gemini + Groq with multi-key pool, automatic rotation, rate-limit cooldown recovery, and structured scam analysis)**, and an **End-to-End Image-Based Scam Detection Engine (Client-Side OCR, QR code decoding, URL/phone/UPI/social engineering extraction, existing scanner pipeline routing, and UI entry points)**.
+2. **WhatsApp Bot & Ingestion Pipeline (Shubham & Vinit):** Production-ready WhatsApp bot service (`whatsapp-bot/`) featuring Meta Cloud API webhook support, local Demo mode, SSRF-protected media ingestion, two-step investigation consent handling, and an **interactive in-extension WhatsApp Bot Simulator** allowing instant hackathon demonstration.
 
 ---
 
@@ -45,6 +45,8 @@ ScamShield is being actively developed across two parallel, decoupled workstream
 | **Phase 8: Extension UI Shells** | P0 | **Completed** | Responsive Popup UI (`popup.html`), full Options/Settings page (`options.html`), threat history, telemetry toggles, and multilingual i18n support. |
 | **Phase 9: Security Test Lab (Dev Mode)** | P0 (Dev) | **Completed** | Controlled testing dashboard (`test-lab.html`) with 17 synthetic/anchor/AI/path-threat test cases, real-time progress, latency tracking, and diagnostic evidence inspection. |
 | **Phase 10: Multi-Provider AI Engine** | P0 | **Completed** | Dual-provider support (Google Gemini & Groq), multi-key pools, health-aware round-robin rotation, HTTP 429 rate-limit cooldown recovery, provider fallback, PII scrubber, structured scam message analyzer in Popup, and AI Settings UI in Options. |
+| **Phase 11: Image-Based Scam Detection** | P0 | **Completed** | Client-side OCR (`tesseract.js`), QR code decoder (`jsqr`), indicator extraction (URLs, Indian mobile numbers, UPI IDs, emails, Hindi/English social tactics), passing extracted URLs to `ReputationService.evaluateUrl`, brand impersonation check, risk score synthesis, drag/drop/upload/paste UI modal with hackathon demo fixtures. |
+| **Phase 12: WhatsApp Bot & In-Extension Simulator** | P1 | **Completed** | Production-ready WhatsApp bot backend (`whatsapp-bot/`) with SSRF protection on media URLs, Meta Cloud API webhook + demo mode, and in-extension interactive WhatsApp Bot simulator modal (`WhatsAppDemoModal.tsx`) with two-step consent flow (`Reply 1/2`). |
 
 ### B. Security Test Lab Matrix (`test-lab.html`)
 
@@ -67,6 +69,9 @@ ScamShield is being actively developed across two parallel, decoupled workstream
 | `AI_RATE_LIMIT_COOLDOWN` | `ai://key-manager/cooldown-test` | `AI Engine Diagnostic` | Safe / Operational | **PASS** | HTTP 429 cooldown status transition & key skipping |
 | `AI_PROVIDER_FALLBACK` | `ai://provider-router/fallback-test` | `AI Engine Diagnostic` | Safe / Operational | **PASS** | Gemini ➔ Groq automatic fallback routing |
 | `AI_SCAM_PARSING` | `ai://ai-service/pii-and-schema-test` | `AI Engine Diagnostic` | Safe / Operational | **PASS** | PII redaction & markdown-fenced JSON extraction |
+| `IMAGE_KYC_PHISHING_SCAN` | `image://scanner/fake-kyc-fixture` | `Image Scam Diagnostic` | Critical Fake KYC (Score ≥ 90) | **PASS** | OCR + Extracted URL passed to `ReputationService` |
+| `IMAGE_UPI_FRAUD_SCAN` | `image://scanner/upi-fraud-fixture` | `Image Scam Diagnostic` | Critical/High UPI Fraud (Score ≥ 80) | **PASS** | OCR + UPI lure extraction + QR decode engine |
+| `WHATSAPP_BOT_DEMO_PIPELINE` | `whatsapp://bot/inbound-scan` | `WhatsApp Bot Diagnostic` | Critical Fake KYC (Score ≥ 90) | **PASS** | Inbound message analysis + Consent prompt pipeline |
 
 ---
 
@@ -74,8 +79,11 @@ ScamShield is being actively developed across two parallel, decoupled workstream
 
 | Check | Tool / Runner | Target | Result | Details |
 |---|---|---|---|---|
-| **Unit & Integration Tests** | Vitest v5.1.1 | `extension/tests/*.test.ts` | **75 / 75 PASS** | 13 test files passing in 236ms |
+| **Extension Unit & Integration Tests** | Vitest v5.1.1 | `extension/tests/*.test.ts` | **87 / 87 PASS** | 14 test files passing in 235ms |
+| **WhatsApp Bot Tests** | Vitest v3.2.7 | `whatsapp-bot/tests/*.test.ts` | **6 / 6 PASS** | SSRF blocking + message scanning + consent |
+| **Total Automated Tests** | Vitest (Dual Runner) | Entire Monorepo | **93 / 93 PASS** | 100% test pass rate across all suites |
 | **TypeScript Typecheck** | `tsc --noEmit` | `extension/tsconfig.json` | **0 Errors** | Strict mode enabled |
+| **WhatsApp Bot Typecheck** | `tsc` | `whatsapp-bot/tsconfig.json` | **0 Errors** | Clean build with zero warnings |
 | **Production Build** | Vite v6.4.6 + Node script | `extension/scripts/build.js` | **SUCCESS** | Bundles `popup`, `options`, `interstitial`, `test-lab`, `background`, `content`, `gmail` |
 | **Lint & Formatting** | ESLint & Prettier configs | `extension/src` | **Compliant** | Zero unused variables / strict security boundaries |
 
@@ -87,13 +95,14 @@ ScamShield is being actively developed across two parallel, decoupled workstream
    - Next.js + Tailwind CSS threat monitoring portal for enterprise/admin threat analytics.
 2. **Backend Threat Intelligence Service Integration:**
    - Wire mock/local k-anonymity API client to live cloud endpoints once backend deployment is ready.
-3. **WhatsApp Bot Coordination (Shubham's Workstream):**
-   - Shared threat schema and investigation request contract alignment per `docs/API_CONTRACTS.md`.
+3. **Multi-Platform Sync:**
+   - Synchronize threat reports between Browser Extension and WhatsApp Bot telemetry feeds.
 
 ---
 
 ## 6. Audit & Change Log
 
+- **2026-11-21 (`vinit-browser-extension-mvp`):** Delivered Phase 11 (Image-Based Scam Detection Engine) and Phase 12 (WhatsApp Bot Service + In-Extension Simulator). Implemented OCR pipeline (`tesseract.js`) with synthetic test fixtures, client-side QR decoder (`jsqr`), indicator extraction for URLs, Indian mobile numbers, UPI IDs, spoofed emails, and English/Hindi social engineering tactics. Wired extracted URLs into existing `ReputationService.evaluateUrl` and domain brand impersonation checks. Implemented complete `whatsapp-bot/` service with SSRF protection preventing access to private/loopback IP addresses and restricting media downloads to Meta CDN domains. Created interactive in-extension `WhatsAppDemoModal.tsx` and `ImageScamScannerModal.tsx` accessible from Popup quick actions. Expanded Security Test Lab to 20 automated tests. Total automated tests passing: 93/93 (87 in extension, 6 in whatsapp-bot). Production build and typecheck passing with zero errors.
 - **2026-11-21 (`vinit-browser-extension-mvp`):** Fixed critical false-negative vulnerability on Google Safe Browsing malware test URL (`https://testsafebrowsing.appspot.com/s/malware.html`). Eliminated silent promotion of offline/failed API lookups to `CLEAN` / `2%`. Implemented hierarchical URL expression threat matching (`getUrlThreatExpressions`) supporting path-specific threats, full URL hashes, and domain lookups. Established strict verdict distinction: `MALICIOUS`, `SUSPICIOUS`, `LEGITIMATE`, `NO_KNOWN_THREAT`, `UNVERIFIED`, `ANALYSIS_UNAVAILABLE`. Unknown sites with offline threat intelligence now conservatively receive `ANALYSIS_UNAVAILABLE` (20% caution score, LOW confidence, never clean). Expanded Security Test Lab to 17 test cases with path-level malware verification and path-isolation regression tests. All 75 unit/integration tests passing.
 - **2026-11-21 (`vinit-browser-extension-mvp`):** Fixed website scanning pipeline and active tab detection bug. Removed hardcoded 15% fallback score, added observable scan lifecycle (scanId, latency in ms, fresh scan vs cached indicator), expanded Tranco Top 100K anchor registry with LinkedIn and top global/Indian platforms, integrated dynamic evidence calculation (`NO_KNOWN_THREAT`, `LEGITIMATE`), added completed checks checklist accordion, and added LinkedIn verification test. 69/69 tests passing across 13 test suites.
 - **2026-11-21 (`vinit-browser-extension-mvp`):** Implemented complete Multi-Provider AI Engine (Google Gemini + Groq) with multi-key pool, round-robin rotation, 429 rate limit cooldown recovery, provider fallback routing, PII scrubber, AI Settings UI in Options, and AI Scam Message Scanner & Threat Explanation Modals in Popup. All 68 tests passing across 13 suites.

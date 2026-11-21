@@ -151,7 +151,7 @@ export interface StructuredScamAnalysis {
 
 export interface MessageAnalysisRequest {
   messageText: string;
-  sourceType?: 'SMS' | 'WHATSAPP' | 'EMAIL' | 'SOCIAL_MEDIA' | 'OTHER';
+  sourceType?: 'SMS' | 'WHATSAPP' | 'EMAIL' | 'SOCIAL_MEDIA' | 'SCREENSHOT_OCR' | 'OTHER';
   userLanguage?: 'en' | 'hi' | 'mr';
 }
 
