@@ -102,12 +102,10 @@ def status_cmd():
     failed_list = [p.display_name for p in phases if p.status == STATUS_FAILED]
 
     best_model_name = "None"
-    best_f1 = 0.0
-    for exp in experiments:
-        f1 = exp.metrics.get("f1", 0.0)
-        if f1 > best_f1:
-            best_f1 = f1
-            best_model_name = f"{exp.model_name} (F1: {f1*100:.1f}%)"
+    best_exps = state.get_best_experiments(dataset_version=dataset_info["version"])
+    if best_exps:
+        top_exp = best_exps[0]
+        best_model_name = f"{top_exp.model_name} (F1: {top_exp.metrics.get('f1', 0.0)*100:.1f}%)"
 
     console.print(Panel.fit(
         f"[bold cyan]SCAMSHIELD ML LAB STATUS[/bold cyan]\n"
@@ -193,7 +191,15 @@ def dashboard_cmd():
     """Interactive visual terminal dashboard using Rich."""
     overall = state.calculate_overall_progress()
     phases = state.get_all_phases()
-    experiments = state.get_experiments()
+    manifest_file = ML_LAB_DIR / "datasets" / "dataset_manifest.json"
+    cur_ver = None
+    if manifest_file.exists():
+        try:
+            with open(manifest_file, "r", encoding="utf-8") as f:
+                cur_ver = json.load(f).get("version")
+        except Exception:
+            pass
+    best_exps = state.get_best_experiments(dataset_version=cur_ver)
     key_status = ProviderKeyManager.get_instance().get_status()
 
     # Overview table
@@ -201,21 +207,20 @@ def dashboard_cmd():
     overview_table.add_column("Metric", style="bold")
     overview_table.add_column("Value", style="cyan")
     overview_table.add_row("Overall Pipeline", f"{overall}% Completed")
-    overview_table.add_row("Trained Models", str(len(experiments)))
+    overview_table.add_row("Trained Models (Active Dataset)", f"{len(best_exps)} Best Models ({cur_ver or 'all'})")
     overview_table.add_row("Gemini Keys Active", f"{key_status['gemini']['healthy_keys']} / {key_status['gemini']['total_keys']}")
     overview_table.add_row("Groq Keys Active", f"{key_status['groq']['healthy_keys']} / {key_status['groq']['total_keys']}")
     overview_table.add_row("Next Action", state.get_next_action())
 
     # Leaderboard table
-    leaderboard_table = Table(title="Model Leaderboard", box=box.SIMPLE_HEAD)
+    leaderboard_table = Table(title=f"Model Leaderboard ({cur_ver})", box=box.SIMPLE_HEAD)
     leaderboard_table.add_column("Model", style="bold")
     leaderboard_table.add_column("Accuracy")
     leaderboard_table.add_column("Recall")
     leaderboard_table.add_column("F1 Score", style="bold green")
     leaderboard_table.add_column("FPR")
 
-    sorted_exps = sorted(experiments, key=lambda x: x.metrics.get("f1", 0.0), reverse=True)
-    for exp in sorted_exps[:5]:
+    for exp in best_exps:
         m = exp.metrics
         leaderboard_table.add_row(
             exp.model_name,
@@ -644,12 +649,20 @@ def analyze_image_cmd(image_path: str):
 @app.command("export-best")
 def export_best_cmd():
     """Export best performing model artifact for production platform deployment."""
-    exps = state.get_experiments()
+    manifest_file = ML_LAB_DIR / "datasets" / "dataset_manifest.json"
+    cur_ver = None
+    if manifest_file.exists():
+        try:
+            with open(manifest_file, "r", encoding="utf-8") as f:
+                cur_ver = json.load(f).get("version")
+        except Exception:
+            pass
+    exps = state.get_best_experiments(dataset_version=cur_ver)
     if not exps:
-        console.print("[yellow]No trained models available to export. Run training first.[/yellow]")
+        console.print("[yellow]No trained models available for active dataset. Run training first.[/yellow]")
         return
 
-    best = max(exps, key=lambda x: x.metrics.get("f1", 0.0))
+    best = exps[0]
     src = Path(best.artifact_path or "")
     dest = ARTIFACTS_DIR / "models" / "best_model.joblib"
 
