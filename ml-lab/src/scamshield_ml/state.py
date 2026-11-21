@@ -470,6 +470,29 @@ class StateManager:
                 created_at=r["created_at"],
             )
 
+    def get_best_experiments(self, dataset_version: Optional[str] = None) -> List[ExperimentInfo]:
+        """Returns the best single experiment per model_name, deduplicated, optionally filtered by dataset_version."""
+        all_exps = self.get_experiments()
+        if dataset_version:
+            all_exps = [e for e in all_exps if e.dataset_version == dataset_version]
+
+        best_by_model: Dict[str, ExperimentInfo] = {}
+        for e in all_exps:
+            name = e.model_name
+            f1 = e.metrics.get("f1", 0.0)
+            acc = e.metrics.get("accuracy", 0.0)
+            if name not in best_by_model:
+                best_by_model[name] = e
+            else:
+                existing_f1 = best_by_model[name].metrics.get("f1", 0.0)
+                existing_acc = best_by_model[name].metrics.get("accuracy", 0.0)
+                if (f1, acc) > (existing_f1, existing_acc):
+                    best_by_model[name] = e
+
+        result = list(best_by_model.values())
+        result.sort(key=lambda x: (x.metrics.get("f1", 0.0), x.metrics.get("accuracy", 0.0)), reverse=True)
+        return result
+
     # ----------------------------------------------------
     # Logging
     # ----------------------------------------------------

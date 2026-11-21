@@ -277,7 +277,16 @@ class PipelineRunner:
     # Phase 7: Leaderboard Generation
     # ----------------------------------------------------
     def generate_leaderboard(self) -> List[Dict[str, Any]]:
-        experiments = self.state.get_experiments()
+        manifest_path = ML_LAB_DIR / "datasets" / "dataset_manifest.json"
+        cur_ver = None
+        if manifest_path.exists():
+            try:
+                with open(manifest_path, "r", encoding="utf-8") as f:
+                    cur_ver = json.load(f).get("version")
+            except Exception:
+                cur_ver = None
+
+        experiments = self.state.get_best_experiments(dataset_version=cur_ver)
         leaderboard = []
 
         for exp in experiments:
@@ -285,6 +294,7 @@ class PipelineRunner:
             leaderboard.append({
                 "experiment_id": exp.experiment_id,
                 "model_name": exp.model_name,
+                "dataset_version": exp.dataset_version,
                 "accuracy": metrics.get("accuracy", 0.0),
                 "precision": metrics.get("precision", 0.0),
                 "recall": metrics.get("recall", 0.0),
@@ -298,11 +308,12 @@ class PipelineRunner:
             })
 
         # Sort by F1 descending
-        leaderboard.sort(key=lambda x: x["f1"], reverse=True)
+        leaderboard.sort(key=lambda x: (x["f1"], x["accuracy"]), reverse=True)
 
         # Write markdown report
-        md = "# ScamShield ML Lab — Empirical Model Leaderboard\n\n"
-        md += "> **Evaluation Protocol:** Strictly evaluated on held-out test split (`test.json`) with zero data leakage.\n\n"
+        ver_str = f" ({cur_ver})" if cur_ver else ""
+        md = f"# ScamShield ML Lab — Empirical Model Leaderboard{ver_str}\n\n"
+        md += "> **Evaluation Protocol:** Best validated checkpoint per model on current held-out test split with zero data leakage.\n\n"
         md += "| Rank | Model | Accuracy | Precision | Recall | Macro F1 | F1 Score | False Positive Rate | ROC-AUC | Latency (ms) |\n"
         md += "|:---:|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|\n"
 

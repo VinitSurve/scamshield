@@ -485,22 +485,28 @@ def adversarial_cmd():
 def experiments_list_cmd():
     """List all permanent experiment runs."""
     exps = state.get_experiments()
-    table = Table(title="PERMANENT EXPERIMENT REGISTRY", box=box.ROUNDED)
+    table = Table(title=f"PERMANENT EXPERIMENT REGISTRY ({len(exps)} Records)", box=box.ROUNDED)
     table.add_column("Experiment ID", style="bold cyan")
     table.add_column("Model", style="bold")
-    table.add_column("F1", justify="right", style="green")
+    table.add_column("Dataset Version", style="dim")
+    table.add_column("Test N", justify="right")
     table.add_column("Accuracy", justify="right")
-    table.add_column("Duration", justify="right")
+    table.add_column("F1", justify="right", style="green")
+    table.add_column("FPR", justify="right", style="yellow")
     table.add_column("Status")
     table.add_column("Created At")
 
     for e in exps:
+        n_samples = e.metrics.get("total_samples", "-")
+        fpr = f"{e.metrics.get('fpr', 0)*100:.1f}%" if "fpr" in e.metrics else "-"
         table.add_row(
             e.experiment_id,
             e.model_name,
-            f"{e.metrics.get('f1', 0)*100:.1f}%",
+            e.dataset_version[:18] if e.dataset_version else "-",
+            str(n_samples),
             f"{e.metrics.get('accuracy', 0)*100:.1f}%",
-            f"{e.duration_sec:.1f}s",
+            f"{e.metrics.get('f1', 0)*100:.1f}%",
+            fpr,
             e.status,
             e.created_at[:19],
         )
