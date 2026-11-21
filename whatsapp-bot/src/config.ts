@@ -21,7 +21,7 @@ for (const envPath of envCandidates) {
 }
 
 export interface WhatsAppConfig {
-  mode: 'demo' | 'cloud_api';
+  mode: 'demo' | 'mock' | 'cloud_api';
   enabled: boolean;
   port: number;
   accessToken: string;
@@ -41,8 +41,14 @@ const parseKeys = (keysString?: string): string[] => {
     .filter(Boolean);
 };
 
+const resolveMode = (envMode?: string): 'demo' | 'mock' | 'cloud_api' => {
+  if (envMode === 'cloud_api') return 'cloud_api';
+  if (envMode === 'mock') return 'mock';
+  return 'demo';
+};
+
 export const config: WhatsAppConfig = {
-  mode: (process.env.WHATSAPP_MODE === 'cloud_api' ? 'cloud_api' : 'demo') as 'demo' | 'cloud_api',
+  mode: resolveMode(process.env.WHATSAPP_MODE),
   enabled: process.env.WHATSAPP_ENABLED !== 'false',
   port: parseInt(process.env.PORT || '3001', 10),
   accessToken: process.env.WHATSAPP_ACCESS_TOKEN || '',

@@ -4,6 +4,8 @@ import { ScannerClient } from './scanner-client.js';
 import { BotSecurity } from './security.js';
 import { BackendAIEngine } from './ai-engine.js';
 import { UrlInvestigator } from './url-investigator.js';
+import { providerManager } from './provider-state.js';
+import { whatsAppClient } from './whatsapp-client.js';
 
 export const app = express();
 app.use(express.json({ limit: '15mb' }));
@@ -20,7 +22,11 @@ app.use((req, res, next) => {
 });
 
 // Set of processed message IDs to prevent duplicate webhook delivery execution
-const processedMessageIds = new Set<string>();
+export const processedMessageIds = new Set<string>();
+
+export function clearProcessedMessageIds(): void {
+  processedMessageIds.clear();
+}
 
 /**
  * Health check endpoint
@@ -30,11 +36,60 @@ app.get('/health', (_req: Request, res: Response) => {
     status: 'healthy',
     service: 'scamshield-whatsapp-bot',
     mode: config.mode,
+    providerStatus: providerManager.getStatus(config.mode),
+    isBlocked: providerManager.getIsBlocked(),
     enabled: config.enabled,
     geminiKeysConfigured: config.geminiApiKeys.length,
     groqKeysConfigured: config.groqApiKeys.length,
     timestamp: new Date().toISOString(),
   });
+});
+
+/**
+ * WhatsApp Provider Status & Diagnostics Endpoint (GET /api/v1/whatsapp/status)
+ * Returns live health, Meta restriction status (Error 131031), interaction counts
+ */
+app.get('/api/v1/whatsapp/status', (_req: Request, res: Response) => {
+  const summary = providerManager.getStatusSummary(config.mode);
+  res.json(summary);
+});
+
+/**
+ * WhatsApp Provider Reset Endpoint (POST /api/v1/whatsapp/reset-status)
+ * Allows administrators or test suites to clear blocked status
+ */
+app.post('/api/v1/whatsapp/reset-status', (_req: Request, res: Response) => {
+  providerManager.reset();
+  res.json({
+    success: true,
+    message: 'WhatsApp provider state successfully reset to HEALTHY',
+    status: providerManager.getStatus(config.mode),
+  });
+});
+
+/**
+ * WhatsApp Simulation Endpoint (POST /api/v1/whatsapp/simulate)
+ * Simulates complete end-to-end inbound and outbound pipeline without calling Meta
+ */
+app.post('/api/v1/whatsapp/simulate', async (req: Request, res: Response) => {
+  try {
+    const { from, text, mediaUrl, imageData } = req.body;
+    if (!text && !mediaUrl && !imageData) {
+      res.status(400).json({ error: 'Payload must include text, mediaUrl, or imageData' });
+      return;
+    }
+
+    const result = await whatsAppClient.simulateInbound({
+      from,
+      text,
+      mediaUrl,
+      imageData,
+    });
+
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Simulation pipeline failed' });
+  }
 });
 
 /**
@@ -242,16 +297,14 @@ app.post('/webhook', async (req: Request, res: Response) => {
           const msgType = msg.type;
 
           console.log(`[ScamShield WhatsApp] Received ${msgType} message from ${sender}`);
+          providerManager.recordInbound(sender, msgType);
 
           if (msgType === 'text') {
             const userText = msg.text?.body || '';
             const scanResult = await ScannerClient.scanMessage(userText, sender);
 
             console.log(`[ScamShield WhatsApp] Generated Reply for ${sender}:\n`, scanResult.formattedReply);
-
-            if (config.mode === 'cloud_api' && config.accessToken && config.phoneNumberId) {
-              await sendWhatsAppMessage(sender, scanResult.formattedReply);
-            }
+            await whatsAppClient.sendMessage(sender, scanResult.formattedReply);
           } else if (msgType === 'image') {
             const mediaUrl = msg.image?.url;
             if (mediaUrl) {
@@ -263,10 +316,7 @@ app.post('/webhook', async (req: Request, res: Response) => {
 
               const scanResult = await ScannerClient.scanImage(mediaUrl, sender);
               console.log(`[ScamShield WhatsApp] Generated Image Reply for ${sender}:\n`, scanResult.formattedReply);
-
-              if (config.mode === 'cloud_api' && config.accessToken && config.phoneNumberId) {
-                await sendWhatsAppMessage(sender, scanResult.formattedReply);
-              }
+              await whatsAppClient.sendMessage(sender, scanResult.formattedReply);
             }
           }
         }
@@ -281,32 +331,8 @@ app.post('/webhook', async (req: Request, res: Response) => {
 });
 
 /**
- * Sends a message back to the user using Meta WhatsApp Cloud API
+ * Sends a message back to the user via WhatsAppClient
  */
-async function sendWhatsAppMessage(recipientPhone: string, messageText: string): Promise<void> {
-  const url = `https://graph.facebook.com/v21.0/${config.phoneNumberId}/messages`;
-
-  try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${config.accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        messaging_product: 'whatsapp',
-        to: recipientPhone,
-        type: 'text',
-        text: { body: messageText },
-      }),
-    });
-
-    if (!response.ok) {
-      console.error(`[ScamShield WhatsApp] Meta API error: ${response.status} ${await response.text()}`);
-    } else {
-      console.log(`[ScamShield WhatsApp] Message delivered successfully to ${recipientPhone}`);
-    }
-  } catch (err) {
-    console.error('[ScamShield WhatsApp] Network error sending WhatsApp reply:', err);
-  }
+export async function sendWhatsAppMessage(recipientPhone: string, messageText: string): Promise<any> {
+  return whatsAppClient.sendMessage(recipientPhone, messageText);
 }

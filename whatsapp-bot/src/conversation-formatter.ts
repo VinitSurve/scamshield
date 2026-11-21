@@ -100,8 +100,8 @@ export class ConversationFormatter {
       msg += `*RECOMMENDED ACTIONS*\n`;
       msg += `1. Do NOT click or open any links.\n`;
       msg += `2. Do NOT share OTP, UPI PIN, or bank passwords.\n`;
-      msg += `3. Official banks NEVER ask for KYC updates via SMS links.\n`;
-      msg += `4. Report this communication to 1930 (National Cyber Crime Helpline).\n\n`;
+      msg += this.getCategorySpecificAdvice(scan.category, scan.impersonatedEntity);
+      msg += `4. Report this communication to 1930 (National Cyber Crime Helpline) or cybercrime.gov.in.\n\n`;
 
       msg += `*Reply:*\n`;
       msg += `*1* - Investigate link safely (Reply *1* to trigger deeper investigation)\n`;
@@ -148,8 +148,9 @@ export class ConversationFormatter {
 
       msg += `*RECOMMENDED ACTIONS*\n`;
       msg += `1. Exercise extreme caution before responding or interacting.\n`;
-      msg += `2. Verify sender identity through official channels.\n`;
-      msg += `3. Never send money or enter credentials on unverified websites.\n\n`;
+      msg += `2. Verify sender identity through official channels or bank branches.\n`;
+      msg += `3. Never enter credentials, OTPs, or UPI PINs on unverified portals.\n`;
+      msg += `4. Dial 1930 immediately if money has been deducted.\n\n`;
 
       msg += `*Reply:*\n`;
       msg += `*1* - Investigate link safely (Reply *1* to trigger deeper investigation)\n`;
@@ -258,5 +259,38 @@ export class ConversationFormatter {
       `📞 National Cyber Crime Helpline: *1930*\n` +
       `🌐 Cybercrime Reporting Portal: *https://cybercrime.gov.in*`
     );
+  }
+
+  /**
+   * Helper returning specific, practical guidance based on Indian scam threat category
+   */
+  private static getCategorySpecificAdvice(category: string, impersonatedEntity?: string): string {
+    const cat = (category || '').toUpperCase();
+    if (cat.includes('KYC') || cat.includes('BANK')) {
+      const entity = impersonatedEntity || 'Banks';
+      return `3. Official banks like ${entity} NEVER ask for KYC updates via SMS or WhatsApp links.\n`;
+    }
+    if (cat.includes('ELECTRICITY') || cat.includes('POWER') || cat.includes('UTILITY')) {
+      return `3. Power distribution companies (e.g. MSEDCL, BESCOM) NEVER cut electricity within hours via SMS or ask to call private 10-digit mobile numbers.\n`;
+    }
+    if (cat.includes('DIGITAL_ARREST') || cat.includes('POLICE') || cat.includes('CBI') || cat.includes('LAW')) {
+      return `3. Police, CBI, ED, and Indian Courts NEVER place citizens under "digital arrest" or conduct interrogations over WhatsApp or Skype video calls.\n`;
+    }
+    if (cat.includes('JOB') || cat.includes('TASK') || cat.includes('TELEGRAM')) {
+      return `3. Legitimate corporations never offer paid daily wages for liking YouTube videos, Telegram tasks, or writing Google reviews.\n`;
+    }
+    if (cat.includes('UPI') || cat.includes('REFUND') || cat.includes('CASHBACK')) {
+      return `3. Entering your UPI PIN DEDUCTS money from your bank account. You NEVER need to enter a PIN to receive refunds or cashback.\n`;
+    }
+    if (cat.includes('LOAN')) {
+      return `3. Never borrow money from unapproved Instant Loan apps or pay "disbursement / processing fees" in advance.\n`;
+    }
+    if (cat.includes('LOTTERY') || cat.includes('REWARD') || cat.includes('KBC')) {
+      return `3. Legitimate lotteries and contests (like KBC) NEVER demand registration fees or tax payments to claim prizes.\n`;
+    }
+    if (cat.includes('REMOTE') || cat.includes('APK') || cat.includes('APP')) {
+      return `3. Never install remote access apps (AnyDesk, TeamViewer, RustDesk) or APK files sent over WhatsApp or SMS.\n`;
+    }
+    return `3. Always verify unsolicited messages directly via official phone numbers or branch visits.\n`;
   }
 }
